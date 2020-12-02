@@ -1,0 +1,41 @@
+{
+"name" : "Nico",
+"depth": "100",
+  "children": [
+    {
+      "name": "boss1",
+      "depth": "50",
+      "children": [
+        {
+          "name": "mister_a",
+          "depth": "0",
+          "colname": "level3"
+        },
+        {
+          "name": "mister_b",
+          "depth": "0",
+          "colname": "level3"
+        }
+      ],
+      "colname": "level2"
+    },
+    {
+      "name": "boss2",
+      "depth": "30",
+      "children": [
+        {
+          "name": "mister_e",
+          "depth": "0",
+          "colname": "level3"
+        },
+        {
+          "name": "mister_f",
+          "depth": "0",
+          "colname": "level3"
+        }
+      ],
+      "colname": "level2"
+    }
+  ],
+  "colname": "level1"
+}
