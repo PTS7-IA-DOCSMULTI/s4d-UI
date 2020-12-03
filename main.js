@@ -12,7 +12,12 @@ let mainWindow;
 // Listen for app to be ready
 app.on('ready', function(){
   // Create new window
-  mainWindow = new BrowserWindow({show: false});
+  mainWindow = new BrowserWindow({
+    show: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  });
   mainWindow.maximize();
   mainWindow.show();
   // Load html in window
