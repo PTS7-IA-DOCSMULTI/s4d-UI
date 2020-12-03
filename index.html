@@ -35,6 +35,11 @@
             <div class="shadow block">
                 <div class="header">
                     Timeline
+                    <button onclick="playPause()">Play/Pause</button>
+                    <button onclick="toggleMute()">Mute/Unmute</button>
+                    <button onclick="stop()">Stop</button>
+                    Zoom
+                    <input id="slider" type="range" min="1" max="500" value="1" />
                 </div>
                 <div class="content">
 					<div id="waveform"></div>
@@ -46,14 +51,36 @@
 			var wavesurfer = WaveSurfer.create({
 				container: '#waveform',
 				waveColor: 'violet',
-				progressColor: 'purple'
+				progressColor: 'purple',
+                scrollParent: true
+
 			});
 			wavesurfer.load('./audio.wav');
+
+            function playPause() {
+                wavesurfer.playPause();
+            }
+
+            function toggleMute() {
+                wavesurfer.toggleMute();
+            }
+
+            function stop() {
+                wavesurfer.stop();
+            }
+
+            var slider = document.querySelector('#slider');
+
+            slider.oninput = function () {
+              var zoomLevel = Number(slider.value);
+              wavesurfer.zoom(zoomLevel);
+            };
+
 		</script>
         <script>
             // set the dimensions and margins of the graph
-            var width = 460
-            var height = 460
+            var width = 335
+            var height = 335
             
             // append the svg object to the body of the page
             var svg = d3.select("#svg")
@@ -132,13 +159,10 @@
             }
 
             function changeNodesHeight(node) {
-                console.log(node);
-                node.y = 420 - (node.data.depth / 100 * 420);
+                graphHeight = height - 40;
+                node.y = graphHeight - (node.data.depth / 100 * graphHeight);
             }
 
-            function separation(a,b) {
-                return 1;
-            }
         </script>   
         <script type="text/javascript" src="./brain.js"></script>		
     </body>
