@@ -4,12 +4,16 @@
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Titillium+Web:400,600,700">
         <link href="style.css" rel="stylesheet">
+		<script src="https://unpkg.com/wavesurfer.js"></script>
     </head>
     <body>
         <div class="left-part">
             <div class="shadow block">
                 <div class="header">
                     Dendrogramme
+					<input type="text" id="value">
+					<button id="send">send to python</button>
+					<label id="res">res</label>
                 </div>
                 <div class="content elements" id="svg">
                 </div>
@@ -32,11 +36,20 @@
                 <div class="header">
                     Timeline
                 </div>
-                <div class="content elements">
+                <div class="content">
+					<div id="waveform"></div>
                 </div>
             </div>
         </div>
         <script src="https://d3js.org/d3.v4.min.js"></script>
+		<script>
+			var wavesurfer = WaveSurfer.create({
+				container: '#waveform',
+				waveColor: 'violet',
+				progressColor: 'purple'
+			});
+			wavesurfer.load('./audio.wav');
+		</script>
         <script>
             // set the dimensions and margins of the graph
             var width = 460
@@ -126,13 +139,7 @@
             function separation(a,b) {
                 return 1;
             }
-
-        </script>
-
-        <script type="text/javascript" src="./brain.js"></script>
-        <input type="text" id="value">
-        <button id="send">send to python</button>
-        <label id="res">res</label>
-        
+        </script>   
+        <script type="text/javascript" src="./brain.js"></script>		
     </body>
 </html>
