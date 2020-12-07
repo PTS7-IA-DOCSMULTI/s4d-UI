@@ -22,12 +22,16 @@
         <div class="right-part">
             <div class="shadow block">
                 <div class="header">
-                    Prévisualisation vidéo
+                    Visualisation noeud
                 </div>
                 <div class="content">
-                    <div class="embed">
-                        <iframe width="560" height="315" src="https://www.youtube.com/embed/p5hpsK48bxQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                    </div>
+                    <div id="nodeInfo">
+                       <h3 id="nodeName">Node name:</h3>
+                       <h3>Segments:</h3>
+                       <ul id="segList">
+
+                       </ul> 
+                    </div>                        
                 </div>
             </div>
         </div>
@@ -40,6 +44,7 @@
                     <button onclick="stop()">Stop</button>
                     Zoom
                     <input id="slider" type="range" min="1" max="500" value="1" />
+                    <span id=audioTime></span>
                 </div>
                 <div class="content">
 					<div id="waveform"></div>
@@ -56,6 +61,23 @@
 
 			});
 			wavesurfer.load('./audio.wav');
+            setInterval(displayTime, 500);
+
+            function displayTime() {
+                let text = secondsToHms(wavesurfer.getCurrentTime()) + " - " + secondsToHms(wavesurfer.getDuration());
+                document.getElementById("audioTime").innerHTML = text;
+            }
+
+            //duration must be in second
+            function secondsToHms(d) {
+                d = Number(d);
+                var h = Math.floor(d / 3600);
+                var m = Math.floor(d % 3600 / 60);
+                var s = Math.floor(d % 3600 % 60);
+                return (h < 10 ? "0" + h : h) + ":" +
+                        (m < 10 ? "0" + m : m) + ":" +
+                        (s < 10 ? "0" + s : s);
+            }
 
             function playPause() {
                 wavesurfer.playPause();
@@ -142,8 +164,8 @@
                   .on("mouseover", mouseover)
                   .on("mouseout", mouseout)
                   .on("click", function(d) {
-                    alert(d.data.name)
-                  })
+                    nodeClick(d)
+                    })
             });
 
             function mouseover() {
@@ -158,9 +180,37 @@
                     .style("fill", "#69b3a2")
             }
 
+            //display node information on right panel when a node is clicked
+            function nodeClick(d) {
+                document.getElementById("nodeName").innerHTML = "Node name: " + d.data.name;
+                let segList = document.getElementById("segList");
+                segList.innerHTML = "";
+                segments = getLeaves(d);
+                for(var i = 0; i < segments.length; i++) {
+                    var li = document.createElement("li");
+                    var seg = segments[i].data;
+                    var text = document.createTextNode(seg.name + " [" + seg.start + " - " + seg.end + "]");
+                    li.appendChild(text);
+                    segList.appendChild(li);
+                }
+            }
+
+            //return all segments linked to the node
+            function getLeaves(node, result = []){
+                if(!node.children || node.children.length === 0){
+                    result.push(node);
+                }else{
+                    for(var i = 0; i < node.children.length; i++) {
+                        result = getLeaves(node.children[i], result);
+                    }                   
+                }
+                return result;
+            }
+            
+
             function changeNodesHeight(node) {
                 graphHeight = height - 40;
-                node.y = graphHeight - (node.data.depth / 100 * graphHeight);
+                node.y = graphHeight - (node.data.height / 100 * graphHeight);
             }
 
         </script>   

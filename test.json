@@ -1,41 +1,42 @@
 {
-"name" : "Nico",
-"depth": "100",
+"name" : "root",
+"height": "100",
   "children": [
     {
-      "name": "boss1",
-      "depth": "50",
+      "name": "node1",
+      "height": "50",
       "children": [
         {
-          "name": "mister_a",
-          "depth": "0",
-          "colname": "level3"
+          "name": "seg1",
+          "height": "0",
+          "start": "00:01:03",
+          "end": "00:05:00"
         },
         {
-          "name": "mister_b",
-          "depth": "0",
-          "colname": "level3"
+          "name": "seg2",
+          "height": "0",
+          "start": "00:01:03",
+          "end": "00:05:00"
         }
-      ],
-      "colname": "level2"
+      ]
     },
     {
-      "name": "boss2",
-      "depth": "30",
+      "name": "node2",
+      "height": "30",
       "children": [
         {
-          "name": "mister_e",
-          "depth": "0",
-          "colname": "level3"
+          "name": "seg3",
+          "height": "0",
+          "start": "00:01:03",
+          "end": "00:05:00"
         },
         {
-          "name": "mister_f",
-          "depth": "0",
-          "colname": "level3"
+          "name": "seg4",
+          "height": "0",
+          "start": "00:01:03",
+          "end": "00:05:00"
         }
-      ],
-      "colname": "level2"
+      ]
     }
-  ],
-  "colname": "level1"
+  ]
 }
