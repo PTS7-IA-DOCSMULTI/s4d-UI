@@ -1,11 +1,38 @@
+//dimensions and margins of the graph
 var width = 335;
 var height = 335;
 
+var selectedNode_d;
+var selectedNode_html;
+
 //call when a node is clicked
-function nodeClick(d) {
+function nodeClick(d, htmlNode) {
+
+  //set default style to the previous node selected
+  d3.select(selectedNode_html)
+      .attr("r",7)
+      .style("fill", "#69b3a2");
+  selectedNode_html = htmlNode;
+
+  //if the clicked node is different from the previous one
+  if(selectedNode_d !== d) {
+    selectedNode_d = d;
     segments = getLeaves(d);
     loadNode(d.data.name, segments);
     loadPeriods(segments);
+    //set the node bigger
+    d3.select(htmlNode)
+        .attr("r",10)
+        .style("fill", "red");
+
+  //if the clicked node was already selected then no node is selected
+  } else {
+    selectedNode_d = null;
+    //set default display for node content and regions
+    loadNode("",[]);
+    loadPeriods([]);
+  }
+    
 }
 
 //display node information on right panel
@@ -35,26 +62,13 @@ function getLeaves(node, result = []){
     return result;
 }
 
-
+//update node height based on the JSON file
 function changeNodesHeight(node) {
     graphHeight = height - 40;
     node.y = graphHeight - (node.data.height / 100 * graphHeight);
 }
 
-function mouseover() {
-    d3.select(this)
-        .attr("r",10)
-        .style("fill", "red")
-}
-
-function mouseout() {
-    d3.select(this)
-        .attr("r",7)
-        .style("fill", "#69b3a2")
-}
-
 function drawDendrogram() {
- // set the dimensions and margins of the graph
     
     // append the svg object to the body of the page
     var svg = d3.select("#svg")
@@ -98,8 +112,7 @@ function drawDendrogram() {
         })
         .style("stroke", "black")
         
-    
-    // Cercle à chaque noeud
+    // add a circle for each node
     svg.selectAll("g")
         .data(root.descendants())
         .enter()
@@ -113,10 +126,8 @@ function drawDendrogram() {
           .attr("stroke", "black")
           .style("cursor", "pointer")
           .style("stroke-width", 2)
-          .on("mouseover", mouseover)
-          .on("mouseout", mouseout)
-          .on("click", function(d) {
-            nodeClick(d)
-            })
+          .on('click', function(d) { 
+            nodeClick(d, this);
+          })
     });
 }
