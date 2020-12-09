@@ -2,6 +2,7 @@ var WaveSurfer = require('wavesurfer.js');
 var RegionPlugin = require ('wavesurfer.js/dist/plugin/wavesurfer.regions.min.js');
 
 var wavesurfer; 
+var url = "audio1hour.mp3";
 
 function displayTime() {
     let text = secondsToHms(wavesurfer.getCurrentTime()) + " - " + secondsToHms(wavesurfer.getDuration());
@@ -41,14 +42,28 @@ function drawWaveForm() {
         progressColor: 'blue',
         scrollParent: true,
         partialRender: true,
-        responsive: true
+        responsive: true,
+        pixelRatio: 1
+        //backend: 'MediaElement'
     });
-    
-    wavesurfer.load('./audio.wav');
-    setInterval(displayTime, 500);
+   
+    wavesurfer.load(url);
+
+    wavesurfer.on('audioprocess', function() {
+        displayTime();
+    })
 
     wavesurfer.on('ready', function() {
-        wavesurfer.zoom(1);
+        wavesurfer.zoom(0);
+        displayTime();
+    })
+
+    wavesurfer.on('seek', function() {
+        displayTime();
+    })
+
+    wavesurfer.on('zoom', function(d) {
+        slider.value = d;
     })
     
     var slider = document.querySelector('#slider');
@@ -68,8 +83,7 @@ function drawWaveForm() {
 function displayRegions() {
     //remove all regions on waveform
     wavesurfer.clearRegions();
-
-    wavesurfer.zoom(1);
+    wavesurfer.zoom(0);
     for(let i = 0; i < segments.length; i++) {
         let seg = segments[i];  
         let options = 
