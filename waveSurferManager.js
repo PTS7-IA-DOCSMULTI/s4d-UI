@@ -31,13 +31,6 @@ function stop() {
     wavesurfer.stop();
 }
 
-function seekAndCenter() {
-    wavesurfer.seekAndCenter(
-        wavesurfer.getCurrentTime() / wavesurfer.getDuration()
-    );
-    wavesurfer.play();
-}
-
 function drawWaveForm() {
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
@@ -59,16 +52,10 @@ function drawWaveForm() {
     })
     
     var slider = document.querySelector('#slider');
-
     slider.oninput = function () {
       var zoomLevel = Number(slider.value);
       wavesurfer.zoom(zoomLevel);
     };
-
-    wavesurfer.on('region-click', function(d, event) {
-        d.play();
-        event.stopPropagation();
-    });
 
     //called when a region is resized
     wavesurfer.on('region-update-end', function(d) {
@@ -78,14 +65,14 @@ function drawWaveForm() {
 }
 
 // display regions on waveform
-function loadPeriods(segments) {
+function displayRegions() {
     //remove all regions on waveform
     wavesurfer.clearRegions();
 
     wavesurfer.zoom(1);
-    for(var i = 0; i < segments.length; i++) {
-        var seg = segments[i].data;  
-        var options = 
+    for(let i = 0; i < segments.length; i++) {
+        let seg = segments[i];  
+        let options = 
         {
             start: seg.start,
             end: seg.end,
@@ -94,12 +81,12 @@ function loadPeriods(segments) {
             color: "rgba(255, 255, 255, 0.5)",
             resize: true
         } 
-        wavesurfer.addRegion(options); 
+        let region = wavesurfer.addRegion(options);
+        seg.region = region; 
     }
 
     var list = document.getElementsByClassName("wavesurfer-region");
     for(let i = 0; i < list.length; i++) {
-        list[i].style.cursor = "pointer";
         list[i].style.zIndex = 10;
     }
 }

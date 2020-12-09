@@ -5,6 +5,8 @@ var height = 335;
 var selectedNode_d;
 var selectedNode_html;
 
+var segments = [];
+
 //call when a node is clicked
 function nodeClick(d, htmlNode) {
 
@@ -17,10 +19,8 @@ function nodeClick(d, htmlNode) {
   //if the clicked node is different from the previous one
   if(selectedNode_d !== d) {
     selectedNode_d = d;
-    segments = getLeaves(d);
-    loadNode(d.data.name, segments);
-    loadPeriods(segments);
-    //set the node bigger
+    createSegmentsFromLeaves(getLeaves(d));
+    //make the node bigger
     d3.select(htmlNode)
         .attr("r",10)
         .style("fill", "red");
@@ -28,26 +28,50 @@ function nodeClick(d, htmlNode) {
   //if the clicked node was already selected then no node is selected
   } else {
     selectedNode_d = null;
-    //set default display for node content and regions
-    loadNode("",[]);
-    loadPeriods([]);
+    segments = [];
   }
+
+  //update display
+  displayNodeContent();
+  displayRegions();
     
 }
 
+function createSegmentsFromLeaves(leaves) {
+    segments = [];
+    for(var i = 0; i < leaves.length; i++) {
+        var leaf = leaves[i].data;
+        segments.push({
+          name: leaf.name,
+          start: leaf.start,
+          end: leaf.end
+        });
+    }
+}
+
 //display node information on right panel
-function loadNode(name, segments) {
+function displayNodeContent() {
+    var name = selectedNode_d == null ? "" : selectedNode_d.data.name
     document.getElementById("nodeName").innerHTML = "Node name: " + name;
-    let segList = document.getElementById("segList");
+    var segList = document.getElementById("segList")
     segList.innerHTML = "";
 
-    for(var i = 0; i < segments.length; i++) {
-        var li = document.createElement("li");
-        var seg = segments[i].data;
-        var text = document.createTextNode(seg.name + " [" + secondsToHms(seg.start) + " - " + secondsToHms(seg.end) + "]");
+    for(let i = 0; i < segments.length; i++) {
+        //create elems to add
+        let li = document.createElement("li");
+        let seg = segments[i];
+        let text = document.createTextNode(seg.name + " [" + secondsToHms(seg.start) + " - " + secondsToHms(seg.end) + "]");
+        let btn = document.createElement("BUTTON");
+        btn.innerHTML = "Play";
+        btn.onclick = function() {
+            seg.region.play();
+        }; 
+        //add elems to html page
         li.appendChild(text);
-        segList.appendChild(li);
+        li.appendChild(btn);
+        segList.appendChild(li); 
     }
+
 }
 
  //return all segments linked to the node
@@ -55,7 +79,7 @@ function getLeaves(node, result = []){
     if(!node.children || node.children.length === 0){
         result.push(node);
     }else{
-        for(var i = 0; i < node.children.length; i++) {
+        for(let i = 0; i < node.children.length; i++) {
             result = getLeaves(node.children[i], result);
         }                   
     }
