@@ -1,8 +1,15 @@
 var WaveSurfer = require('wavesurfer.js');
 var RegionPlugin = require ('wavesurfer.js/dist/plugin/wavesurfer.regions.min.js');
+const ipcRenderer = require('electron').ipcRenderer;
+var url;
+var wavesurfer;
 
-var wavesurfer; 
-var url = "audio1hour.mp3";
+ipcRenderer.on('openFile', (event, arg) => {
+    url = arg;
+    // Second parameter is an array of pre-generated peaks
+    // Empty array avoid displaying the waveform
+    wavesurfer.load(url, []);
+});
 
 function displayTime() {
     let text = secondsToHms(wavesurfer.getCurrentTime()) + " - " + secondsToHms(wavesurfer.getDuration());
@@ -39,15 +46,13 @@ function drawWaveForm() {
             RegionPlugin.create({})
         ],
         waveColor: 'violet',
-        progressColor: 'blue',
+        progressColor: 'yellow',
         scrollParent: true,
         partialRender: true,
         responsive: true,
-        pixelRatio: 1
-        //backend: 'MediaElement'
+        pixelRatio: 1,
+        backend: 'MediaElement'
     });
-   
-    wavesurfer.load(url);
 
     wavesurfer.on('audioprocess', function() {
         displayTime();

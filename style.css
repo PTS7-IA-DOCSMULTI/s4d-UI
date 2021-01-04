@@ -62,3 +62,8 @@ body {
 	height: auto;
 	margin: 20px;
 }
+
+canvas, wave wave{
+	height: 50% !important;
+	top: auto !important;
+}

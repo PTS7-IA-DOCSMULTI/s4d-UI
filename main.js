@@ -2,8 +2,10 @@ const electron = require('electron');
 const path = require('path');
 const url = require('url');
 const net = require('net');
+const { dialog } = require('electron')
 
 var client;
+var optionMode = 'Mode1';
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
@@ -38,10 +40,32 @@ app.on('ready', function(){
 });
 
 
-
 // Create menu template
 const mainMenuTemplate =  [
   // Each object is a dropdown
+  {
+    label: 'File',
+    submenu: [
+    {
+      label: 'Open',
+      accelerator:process.platform == 'darwin' ? 'Command+O' : 'Ctrl+O',
+      click(item, focusedWindow) {
+        showOpen();
+      }
+    }
+    ]
+  },
+  {
+    label: 'Settings',
+    submenu: [
+    {
+      label: 'Mode',
+      click(item, focusedWindow) {
+        changeMode();
+      }
+    }
+    ]
+  },
   {
     label: 'Developer Tools',
     submenu:[
@@ -56,6 +80,62 @@ const mainMenuTemplate =  [
       }
     }
   ]
-  }
+  } 
 ];
+
+var showOpen = function() {
+  dialog.showOpenDialog({
+    properties: [ 'openFile'], 
+    filters: [
+    { 
+      name: 'Audio File (wav, mp3)',
+      extensions: ['wav','mp3']
+    }
+    ]
+  }).then(result => {
+    if(!result.canceled) {
+      mainWindow.webContents.send( 'openFile', result.filePaths[0] );
+    }
+  }).catch(err => {
+    console.log(err)
+  })
+};
+
+var changeMode = function() {
+  let changeModeWindow;
+  changeModeWindow = new BrowserWindow({
+    parent: mainWindow,
+    modal: true,
+    width: 300,
+    height: 400,
+    show: false,
+    center: true,
+    titre: 'Change Option Mode',
+    webPreferences: {
+      nodeIntegration: true,
+      enableRemoteModule: true
+    }
+  });
+  changeModeWindow.show();
+  // Load html in window
+  changeModeWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'changeMode.html'),
+    protocol: 'file:',
+    slashes:true
+  }));
+  
+  changeModeWindow.on('closed', function(){
+    changeModeWindow = null;
+  });
+
+  changeModeWindow.setMenu(null);
+
+  ipcMain.on('requestOptionMode', function(event) {
+    event.returnValue = optionMode;
+  })
+
+  ipcMain.on('modeChanged', function(event, args) {
+    optionMode = args;
+  })
+}
 
