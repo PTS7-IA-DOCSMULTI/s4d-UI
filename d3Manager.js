@@ -5,7 +5,7 @@ var height = 335;
 var selectedNode_d;
 var selectedNode_html;
 
-var segments = [];
+var speakers = [];
 
 //call when a node is clicked
 function nodeClick(d, htmlNode) {
@@ -28,7 +28,7 @@ function nodeClick(d, htmlNode) {
   //if the clicked node was already selected then no node is selected
   } else {
     selectedNode_d = null;
-    segments = [];
+    speakers = [];
   }
 
   //update display
@@ -38,14 +38,23 @@ function nodeClick(d, htmlNode) {
 }
 
 function createSegmentsFromLeaves(leaves) {
-    segments = [];
-    for(var i = 0; i < leaves.length; i++) {
-        var leaf = leaves[i].data;
-        segments.push({
-          name: leaf.name,
-          start: leaf.start,
-          end: leaf.end
-        });
+    speakers = [];
+    for (let i = 0; i < leaves.length; i++) {
+        let leaf = leaves[i].data;
+        let segments = [];
+
+        for (let j = 0; j < leaf.segments.length; j++) {
+            let segment = leaf.segments[j];
+            segments.push({
+              name: leaf.name,
+              start: segment.start,
+              end: segment.end
+            });
+        }
+        speakers.push({
+          id: i,
+          segments: segments
+        }); 
     }
 }
 
@@ -56,10 +65,11 @@ function displayNodeContent() {
     var segList = document.getElementById("segList")
     segList.innerHTML = "";
 
-    for(let i = 0; i < segments.length; i++) {
+    for(let i = 0; i < speakers.length; i++) {
+      for(let j = 0; j < speakers[i].segments.length; j++) {
         //create elems to add
         let li = document.createElement("li");
-        let seg = segments[i];
+        let seg = speakers[i].segments[j];
         let text = document.createTextNode(seg.name + " [" + secondsToHms(seg.start) + " - " + secondsToHms(seg.end) + "]");
         let btn = document.createElement("BUTTON");
         btn.innerHTML = "Play";
@@ -69,7 +79,8 @@ function displayNodeContent() {
         //add elems to html page
         li.appendChild(text);
         li.appendChild(btn);
-        segList.appendChild(li); 
+        segList.appendChild(li);
+      }      
     }
 
 }

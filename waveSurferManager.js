@@ -89,23 +89,40 @@ function displayRegions() {
     //remove all regions on waveform
     wavesurfer.clearRegions();
     wavesurfer.zoom(0);
-    for(let i = 0; i < segments.length; i++) {
-        let seg = segments[i];  
-        let options = 
-        {
-            start: seg.start,
-            end: seg.end,
-            loop: false,
-            drag: false,
-            color: "rgba(255, 255, 255, 0.5)",
-            resize: true
-        } 
-        let region = wavesurfer.addRegion(options);
-        seg.region = region; 
+    for(let i = 0; i < speakers.length; i++) { 
+        let color = drawRandomColor();
+        for(let j = 0; j < speakers[i].segments.length; j++) {
+            let seg = speakers[i].segments[j]; 
+            let options = 
+            {
+                id: i + '-' + j,
+                start: seg.start,
+                end: seg.end,
+                loop: false,
+                drag: false,
+                color: color,
+                resize: true
+            } 
+            let region = wavesurfer.addRegion(options);
+            seg.region = region; 
+        }
     }
 
-    var list = document.getElementsByClassName("wavesurfer-region");
-    for(let i = 0; i < list.length; i++) {
-        list[i].style.zIndex = 10;
+    let waveformHeight = document.getElementById('waveform').offsetHeight;
+    let nbSpeakers = speakers.length;
+    let regionHeight = waveformHeight / nbSpeakers;
+    let regionTop = 100 / nbSpeakers;
+    var regions = document.getElementsByClassName("wavesurfer-region");
+    for(let i = 0; i < regions.length; i++) {
+        let groupId = regions[i].getAttribute('data-id').split('-')[0];
+        regions[i].style.height = regionHeight + 'px';
+        regions[i].style.top = regionTop * groupId * waveformHeight / 100 + 'px';
     }
+}
+
+function drawRandomColor() {
+    let r = Math.floor(Math.random() * 256); 
+    let g = Math.floor(Math.random() * 256); 
+    let b = Math.floor(Math.random() * 256); 
+    return "rgba(" + r + ", " + g + ", " + b + ", 1)";
 }

@@ -7,34 +7,66 @@
       "height": "50",
       "children": [
         {
-          "name": "seg1",
+          "name": "node2",
           "height": "0",
-          "start": "15",
-          "end": "40"
+          "segments": [
+            {
+              "start": "15",
+              "end": "40" 
+            },
+            {
+              "start": "60",
+              "end": "120" 
+            }  
+          ]    
         },
         {
-          "name": "seg2",
+          "name": "node3",
           "height": "0",
-          "start": "45",
-          "end": "60"
+          "segments": [
+            {
+              "start": "30",
+              "end": "35" 
+            },
+            {
+              "start": "200",
+              "end": "220" 
+            }  
+          ]
         }
       ]
     },
     {
-      "name": "node2",
+      "name": "node4",
       "height": "30",
       "children": [
         {
-          "name": "seg3",
+          "name": "node5",
           "height": "0",
-          "start": "69",
-          "end": "75"
+         "segments": [
+            {
+              "start": "60",
+              "end": "70" 
+            },
+            {
+              "start": "400",
+              "end": "600" 
+            }  
+          ]
         },
         {
-          "name": "seg4",
+          "name": "node6",
           "height": "0",
-          "start": "90",
-          "end": "150"
+          "segments": [
+            {
+              "start": "0",
+              "end": "10" 
+            },
+            {
+              "start": "50",
+              "end": "55" 
+            }  
+          ]
         }
       ]
     }
