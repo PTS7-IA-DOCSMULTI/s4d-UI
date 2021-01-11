@@ -32,7 +32,7 @@ function nodeClick(d, htmlNode) {
   }
 
   //update display
-  displayNodeContent();
+  displaySegmentDetails();
   displayRegions();
     
 }
@@ -59,29 +59,50 @@ function createSegmentsFromLeaves(leaves) {
 }
 
 //display node information on right panel
-function displayNodeContent() {
+function displaySegmentDetails() {
     var name = selectedNode_d == null ? "" : selectedNode_d.data.name
-    document.getElementById("nodeName").innerHTML = "Node name: " + name;
-    var segList = document.getElementById("segList")
-    segList.innerHTML = "";
+    var segTable = document.getElementById("segTable");
+    segTable.innerHTML = "";
+
+    var table = document.createElement('table');
+    table.setAttribute('border','1');
+    table.setAttribute('width','100%');
+
+    var header = table.createTHead();
+    let headerRow = header.insertRow(0); 
+    headerRow.insertCell(0).innerHTML = "<b>Start</b>";
+    headerRow.insertCell(1).innerHTML = "<b>End</b>";
+    headerRow.insertCell(2).innerHTML = "<b>Speaker</b>";
+    headerRow.insertCell(3).innerHTML = "<b>Gender</b>";
+    headerRow.insertCell(4).innerHTML = "<b>Play</b>";
+
+    var k = 1;
 
     for(let i = 0; i < speakers.length; i++) {
       for(let j = 0; j < speakers[i].segments.length; j++) {
+        //add a row for each segment
+        let row = table.insertRow(k++);
         //create elems to add
-        let li = document.createElement("li");
         let seg = speakers[i].segments[j];
-        let text = document.createTextNode(seg.name + " [" + secondsToHms(seg.start) + " - " + secondsToHms(seg.end) + "]");
+        let start = document.createTextNode(secondsToHms(seg.start));
+        let end = document.createTextNode(secondsToHms(seg.end));
+        let speaker = document.createTextNode("speaker");
+        let gender = document.createTextNode("gender");
         let btn = document.createElement("BUTTON");
         btn.innerHTML = "Play";
         btn.onclick = function() {
             seg.region.play();
         }; 
-        //add elems to html page
-        li.appendChild(text);
-        li.appendChild(btn);
-        segList.appendChild(li);
+        //add elem to row
+        row.insertCell(0).appendChild(start);
+        row.insertCell(1).appendChild(end);
+        row.insertCell(2).appendChild(speaker);
+        row.insertCell(3).appendChild(gender);
+        row.insertCell(4).appendChild(btn);
       }      
     }
+    //add elems to html page
+    segTable.appendChild(table);
 
 }
 
@@ -166,3 +187,7 @@ function drawDendrogram() {
           })
     });
 }
+
+window.addEventListener('load', (event) => {
+  displaySegmentDetails();
+});
