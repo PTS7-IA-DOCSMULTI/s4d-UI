@@ -76,29 +76,38 @@ function displaySegmentDetails() {
     headerRow.insertCell(3).innerHTML = "<b>Gender</b>";
     headerRow.insertCell(4).innerHTML = "<b>Play</b>";
 
-    var k = 1;
+    var tbody = table.createTBody();
+    var k = 0;
 
     for(let i = 0; i < speakers.length; i++) {
       for(let j = 0; j < speakers[i].segments.length; j++) {
         //add a row for each segment
-        let row = table.insertRow(k++);
+        let row = tbody.insertRow(k++);
         //create elems to add
         let seg = speakers[i].segments[j];
         let start = document.createTextNode(secondsToHms(seg.start));
         let end = document.createTextNode(secondsToHms(seg.end));
         let speaker = document.createTextNode("speaker");
         let gender = document.createTextNode("gender");
+		let btns = document.createElement("DIV");
+		btns.classList.add("single-button");
         let btn = document.createElement("BUTTON");
-        btn.innerHTML = "Play";
+		btn.classList.add('action-button');
+        btn.innerHTML = "<i class='play icon'></i>";
         btn.onclick = function() {
             seg.region.play();
-        }; 
+			var playIcon = document.getElementById("play");
+			playIcon.classList.remove("play");
+			playIcon.classList.remove("pause");
+			playIcon.classList.add("pause");
+        };
+		btns.appendChild(btn);
         //add elem to row
         row.insertCell(0).appendChild(start);
         row.insertCell(1).appendChild(end);
         row.insertCell(2).appendChild(speaker);
         row.insertCell(3).appendChild(gender);
-        row.insertCell(4).appendChild(btn);
+        row.insertCell(4).appendChild(btns);
       }      
     }
     //add elems to html page
@@ -129,8 +138,9 @@ function drawDendrogram() {
     // append the svg object to the body of the page
     var svg = d3.select("#svg")
     .append("svg")
-      .attr("width", width)
-      .attr("height", height)
+	  .attr("class", "scaling-svg")
+	  .attr("viewBox", "0 0 "+width+" "+height)
+	  .attr("id", "dendrosvg")
     .append("g")
       .attr("transform", "translate(0,20)");  // bit of margin on the top = 20
     

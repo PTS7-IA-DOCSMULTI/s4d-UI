@@ -1,57 +1,65 @@
-<!DOCTYPE html>
 <html>
-    <head>
+	<head>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Titillium+Web:400,600,700">
         <link href="style.css" rel="stylesheet">
+        <script src="./jquery.js"></script> 
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="./waveSurferManager.js"></script>
-        <script src="./d3Manager.js"></script>
-        
+        <script src="./d3Manager.js"></script> 
     </head>
-    <body>
-        <div class="left-part">
-            <div class="shadow block">
-                <div class="header">
-                    Dendrogramme
-					<input type="text" id="value">
-					<button id="send">send to python</button>
-					<label id="res">res</label>
-                </div>
-                <div class="content elements" id="svg">
-                </div>
-            </div>
-        </div>
-        <div class="right-part">
-            <div class="shadow block">
-                <div class="header">
+	<body>
+		<div class="left-part" id="dendrogramme">
+			<div class="shadow block">
+				<div class="header" id="dendrogramme-header">
+					Dendrogramme
+					<div id="test-div" style="display:none;">
+						<input type="text" id="value">
+						<button id="send">send to python</button>
+						<label id="res">res</label>
+					</div>
+					<div class="single-button">
+						<button class="action-button" onclick="debug()"><i id="debug" class="eye icon"></i></button>
+					</div>
+				</div>
+				<div class="scaling-svg-container" id="svg">
+				</div>
+			</div>
+		</div>
+		<div class="right-part">
+			<div class="shadow block">
+				<div class="header">
                     Segments
-                </div>
-                <div class="content">
-                    <div id='segTable'></div>                     
-                </div>
-            </div>
-        </div>
-        <div class="bottom-part">
+				</div>
+				<div class="content">
+					<div id='segTable'></div>                     
+				</div>
+			</div>
+		</div>
+		<div class="bottom-part">
             <div class="shadow block">
                 <div class="header">
                     Timeline
-                    <button onclick="playPause()">Play/Pause</button>
-                    <button onclick="toggleMute()">Mute/Unmute</button>
-                    <button onclick="stop()">Stop</button>
-                    Zoom
-                    <input id="slider" type="range" min="0" max="50" value="0" />
-                    <span id=audioTime></span>
+					<div class="buttons">
+						<button class="action-button" onclick="playPause()"><i id="play" class="play icon"></i></button>
+						<button class="action-button" onclick="toggleMute()"><i id="volume" class="volume up icon"></i></button>
+						<button class="action-button" onclick="stop()"><i id="stop" class="stop icon"></i></button>
+					</div>
+					<div class="zoom">
+						Zoom
+						<input id="slider" type="range" min="0" max="50" value="0">
+						<span id="audioTime"></span>
+					</div>
                 </div>
                 <div class="content">
 					<div id="waveform"></div>
                 </div>
             </div>
         </div>
-        <script>
+		 <script>
             drawDendrogram();
             drawWaveForm();
         </script>  
         <script type="text/javascript" src="./brain.js"></script>		
-    </body>
-</html>
+	</body>
+</html> 

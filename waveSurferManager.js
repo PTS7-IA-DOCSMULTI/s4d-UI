@@ -8,6 +8,10 @@ ipcRenderer.on('openFile', (event, arg) => {
     url = arg;
     // Second parameter is an array of pre-generated peaks
     // Empty array avoid displaying the waveform
+	var playIcon = document.getElementById("play");
+	playIcon.classList.remove("play");
+	playIcon.classList.add("play");
+	playIcon.classList.remove("pause");
     wavesurfer.load(url, []);
 });
 
@@ -29,15 +33,64 @@ function secondsToHms(d) {
 
 function playPause() {
     wavesurfer.playPause();
+	var playIcon = document.getElementById("play");
+	playIcon.classList.toggle("play");
+	playIcon.classList.toggle("pause");
 }
 
 function toggleMute() {
     wavesurfer.toggleMute();
+	var volumeIcon = document.getElementById("volume");
+	volumeIcon.classList.toggle("up");
+	volumeIcon.classList.toggle("off");
+}
+
+function debug(){
+	var debugIcon = document.getElementById("debug");
+	debugIcon.classList.toggle("slash");
+	
+	var testDiv = document.getElementById("test-div");
+	if (testDiv.style.display == "inline-block"){
+		testDiv.style.display="none";
+	}
+	else {
+		testDiv.style.display="inline-block";
+	}
 }
 
 function stop() {
     wavesurfer.stop();
+	var playIcon = document.getElementById("play");
+	playIcon.classList.remove("play");
+	playIcon.classList.add("play");
+	playIcon.classList.remove("pause");
 }
+
+$(window).on('load', function () {
+    $(window).resize();
+});
+
+function resizeSVG(){
+	var height = 0
+	$('#dendrogramme').children().each(function(e, v) {
+		height += $(v).outerHeight(true)
+	})
+	$('#dendrogramme-header').children().each(function(e, v) {
+		height -= $(v).outerHeight(true)
+	})
+	var dendrosvg = document.getElementById("dendrosvg");
+	var svg = document.getElementById("svg");
+	dendrosvg.style.maxHeight=height+"px";
+	svg.style.paddingBottom=height+"px";
+}
+
+$(function(){
+    resizeSVG();
+});
+
+window.addEventListener('resize', function(event){
+    resizeSVG();
+});
 
 function drawWaveForm() {
     wavesurfer = WaveSurfer.create({
