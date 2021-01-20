@@ -1,16 +1,16 @@
 const ipcRenderer = require('electron').ipcRenderer;
 const remote = require('electron').remote;
 
-//get the active option and check the corresponding radio button
+//get the active method and check the corresponding radio button
 window.addEventListener('load', function () {
-	//get the active option
-	var activeOption = ipcRenderer.sendSync('requestOptionMode');
+	//get the active method
+	var activeMethod = ipcRenderer.sendSync('requestSelectionMethod');
 	//
 	let inputs = document.getElementsByTagName('input');
 	for (let i = 0; i < inputs.length; i++) {
 		let input = inputs[i];
 		console.log(input);
-		if (input.value == activeOption) {
+		if (input.value == activeMethod) {
 			input.checked = true;
 			break;
 		}
@@ -26,7 +26,7 @@ function validate() {
 	for (let i = 0; i < inputs.length; i++) {
 		let input = inputs[i];
 		if (input.checked) {
-			ipcRenderer.send('modeChanged', input.value);
+			ipcRenderer.send('selectionMethodChanged', input.value);
 			break;
 		}
 	}

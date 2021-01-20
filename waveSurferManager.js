@@ -76,6 +76,8 @@ function drawWaveForm() {
         plugins: [
             RegionPlugin.create({})
         ],
+        waveColor: 'yellow',
+        progressColor: 'yellow',
         scrollParent: true,
         partialRender: true,
         responsive: true,

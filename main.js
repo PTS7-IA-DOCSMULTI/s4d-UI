@@ -5,7 +5,7 @@ const net = require('net');
 const { dialog } = require('electron')
 
 var client;
-var optionMode = 'Mode1';
+var selectionMethod = 'longest';
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
@@ -59,7 +59,7 @@ const mainMenuTemplate =  [
     label: 'Settings',
     submenu: [
     {
-      label: 'Mode',
+      label: 'Selection Method',
       click(item, focusedWindow) {
         changeMode();
       }
@@ -119,7 +119,7 @@ var changeMode = function() {
   changeModeWindow.show();
   // Load html in window
   changeModeWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'changeMode.html'),
+    pathname: path.join(__dirname, 'changeSelectionMethod.html'),
     protocol: 'file:',
     slashes:true
   }));
@@ -130,12 +130,12 @@ var changeMode = function() {
 
   changeModeWindow.setMenu(null);
 
-  ipcMain.on('requestOptionMode', function(event) {
-    event.returnValue = optionMode;
+  ipcMain.on('requestSelectionMethod', function(event) {
+    event.returnValue = selectionMethod;
   })
 
-  ipcMain.on('modeChanged', function(event, args) {
-    optionMode = args;
+  ipcMain.on('selectionMethodChanged', function(event, args) {
+    selectionMethod = args;
   })
 }
 
