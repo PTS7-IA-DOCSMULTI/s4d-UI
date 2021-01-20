@@ -5,13 +5,15 @@ var url;
 var wavesurfer;
 
 ipcRenderer.on('openFile', (event, arg) => {
+
+    var playIcon = document.getElementById("play");
+    playIcon.classList.remove("play");
+    playIcon.classList.add("play");
+    playIcon.classList.remove("pause");
+
     url = arg;
     // Second parameter is an array of pre-generated peaks
     // Empty array avoid displaying the waveform
-	var playIcon = document.getElementById("play");
-	playIcon.classList.remove("play");
-	playIcon.classList.add("play");
-	playIcon.classList.remove("pause");
     wavesurfer.load(url, []);
 });
 
@@ -66,31 +68,7 @@ function stop() {
 	playIcon.classList.remove("pause");
 }
 
-$(window).on('load', function () {
-    $(window).resize();
-});
 
-function resizeSVG(){
-	var height = 0
-	$('#dendrogramme').children().each(function(e, v) {
-		height += $(v).outerHeight(true)
-	})
-	$('#dendrogramme-header').children().each(function(e, v) {
-		height -= $(v).outerHeight(true)
-	})
-	var dendrosvg = document.getElementById("dendrosvg");
-	var svg = document.getElementById("svg");
-	dendrosvg.style.maxHeight=height+"px";
-	svg.style.paddingBottom=height+"px";
-}
-
-$(function(){
-    resizeSVG();
-});
-
-window.addEventListener('resize', function(event){
-    resizeSVG();
-});
 
 function drawWaveForm() {
     wavesurfer = WaveSurfer.create({
@@ -98,13 +76,13 @@ function drawWaveForm() {
         plugins: [
             RegionPlugin.create({})
         ],
-        waveColor: 'violet',
-        progressColor: 'yellow',
         scrollParent: true,
         partialRender: true,
         responsive: true,
         pixelRatio: 1,
-        backend: 'MediaElement'
+        backend: 'MediaElement',
+        cursorWidth: 2,
+        cursorColor: "black"
     });
 
     wavesurfer.on('audioprocess', function() {
@@ -141,7 +119,7 @@ function drawWaveForm() {
 function displayRegions() {
     //remove all regions on waveform
     wavesurfer.clearRegions();
-    wavesurfer.zoom(0);
+   // wavesurfer.zoom(0);
     for(let i = 0; i < speakers.length; i++) { 
         let color = drawRandomColor();
         for(let j = 0; j < speakers[i].segments.length; j++) {

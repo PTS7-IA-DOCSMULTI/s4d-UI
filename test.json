@@ -1,71 +1,216 @@
 {
-"name" : "root",
 "height": "100",
   "children": [
     {
-      "name": "node1",
-      "height": "50",
+      "height": "33",
       "children": [
         {
-          "name": "node2",
-          "height": "0",
-          "segments": [
-            {
-              "start": "15",
-              "end": "40" 
-            },
-            {
-              "start": "60",
-              "end": "120" 
-            }  
-          ]    
+           "height": "25",
+            "children": [
+              {
+                "height": "0",
+                "segments": [
+                  {
+                    "start": "183.840",
+                    "end": "189.001",
+                    "speaker":
+                    {
+                      "name": "Christophe_DELAY",
+                      "type": "adult_male"
+                    } 
+                  },
+                  {
+                    "start": "193.655",
+                    "end": "195.918",
+                    "speaker":
+                    {
+                      "name": "Christophe_DELAY",
+                      "type": "adult_male"
+                    } 
+                  } 
+                ]    
+              },
+              {
+                "height": "0",
+                "segments": [
+                  {
+                    "start": "189.001",
+                    "end": "193.655",
+                    "speaker":
+                    {
+                      "name": "Roselyne_DUBOIS",
+                      "type": "adult_female"
+                    } 
+                  },
+                  {
+                    "start": "195.918",
+                    "end": "196.807",
+                    "speaker":
+                    {
+                      "name": "Roselyne_DUBOIS",
+                      "type": "adult_female"
+                    }
+                  } 
+                ]    
+              }
+            ]
         },
         {
-          "name": "node3",
           "height": "0",
           "segments": [
             {
-              "start": "30",
-              "end": "35" 
-            },
-            {
-              "start": "200",
-              "end": "220" 
-            }  
-          ]
+              "start": "197.931",
+              "end": "199.503",
+              "speaker":
+              {
+                "name": "Francois_CLUZET",
+                "type": "adult_male"
+              } 
+            } 
+          ]    
         }
       ]
     },
     {
-      "name": "node4",
-      "height": "30",
+      "height": "75",
       "children": [
         {
-          "name": "node5",
-          "height": "0",
-         "segments": [
-            {
-              "start": "60",
-              "end": "70" 
-            },
-            {
-              "start": "400",
-              "end": "600" 
-            }  
-          ]
+           "height": "40",
+            "children": [
+              {
+                "height": "0",
+                "segments": [
+                  {
+                    "start": "201.033",
+                    "end": "202.649",
+                    "speaker":
+                    {
+                      "name": "Omar_SY",
+                      "type": "adult_male"
+                    } 
+                  } 
+                ]    
+              },
+              {
+                "height": "15",
+                "children": [
+                  {
+                    "height": "0",
+                    "segments": [
+                      {
+                        "start": "202.649",
+                        "end": "220.601",
+                        "speaker":
+                        {
+                          "name": "Philippe_DUFREIGNE",
+                          "type": "adult_male"
+                        } 
+                      },
+                      {
+                        "start": "223.758",
+                        "end": "235.74",
+                        "speaker":
+                        {
+                          "name": "Philippe_DUFREIGNE",
+                          "type": "adult_male"
+                        }
+                      },
+                      {
+                        "start": "250.878",
+                        "end": "265.108",
+                        "speaker":
+                        {
+                          "name": "Philippe_DUFREIGNE",
+                          "type": "adult_male"
+                        } 
+                      },
+                      {
+                        "start": "268.306",
+                        "end": "287.941",
+                        "speaker":
+                        {
+                          "name": "Philippe_DUFREIGNE",
+                          "type": "adult_male"
+                        }
+                      } 
+                    ]    
+                  },
+                  {
+                    "height": "0",
+                    "segments": [
+                      {
+                        "start": "221.727",
+                        "end": "223.143",
+                        "speaker":
+                        {
+                          "name": "speaker#1669",
+                          "type": "adult_female"
+                        } 
+                      },
+                      {
+                        "start": "249.095",
+                        "end": "250.878",
+                        "speaker":
+                        {
+                          "name": "speaker#1669",
+                          "type": "adult_female"
+                        } 
+                      },
+                      {
+                        "start": "266.098",
+                        "end": "267.72",
+                        "speaker":
+                        {
+                          "name": "speaker#1669",
+                          "type": "adult_female"
+                        } 
+                      }
+                    ]    
+                  }
+                ]
+              }
+            ]
         },
         {
-          "name": "node6",
-          "height": "0",
-          "segments": [
+           "height": "30",
+            "children": [
             {
-              "start": "0",
-              "end": "10" 
+              "height": "0",
+              "segments": [
+                {
+                  "start": "235.740",
+                  "end": "237.818",
+                  "speaker":
+                  {
+                    "name": "Brad_PITT",
+                    "type": "adult_male"
+                  } 
+                } 
+              ]    
             },
             {
-              "start": "50",
-              "end": "55" 
-            }  
+              "height": "0",
+              "segments": [
+                {
+                  "start": "237.818",
+                  "end": "244.169",
+                  "speaker":
+                  {
+                    "name": "speaker#1670",
+                    "type": "adult_male"
+                  } 
+                },
+                {
+                  "start": "244.732",
+                  "end": "245.582",
+                  "speaker":
+                  {
+                    "name": "speaker#1670",
+                    "type": "adult_male"
+                  } 
+                } 
+              ]    
+            }
           ]
         }
       ]

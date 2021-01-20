@@ -46,9 +46,12 @@ function createSegmentsFromLeaves(leaves) {
         for (let j = 0; j < leaf.segments.length; j++) {
             let segment = leaf.segments[j];
             segments.push({
-              name: leaf.name,
               start: segment.start,
-              end: segment.end
+              end: segment.end,
+              speaker: {
+                name: segment.speaker.name,
+                type: segment.speaker.type
+              }
             });
         }
         speakers.push({
@@ -73,7 +76,7 @@ function displaySegmentDetails() {
     headerRow.insertCell(0).innerHTML = "<b>Start</b>";
     headerRow.insertCell(1).innerHTML = "<b>End</b>";
     headerRow.insertCell(2).innerHTML = "<b>Speaker</b>";
-    headerRow.insertCell(3).innerHTML = "<b>Gender</b>";
+    headerRow.insertCell(3).innerHTML = "<b>Type</b>";
     headerRow.insertCell(4).innerHTML = "<b>Play</b>";
 
     var tbody = table.createTBody();
@@ -87,26 +90,27 @@ function displaySegmentDetails() {
         let seg = speakers[i].segments[j];
         let start = document.createTextNode(secondsToHms(seg.start));
         let end = document.createTextNode(secondsToHms(seg.end));
-        let speaker = document.createTextNode("speaker");
-        let gender = document.createTextNode("gender");
-		let btns = document.createElement("DIV");
-		btns.classList.add("single-button");
+        let speaker = document.createTextNode(seg.speaker.name);
+        let type = document.createTextNode(seg.speaker.type);
+
+		    let btns = document.createElement("DIV");
+		    btns.classList.add("single-button");
         let btn = document.createElement("BUTTON");
-		btn.classList.add('action-button');
+		    btn.classList.add('action-button');
         btn.innerHTML = "<i class='play icon'></i>";
         btn.onclick = function() {
-            seg.region.play();
-			var playIcon = document.getElementById("play");
-			playIcon.classList.remove("play");
-			playIcon.classList.remove("pause");
-			playIcon.classList.add("pause");
+          seg.region.play();
+  		    var playIcon = document.getElementById("play");
+  		    playIcon.classList.remove("play");
+  		    playIcon.classList.remove("pause");
+  		    playIcon.classList.add("pause");
         };
-		btns.appendChild(btn);
+		    btns.appendChild(btn);
         //add elem to row
         row.insertCell(0).appendChild(start);
         row.insertCell(1).appendChild(end);
         row.insertCell(2).appendChild(speaker);
-        row.insertCell(3).appendChild(gender);
+        row.insertCell(3).appendChild(type);
         row.insertCell(4).appendChild(btns);
       }      
     }
@@ -200,4 +204,30 @@ function drawDendrogram() {
 
 window.addEventListener('load', (event) => {
   displaySegmentDetails();
+});
+
+$(window).on('load', function () {
+    $(window).resize();
+});
+
+function resizeSVG(){
+  var height = 0
+  $('#dendrogramme').children().each(function(e, v) {
+    height += $(v).outerHeight(true)
+  })
+  $('#dendrogramme-header').children().each(function(e, v) {
+    height -= $(v).outerHeight(true)
+  })
+  var dendrosvg = document.getElementById("dendrosvg");
+  var svg = document.getElementById("svg");
+  dendrosvg.style.maxHeight=height+"px";
+  svg.style.paddingBottom=height+"px";
+}
+
+$(function(){
+    resizeSVG();
+});
+
+window.addEventListener('resize', function(event){
+    resizeSVG();
 });
