@@ -113,6 +113,17 @@ function drawWaveForm() {
     //called when a region is resized
     wavesurfer.on('region-update-end', function(d) {
         //todo
+        
+    });
+
+    // avoid over-lapping regions
+    wavesurfer.on('region-updated', region => {
+        if(region.attributes.nextRegion && region.end > region.attributes.nextRegion.start) {
+          region.end = region.attributes.nextRegion.start
+        }
+        if(region.attributes.backRegion && region.start < region.attributes.backRegion.end) {
+          region.start = region.attributes.backRegion.end
+        }
     });
 
 }
@@ -151,6 +162,8 @@ function displayRegions() {
         regions[i].style.height = regionHeight + 'px';
         regions[i].style.top = regionTop * groupId * waveformHeight / 100 + 'px';
     }
+
+    updateBoundaries();
 }
 
 function drawRandomColor() {
@@ -158,4 +171,33 @@ function drawRandomColor() {
     let g = Math.floor(Math.random() * 256); 
     let b = Math.floor(Math.random() * 256); 
     return "rgba(" + r + ", " + g + ", " + b + ", 1)";
+}
+
+function getNextRegionFromSameSpeaker(region) {
+    var data  = region.id.split('-');
+    var speaker = parseInt(data[0]);
+    var segment = parseInt(data[1]);
+
+    if (speakers[speaker].segments.length >= segment + 2) {
+        return speakers[speaker].segments[segment + 1].region;
+    }
+}
+
+function getBackRegionFromSameSpeaker(region) {
+    var data  = region.id.split('-');
+    var speaker = parseInt(data[0]);
+    var segment = parseInt(data[1]);
+
+    if (segment > 0) {
+        return speakers[speaker].segments[segment - 1].region;
+    }
+}
+
+//set next and back region for each region
+function updateBoundaries() {
+    for (id in wavesurfer.regions.list) {
+        let region = wavesurfer.regions.list[id];
+        region.attributes.nextRegion = getNextRegionFromSameSpeaker(region);
+        region.attributes.backRegion = getBackRegionFromSameSpeaker(region);
+    }
 }
