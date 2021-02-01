@@ -94,7 +94,7 @@ function drawWaveForm() {
     wavesurfer.on('ready', function() {
         wavesurfer.zoom(0);
         displayTime();
-    })
+    });
 
     wavesurfer.on('seek', function() {
         displayTime();
@@ -116,7 +116,7 @@ function drawWaveForm() {
         
     });
 
-    // avoid over-lapping regions
+    // prevent regions of the same speaker from overlapping
     wavesurfer.on('region-updated', region => {
         if(region.attributes.nextRegion && region.end > region.attributes.nextRegion.start) {
           region.end = region.attributes.nextRegion.start

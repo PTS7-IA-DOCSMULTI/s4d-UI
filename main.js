@@ -6,6 +6,7 @@ const { dialog } = require('electron')
 
 var client;
 var selectionMethod = 'longest';
+var settings;
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
@@ -57,14 +58,9 @@ const mainMenuTemplate =  [
   },
   {
     label: 'Settings',
-    submenu: [
-    {
-      label: 'Selection Method',
-      click(item, focusedWindow) {
-        changeMode();
-      }
+    click(item, focusedWindow) {
+        openSettings();
     }
-    ]
   },
   {
     label: 'Developer Tools',
@@ -101,41 +97,33 @@ var showOpen = function() {
   })
 };
 
-var changeMode = function() {
-  let changeModeWindow;
-  changeModeWindow = new BrowserWindow({
+var openSettings = function() {
+  let settingsWindow;
+  settingsWindow = new BrowserWindow({
     parent: mainWindow,
     modal: true,
-    width: 300,
-    height: 400,
+    width: 900,
+    height: 700,
     show: false,
     center: true,
-    titre: 'Change Option Mode',
+    titre: 'Settings',
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true
     }
   });
-  changeModeWindow.show();
+  settingsWindow.show();
   // Load html in window
-  changeModeWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'changeSelectionMethod.html'),
+  settingsWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'settings.html'),
     protocol: 'file:',
     slashes:true
   }));
   
-  changeModeWindow.on('closed', function(){
-    changeModeWindow = null;
+  settingsWindow.on('closed', function(){
+    settingsWindow = null;
   });
 
-  changeModeWindow.setMenu(null);
-
-  ipcMain.on('requestSelectionMethod', function(event) {
-    event.returnValue = selectionMethod;
-  })
-
-  ipcMain.on('selectionMethodChanged', function(event, args) {
-    selectionMethod = args;
-  })
+  settingsWindow.setMenu(null);
 }
 
