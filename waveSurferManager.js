@@ -132,16 +132,18 @@ function drawWaveForm() {
 function displayRegions() {
     //remove all regions on waveform
     wavesurfer.clearRegions();
-   // wavesurfer.zoom(0);
-    for(let i = 0; i < speakers.length; i++) { 
+    for(let i = 0; i < clustersToDisplay.length; i++) { 
         let color = drawRandomColor();
-        for(let j = 0; j < speakers[i].segments.length; j++) {
-            let seg = speakers[i].segments[j]; 
-            let options = 
+        let cluster = segsToDisplay.filter(seg => seg[1] == clusters[clustersToDisplay[i]]);
+
+        for(let j = 0; j < cluster.length; j++) {
+            console.log('j: ' + j);
+            let seg = cluster[j]; 
+            let options =
             {
                 id: i + '-' + j,
-                start: seg.start,
-                end: seg.end,
+                start: seg[3] / 100,
+                end: seg[4] / 100,
                 loop: false,
                 drag: false,
                 color: color,
@@ -153,9 +155,8 @@ function displayRegions() {
     }
 
     let waveformHeight = document.getElementById('waveform').offsetHeight;
-    let nbSpeakers = speakers.length;
-    let regionHeight = waveformHeight / nbSpeakers;
-    let regionTop = 100 / nbSpeakers;
+    let regionHeight = waveformHeight / clustersToDisplay.length;
+    let regionTop = 100 / clustersToDisplay.length;
     var regions = document.getElementsByClassName("wavesurfer-region");
     for(let i = 0; i < regions.length; i++) {
         let groupId = regions[i].getAttribute('data-id').split('-')[0];
@@ -163,7 +164,7 @@ function displayRegions() {
         regions[i].style.top = regionTop * groupId * waveformHeight / 100 + 'px';
     }
 
-    updateBoundaries();
+   updateBoundaries();
 }
 
 function drawRandomColor() {
@@ -175,21 +176,23 @@ function drawRandomColor() {
 
 function getNextRegionFromSameSpeaker(region) {
     var data  = region.id.split('-');
-    var speaker = parseInt(data[0]);
+    var clusterId = parseInt(data[0]);
     var segment = parseInt(data[1]);
 
-    if (speakers[speaker].segments.length >= segment + 2) {
-        return speakers[speaker].segments[segment + 1].region;
+    let segments = segsToDisplay.filter(seg => seg[1] == clusters[clustersToDisplay[clusterId]]);
+    if (segments.length >= segment + 2) {
+        return segments[segment + 1].region;
     }
 }
 
 function getBackRegionFromSameSpeaker(region) {
     var data  = region.id.split('-');
-    var speaker = parseInt(data[0]);
+    var clusterId = parseInt(data[0]);
     var segment = parseInt(data[1]);
 
     if (segment > 0) {
-        return speakers[speaker].segments[segment - 1].region;
+        let segments = segsToDisplay.filter(seg => seg[1] == clusters[clustersToDisplay[clusterId]]);
+        return segments[segment - 1].region;
     }
 }
 

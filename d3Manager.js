@@ -5,6 +5,11 @@ var height = 335;
 var selectedNode_d;
 var selectedNode_html;
 
+var segments = [];
+var clusters = [];
+var segsToDisplay = [];
+var clustersToDisplay = [];
+
 var speakers = [];
 
 //call when a node is clicked
@@ -19,7 +24,7 @@ function nodeClick(d, htmlNode) {
   //if the clicked node is different from the previous one
   if(selectedNode_d !== d) {
     selectedNode_d = d;
-    createSegmentsFromLeaves(getLeaves(d));
+    generateSegsToDisplay(getBaseClusterIDs(d));
     //make the node bigger
     d3.select(htmlNode)
         .attr("r",10)
@@ -37,28 +42,13 @@ function nodeClick(d, htmlNode) {
     
 }
 
-function createSegmentsFromLeaves(leaves) {
-    speakers = [];
-    for (let i = 0; i < leaves.length; i++) {
-        let leaf = leaves[i].data;
-        let segments = [];
-
-        for (let j = 0; j < leaf.segments.length; j++) {
-            let segment = leaf.segments[j];
-            segments.push({
-              start: segment.start,
-              end: segment.end,
-              speaker: {
-                name: segment.speaker.name,
-                type: segment.speaker.type
-              }
-            });
-        }
-        speakers.push({
-          id: i,
-          segments: segments
-        }); 
+function generateSegsToDisplay(baseClusterIDs) {
+    clusterNames = [];
+    for(let i = 0; i < baseClusterIDs.length; i++) {
+      clusterNames.push(clusters[baseClusterIDs[i]]);
     }
+    clustersToDisplay = baseClusterIDs;
+    segsToDisplay = segments.filter(seg => clusterNames.includes(seg[1]));
 }
 
 //display node information on right panel
@@ -80,18 +70,17 @@ function displaySegmentDetails() {
     headerRow.insertCell(4).innerHTML = "<b>Play</b>";
 
     var tbody = table.createTBody();
-    var k = 0;
+    var j = 0;
 
-    for(let i = 0; i < speakers.length; i++) {
-      for(let j = 0; j < speakers[i].segments.length; j++) {
+    for(let i = 0; i < segsToDisplay.length; i++) {
         //add a row for each segment
-        let row = tbody.insertRow(k++);
+        let row = tbody.insertRow(j++);
         //create elems to add
-        let seg = speakers[i].segments[j];
-        let start = document.createTextNode(secondsToHms(seg.start));
-        let end = document.createTextNode(secondsToHms(seg.end));
-        let speaker = document.createTextNode(seg.speaker.name);
-        let type = document.createTextNode(seg.speaker.type);
+        let seg = segsToDisplay[i];
+        let start = document.createTextNode(secondsToHms(seg[3] / 100));
+        let end = document.createTextNode(secondsToHms(seg[4] / 100));
+        let speaker = document.createTextNode("Unknown");
+        let type = document.createTextNode("Unknown");
 
 		    let btns = document.createElement("DIV");
 		    btns.classList.add("single-button");
@@ -112,20 +101,19 @@ function displaySegmentDetails() {
         row.insertCell(2).appendChild(speaker);
         row.insertCell(3).appendChild(type);
         row.insertCell(4).appendChild(btns);
-      }      
+          
     }
     //add elems to html page
     segTable.appendChild(table);
-
 }
 
  //return all segments linked to the node
-function getLeaves(node, result = []){
+function getBaseClusterIDs(node, result = []){
     if(!node.children || node.children.length === 0){
-        result.push(node);
-    }else{
+        result.push(node.data["node_id"]);
+    } else {
         for(let i = 0; i < node.children.length; i++) {
-            result = getLeaves(node.children[i], result);
+            result = getBaseClusterIDs(node.children[i], result);
         }                   
     }
     return result;
@@ -137,7 +125,15 @@ function changeNodesHeight(node) {
     node.y = graphHeight - (node.data.height / 100 * graphHeight);
 }
 
-function drawDendrogram() {
+function loadSegments(data) {
+    segments = data;
+}
+
+function loadClusters(data) {
+    clusters = data;
+}
+
+function drawDendrogram(data, threshold) {
     
     // append the svg object to the body of the page
     var svg = d3.select("#svg")
@@ -146,12 +142,13 @@ function drawDendrogram() {
 	  .attr("viewBox", "0 0 "+width+" "+height)
 	  .attr("id", "dendrosvg")
     .append("g")
-      .attr("transform", "translate(0,20)");  // bit of margin on the top = 20
+    .attr("transform", "translate(0,20)");  // bit of margin on the top = 20
     
-    // read json data
-    d3.json("./test.json", function(data) {
+    // read data
+    
     var cluster = d3.cluster()
       .size([ width, height - 40]) // bit of margin on the bottom = 20
+      //distance between leaves
       .separation(function(a,b) {
         return 1;
       })
@@ -178,7 +175,7 @@ function drawDendrogram() {
                 })
         .style("fill", "transparent")
         .style("stroke-dasharray", function(d) {
-            return d.depth == 1 ? "5,5" : "0,0";
+            return d.parent.data.height > threshold ? "5,5" : "0,0";
         })
         .style("stroke", "black")
         
@@ -198,8 +195,9 @@ function drawDendrogram() {
           .style("stroke-width", 2)
           .on('click', function(d) { 
             nodeClick(d, this);
-          })
-    });
+          });
+
+    resizeSVG();
 }
 
 window.addEventListener('load', (event) => {
@@ -211,6 +209,9 @@ $(window).on('load', function () {
 });
 
 function resizeSVG(){
+  var dendrosvg = document.getElementById("dendrosvg");
+  var svg = document.getElementById("svg");
+  if (!dendrosvg || !svg) return;
   var height = 0
   $('#dendrogramme').children().each(function(e, v) {
     height += $(v).outerHeight(true)
@@ -218,8 +219,6 @@ function resizeSVG(){
   $('#dendrogramme-header').children().each(function(e, v) {
     height -= $(v).outerHeight(true)
   })
-  var dendrosvg = document.getElementById("dendrosvg");
-  var svg = document.getElementById("svg");
   dendrosvg.style.maxHeight=height+"px";
   svg.style.paddingBottom=height+"px";
 }
