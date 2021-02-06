@@ -20,6 +20,7 @@ window.addEventListener('load', (event) => {
   	getDendrogram();
   	getSegments();
   	getClusters();
+ 	getDERLog();
 });
 
 function getDendrogram() {
@@ -55,5 +56,16 @@ function getClusters() {
 
     request(options).then(function (res) {
     	loadClusters(JSON.parse(res));
+    })
+}
+
+function getDERLog() {
+	var options = {
+        method: 'POST',
+        uri: 'http://127.0.0.1:5000/der_log',
+    }
+
+    request(options).then(function (res) {
+    	loadDERLog(JSON.parse(res));
     })
 }

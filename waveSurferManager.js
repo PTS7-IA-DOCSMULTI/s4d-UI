@@ -137,7 +137,6 @@ function displayRegions() {
         let cluster = segsToDisplay.filter(seg => seg[1] == clusters[clustersToDisplay[i]]);
 
         for(let j = 0; j < cluster.length; j++) {
-            console.log('j: ' + j);
             let seg = cluster[j]; 
             let options =
             {

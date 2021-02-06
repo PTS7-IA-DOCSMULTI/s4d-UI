@@ -133,6 +133,10 @@ function loadClusters(data) {
     clusters = data;
 }
 
+function loadDERLog(data) {
+  console.log(data);
+}
+
 function drawDendrogram(data, threshold) {
     
     // append the svg object to the body of the page

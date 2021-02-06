@@ -73,6 +73,7 @@ app = Flask(__name__)
 json_tree = None
 segments = []
 clusters = []
+der_log = []
 
 @app.route('/', methods=['POST'])
 def calculation():
@@ -90,6 +91,11 @@ def send_segments():
 @app.route('/clusters', methods=['POST'])
 def send_clusters():
     return clusters
+
+@app.route('/der_log', methods=['POST'])
+def send_der_log():
+    print('der_log')
+    return der_log
 
 if __name__ == "__main__":
 
@@ -133,9 +139,40 @@ if __name__ == "__main__":
     print("Noeud à vérifier:")
     print(links_to_check)
 
+    # prepare dendrogram for UI
     T = scipy.cluster.hierarchy.to_tree(link, rd=False)
     d3_dendro = add_node(T, None, number_cluster, link)
     json_tree = json.dumps(d3_dendro)
     print(json_tree)
+
+    # Initialize the list of link to create
+
+    # This corresponds to the links that must be done if not using any human assistance
+    temporary_link_list = []
+    for l in link:
+        if l[2] < th:
+            temporary_link_list.append(l)  # final_links
+            # -----------> temporary_link_list contient la liste des noeuds qui sont fait (trait plein sur le dendrogramme)
+            #   les noeuds qui ne sont pas dans cette liste doivent être en pointillés sur le dendrogramme
+
+    # creat der_track dictionary and calculate intial DER
+    der, time, new_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
+                                                                                current_vec,
+                                                                                list(scores_per_cluster.modelset),
+                                                                                temporary_link_list,
+                                                                                uem,
+                                                                                ref)
+    print("Initial DER : ", der, "(Criteria 2: process_all_nodes = True)")
+    der_track = {"time": time, "der_log": [der], "correction": ["initial"]}
+    der_log = json.dumps([der])
+    # Check all nodes from the tree
+    no_more_clustering = False
+    no_more_separation = False
+
+    # a list of nodes that have separated to avoid any conflict with clustering
+    # it will be used in case of prioritize_separation2clustering
+    separated_list = []
+    stop_separation_list = []  # a list of nodes that have gotten confirmaton for seperation question
+    stop_clustering_list = []  # a list of nodes that have gotten confirmaton for clustering question
 
     app.run(debug=True, port=5000)
