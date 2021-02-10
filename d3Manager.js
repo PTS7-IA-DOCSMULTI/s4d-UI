@@ -12,8 +12,6 @@ var clusters = [];
 var segsToDisplay = [];
 var clustersToDisplay = [];
 
-var speakers = [];
-
 //call when a node is clicked
 function nodeClick(d, htmlNode) {
 
@@ -35,7 +33,8 @@ function nodeClick(d, htmlNode) {
   //if the clicked node was already selected then no node is selected
   } else {
     selectedNode_d = null;
-    speakers = [];
+    segsToDisplay = [];
+    clustersToDisplay = [];
   }
 
   //update display

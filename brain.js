@@ -1,59 +1,33 @@
-var request = require('request-promise')
+var request = require('request-promise');
+const fs = require('fs');
 
-var values = ""
-
-document.getElementById('send').addEventListener('click', () => {
-    
-    values = document.getElementById('value').value 
-    var options = {
-        method: 'POST',
-        uri: 'http://127.0.0.1:5000/',
-        form: {value: values}
-    }
-
-    request(options).then(function (innerHTML) {
-    	document.getElementById('res').innerHTML = innerHTML;
-    })
-})
-
-window.addEventListener('load', (event) => {
-  	getDendrogram();
-  	getSegments();
-  	getClusters();
- 	getDERLog();
+ipcRenderer.on('openFile', (event, arg) => {
+	//remove the extension 
+	url = arg.substring(0, arg.length - 4);
+	loadFile(url);
 });
 
-function getDendrogram() {
-	var options = {
+function loadFile(fileName) {
+
+	settings = JSON.parse(fs.readFileSync('./settings.json', 'utf8'));
+
+    var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/dendrogram',
+        uri: 'http://127.0.0.1:5000/load_file',
+        form: {
+        	showName: fileName,
+        	clustering_method: settings.clustering_method,
+        	selection_method: settings.selection_method,
+        	conditional_questioning: settings.conditional_questioning,
+        	prioritize_separation2clustering: settings.prioritize_separation2clustering
+        }
     }
 
-    request(options).then(function (res) {
-    	data = JSON.parse(res)
+    request(options).then(function(res) {
+    	data = JSON.parse(res);
     	drawDendrogram(data.tree, data.threshold);
-    })
-}
-
-function getSegments() {
-	var options = {
-        method: 'POST',
-        uri: 'http://127.0.0.1:5000/segments',
-    }
-
-    request(options).then(function (res) {
-    	loadSegments(JSON.parse(res));
-    })
-}
-
-function getClusters() {
-	var options = {
-        method: 'POST',
-        uri: 'http://127.0.0.1:5000/clusters',
-    }
-
-    request(options).then(function (res) {
-    	loadClusters(JSON.parse(res));
+    	loadSegments(data.segments);
+    	loadClusters(data.clusters);
     })
 }
 
