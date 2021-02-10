@@ -2,6 +2,8 @@
 var width = 335;
 var height = 335;
 
+var rootHeight;
+
 var selectedNode_d;
 var selectedNode_html;
 
@@ -119,10 +121,10 @@ function getBaseClusterIDs(node, result = []){
     return result;
 }
 
-//update node height based on the JSON file
+//update node height / 100 based on the height of the root
 function changeNodesHeight(node) {
     graphHeight = height - 40;
-    node.y = graphHeight - (node.data.height / 100 * graphHeight);
+    node.y = graphHeight - (node.data.height / rootHeight * graphHeight);
 }
 
 function loadSegments(data) {
@@ -138,6 +140,8 @@ function loadDERLog(data) {
 }
 
 function drawDendrogram(data, threshold) {
+
+    rootHeight = data.height;
     
     // append the svg object to the body of the page
     var svg = d3.select("#svg")
