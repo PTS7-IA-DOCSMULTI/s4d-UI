@@ -1,3 +1,5 @@
+import threading
+
 from flask import Flask, request
 import copy
 import json
@@ -19,6 +21,15 @@ from evallies.der_single import *
 import evallies
 from s4d.s4d.diar import Diar
 from s4d.s4d.scoring import DER
+
+
+class Flash_Thread(threading.Thread):
+    def __init__(self, app):
+        threading.Thread.__init__(self)
+        self.app = app
+
+    def run(self):
+        self.app.run(port=5000)
 
 
 def s4d_ui_load(show_name):
@@ -70,34 +81,44 @@ def add_node(node, parent, number_cluster, link):
 
 
 app = Flask(__name__)
-json_tree = None
+d3_dendro = None
 segments = []
 clusters = []
 der_log = []
+th_json = None
+
 
 @app.route('/', methods=['POST'])
 def calculation():
     val = request.form.get('value')
     return str("recu: " + val)
 
+
 @app.route('/dendrogram', methods=['POST'])
 def send_dendrogram():
-    return json_tree
+    return d3_dendro
+
 
 @app.route('/segments', methods=['POST'])
 def send_segments():
     return segments
 
+
 @app.route('/clusters', methods=['POST'])
 def send_clusters():
     return clusters
 
+
 @app.route('/der_log', methods=['POST'])
 def send_der_log():
-    print('der_log')
     return der_log
 
+
 if __name__ == "__main__":
+
+    # launch the flask server on a thread
+    thread = Flash_Thread(app=app)
+    thread.start()
 
     # Parameter fixed in the code
     threshold = 30
@@ -110,11 +131,11 @@ if __name__ == "__main__":
     prioritize_separation2clustering = "False"  # true or False
 
     current_diar, initial_diar, current_vec, scores_per_cluster, uem, ref = s4d_ui_load(
-        "BFMTV_PlaneteShowbiz_2011-11-11_065040")
+        "LCP_LCPInfo13h30_2012-02-16_132700")
 
     print("segments:")
     print(current_diar.segments)
-    segments = json.dumps(current_diar.segments);
+    segments = json.dumps(current_diar.segments)
 
     init_diar = copy.deepcopy(initial_diar)
     # Get the linkage matrix from the scores
@@ -141,9 +162,9 @@ if __name__ == "__main__":
 
     # prepare dendrogram for UI
     T = scipy.cluster.hierarchy.to_tree(link, rd=False)
-    d3_dendro = add_node(T, None, number_cluster, link)
-    json_tree = json.dumps(d3_dendro)
-    print(json_tree)
+    tree = add_node(T, None, number_cluster, link)
+    d3_dendro = json.dumps(dict(tree=tree, threshold=th))
+    print(d3_dendro)
 
     # Initialize the list of link to create
 
@@ -154,6 +175,8 @@ if __name__ == "__main__":
             temporary_link_list.append(l)  # final_links
             # -----------> temporary_link_list contient la liste des noeuds qui sont fait (trait plein sur le dendrogramme)
             #   les noeuds qui ne sont pas dans cette liste doivent être en pointillés sur le dendrogramme
+    print("temporary_link_list")
+    print(temporary_link_list)
 
     # creat der_track dictionary and calculate intial DER
     der, time, new_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
@@ -174,5 +197,3 @@ if __name__ == "__main__":
     separated_list = []
     stop_separation_list = []  # a list of nodes that have gotten confirmaton for seperation question
     stop_clustering_list = []  # a list of nodes that have gotten confirmaton for clustering question
-
-    app.run(debug=True, port=5000)

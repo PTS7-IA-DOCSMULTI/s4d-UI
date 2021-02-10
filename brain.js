@@ -30,10 +30,8 @@ function getDendrogram() {
     }
 
     request(options).then(function (res) {
-    	tree = JSON.parse(res)
-    	//need to get the threshold here
-    	threshold = 30;
-    	drawDendrogram(tree, threshold);
+    	data = JSON.parse(res)
+    	drawDendrogram(data.tree, data.threshold);
     })
 }
 
