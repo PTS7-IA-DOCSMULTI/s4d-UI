@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Settings</title>  
+        <script src="../js/settings.js"></script>
+    </head>
+    <body>
+
+    	<label for="clustering">Clustering method</label>
+
+		<select name="clustering" id="clustering">
+  			<option value="complete">Complete</option>
+  			<option value="ward">Ward</option>
+		  	<option value="average">Average</option>
+		  	<option value="single">Single</option>
+		</select>
+
+		<br>
+
+		<label for="selection">Selection method</label>
+
+		<select name="selection" id="selection">
+  			<option value="longest">Longest</option>
+  			<option value="cluster_center">Cluster Center</option>
+		  	<option value="max_noBICHAC">Max noBICHAC</option>
+		</select>
+
+		<br>
+
+		<label class="switch">
+			Conditionnal questioning
+		 	<input type="checkbox" id="conditionnal">
+		 	<span class="slider round"></span>
+		</label>
+
+		<br>
+
+		<label class="switch" >
+			Prioritize separaration to clustering
+		 	<input type="checkbox" id="prioritize">
+		 	<span class="slider round"></span>
+		</label>
+
+		<br>
+
+		<button onclick='validate()'>
+			Validate
+		</button>
+
+		<button onclick='reset()'>
+			Reset
+		</button>
+
+		<button onclick='cancel()'>
+			Cancel
+		</button>
+
+    </body>
+ </html>

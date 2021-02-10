@@ -1,0 +1,6 @@
+{
+    "clustering_method": "complete",
+    "selection_method": "longest",
+    "conditional_questioning": false,
+    "prioritize_separation2clustering": false
+}

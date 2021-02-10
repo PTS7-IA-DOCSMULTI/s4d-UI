@@ -2,7 +2,7 @@
   "name": "s4d-ui",
   "version": "1.0.0",
   "description": "Interface for s4d project, ENSIM 4A Project",
-  "main": "main.js",
+  "main": "src/js/main.js",
   "scripts": {
     "start": "electron ."
   },
