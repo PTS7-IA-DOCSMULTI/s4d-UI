@@ -2,9 +2,19 @@ var request = require('request-promise');
 var fs = require('fs');
 var path = require('path');
 
+document.getElementById('falseButton').onclick = function() {
+    answerQuestion(false)
+}
+
+document.getElementById('trueButton').onclick = function() {
+    answerQuestion(true)
+}
+
 ipcRenderer.on('openFile', (event, arg) => {
 	//remove the extension 
-	url = arg.substring(0, arg.length - 4);
+    url = arg.split('.');
+    url.pop();
+    url = url.join('.');
 	loadFile(url);
 });
 
@@ -30,16 +40,40 @@ function loadFile(fileName) {
     	drawDendrogram(data.tree, data.threshold);
     	loadSegments(data.segments);
     	loadClusters(data.clusters);
+        console.log(data.der_track);
     })
 }
 
-function getDERLog() {
-	var options = {
+function answerQuestion(answer) {
+    var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/der_log',
+        uri: 'http://127.0.0.1:5000/answer_question',
+        form: {
+            is_same_speaker: answer
+        }
     }
 
+    // send answer
     request(options).then(function (res) {
-    	loadDERLog(JSON.parse(res));
+        // get the new DER and dendrogram
+        console.log(JSON.parse(res));
+    })
+}
+
+function getNextQuestion() {
+    var options = {
+        method: 'POST',
+        uri: 'http://127.0.0.1:5000/next_question',
+    }
+
+    // get the question
+    request(options).then(function (res) {
+        question = JSON.parse(res)
+        console.log(question)
+        if (question.error) {
+            alert(question.error)
+        } else {
+            loadQuestion(question)
+        } 
     })
 }

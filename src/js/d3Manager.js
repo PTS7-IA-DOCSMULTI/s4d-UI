@@ -210,6 +210,29 @@ function drawDendrogram(data, threshold) {
     resizeSVG();
 }
 
+// Load the question sent by the system
+function loadQuestion(question) {
+  // first find the node concerned by the question
+  let node = findParentNode(question.node[0], question.node[1]);
+  console.log(node);
+}
+
+// Find a parent node from the ids of two children
+function findParentNode(childNodeId1, childNodeId2) {
+  let nodes = d3.selectAll("g")._groups[0]
+  for (let i = 1; i < nodes.length; i++) {
+    let node = nodes[i]
+    if (node.__data__.children) {
+      let id1 = node.__data__.children[0].data.node_id
+      let id2 = node.__data__.children[1].data.node_id
+      if (id1 == childNodeId1 && id2 == childNodeId2) {
+        return node;
+      }
+    }
+  }
+  return null;
+}
+
 window.addEventListener('load', (event) => {
   displaySegmentDetails();
 });
