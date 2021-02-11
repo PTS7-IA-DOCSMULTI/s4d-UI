@@ -30,9 +30,15 @@ function secondsToHms(d) {
     var h = Math.floor(d / 3600);
     var m = Math.floor(d % 3600 / 60);
     var s = Math.floor(d % 3600 % 60);
-    return (h < 10 ? "0" + h : h) + ":" +
-            (m < 10 ? "0" + m : m) + ":" +
-            (s < 10 ? "0" + s : s);
+
+    let res =   (h < 10 ? "0" + h : h) + ":" +
+                (m < 10 ? "0" + m : m) + ":" +
+                (s < 10 ? "0" + s : s);
+
+    while((res.startsWith("0") || res.startsWith(":")) && res.length > 4) {
+        res = res.substring(1, res.length)
+    }
+    return res;
 }
 
 function playPause() {
