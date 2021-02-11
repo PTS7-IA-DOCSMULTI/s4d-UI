@@ -226,9 +226,7 @@ function resizeSVG(){
   $('#dendrogramme').children().each(function(e, v) {
     height += $(v).outerHeight(true)
   })
-  $('#dendrogramme-header').children().each(function(e, v) {
-    height -= $(v).outerHeight(true)
-  })
+  height -= $('#dendrogramme-header').outerHeight(true)
   dendrosvg.style.maxHeight=height+"px";
   svg.style.paddingBottom=height+"px";
 }
