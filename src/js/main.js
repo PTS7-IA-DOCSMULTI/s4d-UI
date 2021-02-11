@@ -4,8 +4,6 @@ const url = require('url');
 const net = require('net');
 const { dialog } = require('electron')
 
-var client;
-var selectionMethod = 'longest';
 var settings;
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;

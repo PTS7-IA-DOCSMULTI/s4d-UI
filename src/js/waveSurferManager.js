@@ -15,6 +15,8 @@ ipcRenderer.on('openFile', (event, arg) => {
     // Second parameter is an array of pre-generated peaks
     // Empty array avoid displaying the waveform
     wavesurfer.load(url, []);
+    document.title = "s4d-UI - " + url;
+    document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 });
 
 function displayTime() {

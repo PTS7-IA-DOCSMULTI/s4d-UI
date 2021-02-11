@@ -250,3 +250,14 @@ table {
   left: 0; 
   top:0;
 }
+
+#filename {
+	display: inline-block;
+	position: absolute;
+	left: 50%;
+}
+
+#filename>span {
+	position: relative;
+	left: -50%; 
+}
