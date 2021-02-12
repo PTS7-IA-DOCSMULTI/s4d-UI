@@ -265,9 +265,7 @@ def answer_question():
                                                                     "not_clustering",
                                                                     uem,
                                                                     ref)
-    print(links_to_check)
     links_to_check = np.delete(links_to_check, 0, axis=0)
-    print(links_to_check)
     return json.dumps(der_track)
 
 
@@ -276,7 +274,6 @@ def next_question():
     global no_more_clustering, no_more_separation, links_to_check
 
     length = len(links_to_check)
-
     while length > 0:
         node = links_to_check[0]
 
@@ -333,7 +330,6 @@ def next_question():
 
         # Check node above the threshold
         elif node[-2] > 0:
-
             # If conditional_questioning is active, We estimate the quality of the question for this node
             if conditional_questioning:
                 # If True we don't ask about this node
@@ -356,38 +352,38 @@ def next_question():
                 if not set(branch1_nodes + branch2_nodes).isdisjoint(set(separated_list)):
                     print("In order to avoid conflict and by prioritizing separation, clustering stopped!")
                     pass
-                # check if the node is part of a branch that has gotten a confirmation answer before
-                branch1_nodes = get_node_spkeakers(node[0], number_cluster, link)
-                branch2_nodes = get_node_spkeakers(node[1], number_cluster, link)
-                if set(branch1_nodes + branch2_nodes).issubset(set(stop_clustering_list)):
+            # check if the node is part of a branch that has gotten a confirmation answer before
+            branch1_nodes = get_node_spkeakers(node[0], number_cluster, link)
+            branch2_nodes = get_node_spkeakers(node[1], number_cluster, link)
+            if set(branch1_nodes + branch2_nodes).issubset(set(stop_clustering_list)):
                     no_more_clustering = True
                     pass
 
-                # If we already decided not to explore up the tree
-                if no_more_clustering:
-                    pass
-                # otherwise as question to the human about this node
-                else:
-                    # Ask the human
-                    # on récupère la liste ordonnée des segments appartenant aux deux branches de ce noeud
-                    first_seg_list_sorted, second_seg_list_sorted = get_segment_sorted_list(node,
-                                                                                            link,
-                                                                                            scores_per_cluster,
-                                                                                            None,
-                                                                                            init_diar,
-                                                                                            current_vec,
-                                                                                            selection_method)
+            # If we already decided not to explore up the tree
+            if no_more_clustering:
+                pass
+            # otherwise as question to the human about this node
+            else:
+                # Ask the human
+                # on récupère la liste ordonnée des segments appartenant aux deux branches de ce noeud
+                first_seg_list_sorted, second_seg_list_sorted = get_segment_sorted_list(node,
+                                                                                        link,
+                                                                                        scores_per_cluster,
+                                                                                        None,
+                                                                                        init_diar,
+                                                                                        current_vec,
+                                                                                        selection_method)
 
-                    # On présente les deux listes de segments ordonnées à l'utilisateur pour qu'il puisse écouter ceux qu'il veut
-                    # L'utilisateur selectionne un segment dans chacune des deux listes (first_seg_list_sorted, second_seg_list_sorted )
-                    # et peux alors écouter les segments correspondant.
-                    # Il peut ensuite décider si les deux clusters appartiennent à la même personne ou pas
-                    # cette réponse est récupérée dans un booleen : is_same_speaker
+                # On présente les deux listes de segments ordonnées à l'utilisateur pour qu'il puisse écouter ceux qu'il veut
+                # L'utilisateur selectionne un segment dans chacune des deux listes (first_seg_list_sorted, second_seg_list_sorted )
+                # et peux alors écouter les segments correspondant.
+                # Il peut ensuite décider si les deux clusters appartiennent à la même personne ou pas
+                # cette réponse est récupérée dans un booleen : is_same_speaker
 
-                    #question = dict(node=node)
+                #question = dict(node=node)
 
-                    question = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
-                    return json.dumps(question)
+                question = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
+                return json.dumps(question)
 
         links_to_check = np.delete(links_to_check, 0, axis=0)
         length = len(links_to_check)

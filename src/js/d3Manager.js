@@ -4,43 +4,43 @@ var height = 335;
 
 var rootHeight;
 
-var selectedNode_d;
-var selectedNode_html;
-
+var selectedNode;
 var segments = [];
 var clusters = [];
 var segsToDisplay = [];
 var clustersToDisplay = [];
 
-//call when a node is clicked
-function nodeClick(d, htmlNode) {
+function highlightNode(node) {
 
+  selectedNode = node;
+  d = node.__data__;
+  htmlNode = node.children[0];
+
+  //make the node bigger
+  d3.select(htmlNode)
+    .attr("r",10)
+    .style("fill", "red");
+
+  //update display
+  generateSegsToDisplay(getBaseClusterIDs(d));
+  displaySegmentDetails();
+  displayRegions();
+}
+
+function removeHighlight() {
   //set default style to the previous node selected
-  d3.select(selectedNode_html)
+  d3.select(selectedNode.children[0])
       .attr("r",7)
       .style("fill", "#69b3a2");
-  selectedNode_html = htmlNode;
 
-  //if the clicked node is different from the previous one
-  if(selectedNode_d !== d) {
-    selectedNode_d = d;
-    generateSegsToDisplay(getBaseClusterIDs(d));
-    //make the node bigger
-    d3.select(htmlNode)
-        .attr("r",10)
-        .style("fill", "red");
-
-  //if the clicked node was already selected then no node is selected
-  } else {
-    selectedNode_d = null;
-    segsToDisplay = [];
-    clustersToDisplay = [];
-  }
+  //now no node is selected
+  selectedNode = null;
+  segsToDisplay = [];
+  clustersToDisplay = [];
 
   //update display
   displaySegmentDetails();
   displayRegions();
-    
 }
 
 function generateSegsToDisplay(baseClusterIDs) {
@@ -54,7 +54,7 @@ function generateSegsToDisplay(baseClusterIDs) {
 
 //display node information on right panel
 function displaySegmentDetails() {
-    var name = selectedNode_d == null ? "" : selectedNode_d.data.name
+    var name = selectedNode == null ? "" : selectedNode.__data__.data.name
     var segTable = document.getElementById("segTable");
     segTable.innerHTML = "";
 
@@ -201,11 +201,7 @@ function drawDendrogram(data, threshold) {
           .attr("r", 7)
           .style("fill", "#69b3a2")
           .attr("stroke", "black")
-          .style("cursor", "pointer")
           .style("stroke-width", 2)
-          .on('click', function(d) { 
-            nodeClick(d, this);
-          });
 
     resizeSVG();
 }
@@ -214,7 +210,8 @@ function drawDendrogram(data, threshold) {
 function loadQuestion(question) {
   // first find the node concerned by the question
   let node = findParentNode(question.node[0], question.node[1]);
-  console.log(node);
+  //highlight the node
+  highlightNode(node);
 }
 
 // Find a parent node from the ids of two children

@@ -2,12 +2,36 @@ var request = require('request-promise');
 var fs = require('fs');
 var path = require('path');
 
-document.getElementById('falseButton').onclick = function() {
-    answerQuestion(false)
+nextQuestionButton = document.getElementById('nextQuestionButton');
+falseButton = document.getElementById('falseButton');
+trueButton = document.getElementById('trueButton');
+
+window.onload = function() {
+    nextQuestionButton.style.display = "none";
+    falseButton.style.display = "none";
+    trueButton.style.display = "none";
 }
 
-document.getElementById('trueButton').onclick = function() {
-    answerQuestion(true)
+nextQuestionButton.onclick = function() {
+    getNextQuestion();
+    nextQuestionButton.style.display = "none";
+}
+
+falseButton.onclick = function() {
+    answerQuestion(false);
+    updateDisplay();
+}
+
+trueButton.onclick = function() {
+    answerQuestion(true);
+    updateDisplay();
+}
+
+function updateDisplay() {
+    nextQuestionButton.style.display = "";
+    falseButton.style.display = "none";
+    trueButton.style.display = "none";
+    removeHighlight();
 }
 
 ipcRenderer.on('openFile', (event, arg) => {
@@ -40,7 +64,8 @@ function loadFile(fileName) {
     	drawDendrogram(data.tree, data.threshold);
     	loadSegments(data.segments);
     	loadClusters(data.clusters);
-        console.log(data.der_track);
+        nextQuestionButton.style.display = "";
+        loadDERLog(data.der_track);
     })
 }
 
@@ -73,7 +98,9 @@ function getNextQuestion() {
         if (question.error) {
             alert(question.error)
         } else {
-            loadQuestion(question)
+            loadQuestion(question);
+            falseButton.style.display = "";
+            trueButton.style.display = "";
         } 
     })
 }
