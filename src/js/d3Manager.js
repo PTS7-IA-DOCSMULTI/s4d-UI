@@ -134,10 +134,6 @@ function loadClusters(data) {
     clusters = data;
 }
 
-function loadDERLog(data) {
-  console.log(data);
-}
-
 function drawDendrogram(data, threshold) {
 
     //remove previous dendrogram
@@ -185,7 +181,7 @@ function drawDendrogram(data, threshold) {
                 })
         .style("fill", "transparent")
         .style("stroke-dasharray", function(d) {
-            return d.parent.data.height > threshold ? "5,5" : "0,0";
+            return d.parent.data.isGrouped ? "0,0" : "5,5";
         })
         .style("stroke", "black")
         

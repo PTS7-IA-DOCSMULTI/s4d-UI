@@ -23,10 +23,8 @@ from s4d.s4d.diar import Diar
 from s4d.s4d.scoring import DER
 
 app = Flask(__name__)
-d3_dendro = None
-segments = []
-clusters = []
 
+# Settings
 clustering_method = None
 selection_method = None
 conditional_questioning = None
@@ -43,7 +41,7 @@ links_to_check = None
 link = None
 number_cluster = None
 complete_list = None
-temporary_link_list = None
+temporary_link_list = []
 der_track = None
 
 no_more_clustering = False
@@ -101,10 +99,6 @@ def load_file():
     tmp[:, -1] = np.abs(link[:, 2] - th)
     links_to_check = tmp[np.argsort(tmp[:, -1])]
 
-    # prepare dendrogram for UI
-    tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
-    json_tree = add_node(tree, None, number_cluster, link)
-
     # Initialize the list of link to create
 
     # This corresponds to the links that must be done if not using any human assistance
@@ -112,8 +106,6 @@ def load_file():
     for l in link:
         if l[2] < th:
             temporary_link_list.append(l)  # final_links
-            # -----------> temporary_link_list contient la liste des noeuds qui sont fait (trait plein sur le dendrogramme)
-            #   les noeuds qui ne sont pas dans cette liste doivent être en pointillés sur le dendrogramme
 
     # create der_track dictionary and calculate intial DER
     der, time, new_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
@@ -122,6 +114,10 @@ def load_file():
                                                                                 temporary_link_list,
                                                                                 uem,
                                                                                 ref)
+    # prepare dendrogram for UI
+    tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
+    json_tree = add_node(tree, None)
+
     print("Initial DER : ", der, "(Criteria 2: process_all_nodes = True)")
     der_track = {"time": time, "der_log": [der], "correction": ["initial"]}
     der_log = json.dumps([der])
@@ -170,7 +166,7 @@ def s4d_ui_load(show_name):
 
 
 # Create a nested dictionary from the ClusterNode's returned by SciPy
-def add_node(node, parent, number_cluster, link):
+def add_node(node, parent):
     # First create the new node and append it to its parent's children
     new_node = dict(node_id=node.id, height=0, children=[])
     if parent is None:
@@ -179,14 +175,23 @@ def add_node(node, parent, number_cluster, link):
         parent["children"].append(new_node)
 
     new_node["height"] = node.dist
+    new_node["isGrouped"] = node_is_grouped(node)
 
     # Recursively add the current node's children
     if node.left:
-        add_node(node.left, new_node, number_cluster, link)
+        add_node(node.left, new_node)
     if node.right:
-        add_node(node.right, new_node, number_cluster, link)
+        add_node(node.right, new_node)
 
     return parent
+
+
+def node_is_grouped(node):
+    if node.left and node.right:
+        for l in temporary_link_list:
+            if l[0] == int(node.left.id) and l[1] == int(node.right.id):
+                return True
+    return False
 
 
 @app.route('/answer_question', methods=['POST'])
@@ -265,8 +270,14 @@ def answer_question():
                                                                     "not_clustering",
                                                                     uem,
                                                                     ref)
+    # remove the link we just processed
     links_to_check = np.delete(links_to_check, 0, axis=0)
-    return json.dumps(der_track)
+
+    # prepare new dendrogram for UI
+    tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
+    json_tree = add_node(tree, None)
+
+    return dict(tree=json_tree, der_track=der_track)
 
 
 @app.route('/next_question', methods=['POST'])

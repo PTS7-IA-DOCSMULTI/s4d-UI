@@ -2,14 +2,18 @@ var request = require('request-promise');
 var fs = require('fs');
 var path = require('path');
 
+var derTrack;
+
 nextQuestionButton = document.getElementById('nextQuestionButton');
 falseButton = document.getElementById('falseButton');
 trueButton = document.getElementById('trueButton');
+derButton = document.getElementById('derButton');
 
 window.onload = function() {
     nextQuestionButton.style.display = "none";
     falseButton.style.display = "none";
     trueButton.style.display = "none";
+    derButton.style.display = "none";
 }
 
 nextQuestionButton.onclick = function() {
@@ -25,6 +29,10 @@ falseButton.onclick = function() {
 trueButton.onclick = function() {
     answerQuestion(true);
     updateDisplay();
+}
+
+derButton.onclick = function() {
+    alert(derTrack.der_log)
 }
 
 function updateDisplay() {
@@ -61,11 +69,12 @@ function loadFile(fileName) {
 
     request(options).then(function(res) {
     	data = JSON.parse(res);
-    	drawDendrogram(data.tree, data.threshold);
+    	drawDendrogram(data.tree);
     	loadSegments(data.segments);
     	loadClusters(data.clusters);
         nextQuestionButton.style.display = "";
-        loadDERLog(data.der_track);
+        derButton.style.display = "";
+        updateDER(data.der_track);
     })
 }
 
@@ -81,7 +90,9 @@ function answerQuestion(answer) {
     // send answer
     request(options).then(function (res) {
         // get the new DER and dendrogram
-        console.log(JSON.parse(res));
+        data = JSON.parse(res);
+        updateDER(data.der_track)
+        drawDendrogram(data.tree);
     })
 }
 
@@ -94,7 +105,6 @@ function getNextQuestion() {
     // get the question
     request(options).then(function (res) {
         question = JSON.parse(res)
-        console.log(question)
         if (question.error) {
             alert(question.error)
         } else {
@@ -103,4 +113,10 @@ function getNextQuestion() {
             trueButton.style.display = "";
         } 
     })
+}
+
+function updateDER(der_track) {
+    derTrack = der_track
+    der_log = der_track.der_log;
+    document.getElementById('der').innerHTML = "(DER: " +  der_log[der_log.length - 1].toFixed(2) + "%)";
 }
