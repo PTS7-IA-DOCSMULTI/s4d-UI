@@ -12,6 +12,16 @@ var clustersToDisplay = [];
 
 var timer;
 
+function generateIdForSegments() {
+  for(let i = 0; i < clusters.length; i++) { 
+    let cluster = segments.filter(seg => seg[1] == clusters[i]);
+    for(let j = 0; j < cluster.length; j++) {
+        let seg = cluster[j]; 
+        seg["data-id"] = i + '-' + j;
+    }
+  }
+}
+
 function highlightNode(node) {
 
   selectedNode = node;
@@ -80,10 +90,15 @@ function displaySegmentDetails() {
         let row = tbody.insertRow(j++);
 
         //event to flash the region when the mouse is on a row
+        var hoverTimer;
         row.addEventListener("mouseenter", function( event ) {
-          flashRegion(event.target);
+          hoverTimer = setTimeout(function() {
+            flashRegion(event.target);
+            clearInterval(hoverTimer);
+          }, 1000);
         });
         row.addEventListener("mouseleave", function( event ) {
+          clearInterval(hoverTimer);
           clearInterval(timer);
         });
 
@@ -106,6 +121,7 @@ function displaySegmentDetails() {
   		    playIcon.classList.remove("pause");
   		    playIcon.classList.add("pause");
         };
+        row.style["data-id"] = seg["data-id"];
 		    btns.appendChild(btn);
         //add elem to row
         row.insertCell(0).appendChild(start);
@@ -137,12 +153,10 @@ function changeNodesHeight(node) {
     node.y = graphHeight - (node.data.height / rootHeight * graphHeight);
 }
 
-function loadSegments(data) {
-    segments = data;
-}
-
-function loadClusters(data) {
-    clusters = data;
+function loadData(data) {
+    segments = data.segments;
+    clusters = data.clusters;
+    generateIdForSegments();
 }
 
 function drawDendrogram(data, threshold) {
@@ -238,33 +252,13 @@ function findParentNode(childNodeId1, childNodeId2) {
 }
 
 function flashRegion(target) {
-  let index = getRowIndexInTable(target);
-  let i = 0;
-  let htmlRegion;
-  for (let id in wavesurfer.regions.list) {
-    if (i++ == index) {
-      htmlRegion = wavesurfer.regions.list[id].element
-      break;
-    }
-  }
+  let segID = target.style["data-id"];
+  let htmlRegion = wavesurfer.regions.list[segID].element;
   $(htmlRegion).fadeOut(800).fadeIn(800);
   timer = setInterval(function(){ 
       $(htmlRegion).fadeOut(800).fadeIn(800);
   }, 1600);
 }
-
-function getRowIndexInTable(target) {
-  segTable = document.getElementById("segTable");
-  tbody = segTable.children[0].children[1];
-  for (i = 0; i < tbody.children.length; i++) {
-    row = tbody.children[i];
-    if (target == row) {
-      return i;
-    }
-  }
-  return -1
-}
-
 
 window.addEventListener('load', (event) => {
   displaySegmentDetails();

@@ -107,7 +107,7 @@ function drawWaveForm() {
 
     //called when a region is resized
     wavesurfer.on('region-update-end', function(d) {
-        //todo
+        console.log(d);
         
     });
 
@@ -132,10 +132,10 @@ function displayRegions() {
         let cluster = segsToDisplay.filter(seg => seg[1] == clusters[clustersToDisplay[i]]);
 
         for(let j = 0; j < cluster.length; j++) {
-            let seg = cluster[j]; 
+            let seg = cluster[j];
             let options =
             {
-                id: i + '-' + j,
+                id: seg["data-id"],
                 start: seg[3] / 100,
                 end: seg[4] / 100,
                 loop: false,
@@ -152,10 +152,14 @@ function displayRegions() {
     let regionHeight = waveformHeight / clustersToDisplay.length;
     let regionTop = 100 / clustersToDisplay.length;
     var regions = document.getElementsByClassName("wavesurfer-region");
-    for(let i = 0; i < regions.length; i++) {
-        let groupId = regions[i].getAttribute('data-id').split('-')[0];
-        regions[i].style.height = regionHeight + 'px';
-        regions[i].style.top = regionTop * groupId * waveformHeight / 100 + 'px';
+    for(let i = 0; i < clustersToDisplay.length; i++) {
+        for(let j = 0; j < regions.length; j++) {
+            let groupId = regions[j].getAttribute('data-id').split('-')[0];
+            if(groupId == clustersToDisplay[i]) {
+                regions[j].style.height = regionHeight + 'px';
+                regions[j].style.top = regionTop * i * waveformHeight / 100 + 'px';
+            }        
+        }
     }
 
    updateBoundaries();
@@ -173,10 +177,7 @@ function getNextRegionFromSameSpeaker(region) {
     var clusterId = parseInt(data[0]);
     var segment = parseInt(data[1]);
 
-    let segments = segsToDisplay.filter(seg => seg[1] == clusters[clustersToDisplay[clusterId]]);
-    if (segments.length >= segment + 2) {
-        return segments[segment + 1].region;
-    }
+    return wavesurfer.regions.list[clusterId + "-" + (segment+1)]
 }
 
 function getBackRegionFromSameSpeaker(region) {
@@ -185,8 +186,7 @@ function getBackRegionFromSameSpeaker(region) {
     var segment = parseInt(data[1]);
 
     if (segment > 0) {
-        let segments = segsToDisplay.filter(seg => seg[1] == clusters[clustersToDisplay[clusterId]]);
-        return segments[segment - 1].region;
+        return wavesurfer.regions.list[clusterId + "-" + (segment-1)]
     }
 }
 

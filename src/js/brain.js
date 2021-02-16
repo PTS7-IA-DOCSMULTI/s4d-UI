@@ -70,8 +70,7 @@ function loadFile(fileName) {
     request(options).then(function(res) {
     	data = JSON.parse(res);
     	drawDendrogram(data.tree);
-    	loadSegments(data.segments);
-    	loadClusters(data.clusters);
+    	loadData(data);
         nextQuestionButton.style.display = "";
         derButton.style.display = "";
         updateDER(data.der_track);
