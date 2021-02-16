@@ -122,6 +122,6 @@ var openSettings = function() {
     settingsWindow = null;
   });
 
-  //settingsWindow.setMenu(null);
+  settingsWindow.setMenu(null);
 }
 

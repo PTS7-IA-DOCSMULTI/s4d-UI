@@ -7,7 +7,7 @@
     "start": "electron ."
   },
   "dependencies": {
-    "electron": "^11.0.3",
+    "electron": "^11.1.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "wavesurfer.js": "^4.2.0"
