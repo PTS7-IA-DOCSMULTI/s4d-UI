@@ -10,6 +10,8 @@ var clusters = [];
 var segsToDisplay = [];
 var clustersToDisplay = [];
 
+var timer;
+
 function highlightNode(node) {
 
   selectedNode = node;
@@ -76,6 +78,15 @@ function displaySegmentDetails() {
     for(let i = 0; i < segsToDisplay.length; i++) {
         //add a row for each segment
         let row = tbody.insertRow(j++);
+
+        //event to flash the region when the mouse is on a row
+        row.addEventListener("mouseenter", function( event ) {
+          flashRegion(event.target);
+        });
+        row.addEventListener("mouseleave", function( event ) {
+          clearInterval(timer);
+        });
+
         //create elems to add
         let seg = segsToDisplay[i];
         let start = document.createTextNode(secondsToHms(seg[3] / 100));
@@ -225,6 +236,35 @@ function findParentNode(childNodeId1, childNodeId2) {
   }
   return null;
 }
+
+function flashRegion(target) {
+  let index = getRowIndexInTable(target);
+  let i = 0;
+  let htmlRegion;
+  for (let id in wavesurfer.regions.list) {
+    if (i++ == index) {
+      htmlRegion = wavesurfer.regions.list[id].element
+      break;
+    }
+  }
+  $(htmlRegion).fadeOut(800).fadeIn(800);
+  timer = setInterval(function(){ 
+      $(htmlRegion).fadeOut(800).fadeIn(800);
+  }, 1600);
+}
+
+function getRowIndexInTable(target) {
+  segTable = document.getElementById("segTable");
+  tbody = segTable.children[0].children[1];
+  for (i = 0; i < tbody.children.length; i++) {
+    row = tbody.children[i];
+    if (target == row) {
+      return i;
+    }
+  }
+  return -1
+}
+
 
 window.addEventListener('load', (event) => {
   displaySegmentDetails();
