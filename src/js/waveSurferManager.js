@@ -107,8 +107,15 @@ function drawWaveForm() {
 
     //called when a region is resized
     wavesurfer.on('region-update-end', function(d) {
-        console.log(d);
-        
+        for (i = 0; i < segments.length; i++) {
+            let seg = segments[i];
+            if (seg["data-id"] == d.id) {
+                seg[3] = Math.round(d.start * 100);
+                seg[4] = Math.round(d.end * 100);
+                break;
+            }
+        }
+        displaySegmentDetails();
     });
 
     // prevent regions of the same speaker from overlapping
