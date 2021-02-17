@@ -1,60 +1,70 @@
-<!DOCTYPE html>
 <html>
-    <head>
+	<head>
         <meta charset="UTF-8">
-        <title>Settings</title>  
+        <title>s4d-UI - Settings</title> 
+        <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Titillium+Web:400,600,700">
+        <link href="../css/style.css" rel="stylesheet">
         <script src="../js/settings.js"></script>
     </head>
     <body>
+		<div class="main-part">
+			<div class="shadow block">
+				<div class="header">
+					Settings
+					<div class="buttons right-pos">
+						<button class="action-button"  onclick='validate()'>
+							Validate
+						</button>
 
-    	<label for="clustering">Clustering method</label>
+						<button class="action-button" onclick='reset()'>
+							Reset
+						</button>
 
-		<select name="clustering" id="clustering">
-  			<option value="complete">Complete</option>
-  			<option value="ward">Ward</option>
-		  	<option value="average">Average</option>
-		  	<option value="single">Single</option>
-		</select>
+						<button class="action-button" onclick='cancel()'>
+							Cancel
+						</button>
+					</div>
+				</div>
+				<div class="content">
 
-		<br>
+					<label for="clustering">Clustering method</label>
 
-		<label for="selection">Selection method</label>
+					<select name="clustering" id="clustering">
+						<option value="complete">Complete</option>
+						<option value="ward">Ward</option>
+						<option value="average">Average</option>
+						<option value="single">Single</option>
+					</select>
 
-		<select name="selection" id="selection">
-  			<option value="longest">Longest</option>
-  			<option value="cluster_center">Cluster Center</option>
-		  	<option value="max_noBICHAC">Max noBICHAC</option>
-		</select>
+					<br>
 
-		<br>
+					<label for="selection">Selection method</label>
 
-		<label class="switch">
-			Conditionnal questioning
-		 	<input type="checkbox" id="conditionnal">
-		 	<span class="slider round"></span>
-		</label>
+					<select name="selection" id="selection">
+						<option value="longest">Longest</option>
+						<option value="cluster_center">Cluster Center</option>
+						<option value="max_noBICHAC">Max noBICHAC</option>
+					</select>
 
-		<br>
+					<br>
 
-		<label class="switch" >
-			Prioritize separaration to clustering
-		 	<input type="checkbox" id="prioritize">
-		 	<span class="slider round"></span>
-		</label>
+					<label class="switch">
+						Conditionnal questioning
+						<input type="checkbox" id="conditionnal">
+						<span class="slider round"></span>
+					</label>
 
-		<br>
+					<br>
 
-		<button onclick='validate()'>
-			Validate
-		</button>
+					<label class="switch" >
+						Prioritize separaration to clustering
+						<input type="checkbox" id="prioritize">
+						<span class="slider round"></span>
+					</label>
 
-		<button onclick='reset()'>
-			Reset
-		</button>
-
-		<button onclick='cancel()'>
-			Cancel
-		</button>
-
-    </body>
+					<br>
+				</div>
+			</div>
+		</div>
+	</body>
  </html>
