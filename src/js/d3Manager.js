@@ -31,16 +31,19 @@ var rootHeight;
 var selectedNode;
 var segments = [];
 var clusters = [];
+var colors = [];
 var segsToDisplay = [];
+var segList1 = [];
+var segList2 = [];
 var clustersToDisplay = [];
 
 var timer;
 
 function generateIdForSegments() {
-  for(let i = 0; i < clusters.length; i++) { 
-    let cluster = segments.filter(seg => seg[1] == clusters[i]);
-    for(let j = 0; j < cluster.length; j++) {
-        let seg = cluster[j]; 
+  for(let i = 0; i < 2; i++) {
+    let segList = i == 0 ? segList1 : segList2;
+    for(let j = 0; j < segList.length; j++) {
+        let seg = segList[j]; 
         seg["data-id"] = i + '-' + j;
     }
   }
@@ -56,11 +59,6 @@ function highlightNode(node) {
   d3.select(htmlNode)
     .attr("r",10)
     .style("fill", "red");
-
-  //update display
-  generateSegsToDisplay(getBaseClusterIDs(d));
-  displaySegmentDetails();
-  displayRegions();
 }
 
 function removeHighlight() {
@@ -72,44 +70,40 @@ function removeHighlight() {
   //now no node is selected
   selectedNode = null;
   segsToDisplay = [];
+  segList1 = [];
+  segList2 = [];
   clustersToDisplay = [];
 
   //update display
-  displaySegmentDetails();
+  displaySegmentDetails(1);
+  displaySegmentDetails(2);
   displayRegions();
 }
 
-function generateSegsToDisplay(baseClusterIDs) {
-    clusterNames = [];
-    for(let i = 0; i < baseClusterIDs.length; i++) {
-      clusterNames.push(clusters[baseClusterIDs[i]]);
-    }
-    clustersToDisplay = baseClusterIDs;
-    segsToDisplay = segments.filter(seg => clusterNames.includes(seg[1]));
-}
-
 //display node information on right panel
-function displaySegmentDetails() {
-    var name = selectedNode == null ? "" : selectedNode.__data__.data.name
-    var segTable = document.getElementById("segTable");
+function displaySegmentDetails(numList) {
+
+    segTableId = numList == 1 ? "segTable" : "segTable2"
+    segList =  numList == 1 ? segList1 : segList2
+
+    let name = selectedNode == null ? "" : selectedNode.__data__.data.name
+    let segTable = document.getElementById(segTableId);
     segTable.innerHTML = "";
 
-    var table = document.createElement('table');
+    let table = document.createElement('table');
     table.setAttribute('border','1');
     table.setAttribute('width','100%');
 
-    var header = table.createTHead();
+    let header = table.createTHead();
     let headerRow = header.insertRow(0); 
     headerRow.insertCell(0).innerHTML = "<b>Start</b>";
     headerRow.insertCell(1).innerHTML = "<b>End</b>";
-    headerRow.insertCell(2).innerHTML = "<b>Speaker</b>";
-    headerRow.insertCell(3).innerHTML = "<b>Type</b>";
-    headerRow.insertCell(4).innerHTML = "<b>Play</b>";
+    headerRow.insertCell(2).innerHTML = "<b>Play</b>";
 
-    var tbody = table.createTBody();
-    var j = 0;
+    let tbody = table.createTBody();
+    let j = 0;
 
-    for(let i = 0; i < segsToDisplay.length; i++) {
+    for(let i = 0; i < segList.length; i++) {
         //add a row for each segment
         let row = tbody.insertRow(j++);
 
@@ -127,11 +121,9 @@ function displaySegmentDetails() {
         });
 
         //create elems to add
-        let seg = segsToDisplay[i];
+        let seg = segList[i];
         let start = document.createTextNode(secondsToHms(seg[3] / 100));
         let end = document.createTextNode(secondsToHms(seg[4] / 100));
-        let speaker = document.createTextNode("Unknown");
-        let type = document.createTextNode("Unknown");
 
 		    let btns = document.createElement("DIV");
 		    btns.classList.add("single-button");
@@ -140,7 +132,7 @@ function displaySegmentDetails() {
         btn.innerHTML = "<i class='play icon'></i>";
         btn.onclick = function() {
           seg.region.play();
-  		    var playIcon = document.getElementById("play");
+  		    let playIcon = document.getElementById("play");
   		    playIcon.classList.remove("play");
   		    playIcon.classList.remove("pause");
   		    playIcon.classList.add("pause");
@@ -150,9 +142,7 @@ function displaySegmentDetails() {
         //add elem to row
         row.insertCell(0).appendChild(start);
         row.insertCell(1).appendChild(end);
-        row.insertCell(2).appendChild(speaker);
-        row.insertCell(3).appendChild(type);
-        row.insertCell(4).appendChild(btns);
+        row.insertCell(2).appendChild(btns);
           
     }
     //add elems to html page
@@ -164,7 +154,7 @@ function getBaseClusterIDs(node, result = []){
     if(!node.children || node.children.length === 0){
         result.push(node.data["node_id"]);
     } else {
-        for(let i = 0; i < node.children.length; i++) {
+        for(i = 0; i < node.children.length; i++) {
             result = getBaseClusterIDs(node.children[i], result);
         }                   
     }
@@ -180,7 +170,18 @@ function changeNodesHeight(node) {
 function loadData(data) {
     segments = data.segments;
     clusters = data.clusters;
-    generateIdForSegments();
+    randomColorClusters();
+    drawDendrogram(data.tree);
+}
+
+function randomColorClusters() {
+  colors = [];
+  for (i = 0; i < clusters.length; i++) {
+    let r = Math.floor(Math.random() * 256); 
+    let g = Math.floor(Math.random() * 256); 
+    let b = Math.floor(Math.random() * 256); 
+    colors.push("rgba(" + r + ", " + g + ", " + b + ", 1)");
+  } 
 }
 
 function drawDendrogram(data, threshold) {
@@ -213,7 +214,7 @@ function drawDendrogram(data, threshold) {
     });
     cluster(root);
 
-    // Lien entre chaque noeuds
+    // Lien entre chaque noeud
     svg.selectAll('path')
       .data( root.descendants().slice(1) )
       .enter()
@@ -244,11 +245,55 @@ function drawDendrogram(data, threshold) {
         })
         .append("circle")
           .attr("r", 7)
-          .style("fill", "#69b3a2")
           .attr("stroke", "black")
           .style("stroke-width", 2)
 
+    // sort nodes by id
+    var sortedNodes = Array.prototype.slice.call(svg.selectAll("g")._groups[0], 0).sort(sortNodesById);
+    colorNodesUpward(sortedNodes);
+    colorNodesDownward(sortedNodes, sortedNodes.length - 1, null)
     resizeSVG();
+}
+
+function sortNodesById(node1, node2) {
+  return node1.__data__.data.node_id - node2.__data__.data.node_id
+}
+
+function colorNodesUpward(sortedNodes) {
+  for (i = 0; i < sortedNodes.length; i++) {
+    let node = sortedNodes[i];
+    let cssText = "stroke-width: 2;"
+    if (node.__data__.data.children.length == 0) {
+      cssText += "fill: " + colors[node.__data__.data.node_id] + ";"
+    } else if (node.__data__.data.isGrouped) {
+      let childId = node.__data__.data.children[0].node_id;
+      cssText = sortedNodes[childId].childNodes[0].style.cssText;
+    } else {
+      cssText += "fill: black;";
+    }
+    node.childNodes[0].style.cssText = cssText;
+  }
+}
+
+//recursively check that the 2 children of a grouped node have the same color
+function colorNodesDownward(sortedNodes, node_id, parent) {
+  var node = sortedNodes[node_id];
+  if (parent && parent.__data__.data.isGrouped) {
+    node.childNodes[0].style.cssText = parent.childNodes[0].style.cssText;
+  }
+
+  if (node.__data__.data.children.length == 2) {
+    var id1 = node.__data__.data.children[0].node_id;
+    var id2 = node.__data__.data.children[1].node_id;
+    colorNodesDownward(sortedNodes, id1, node);
+    colorNodesDownward(sortedNodes, id2, node);   
+  } else {
+      let cssText =  node.childNodes[0].style.cssText
+      let start = cssText.indexOf("rgb");
+      cssText = cssText.substring(start, cssText.length);
+      let end = cssText.indexOf(";");
+      colors[node_id] = cssText.substring(0, end);
+  }
 }
 
 // Load the question sent by the system
@@ -257,6 +302,17 @@ function loadQuestion(question) {
   let node = findParentNode(question.node[0], question.node[1]);
   //highlight the node
   highlightNode(node);
+
+  //load segments to display
+  segList1 = question.segs1;
+  segList2 = question.segs2;
+  generateIdForSegments();
+  displaySegmentDetails(1);
+  displaySegmentDetails(2);
+  clustersToDisplay.push(segList1[0][1])
+  clustersToDisplay.push(segList2[0][1])
+  displayRegions();
+
 }
 
 // Find a parent node from the ids of two children
@@ -285,7 +341,8 @@ function flashRegion(target) {
 }
 
 window.addEventListener('load', (event) => {
-  displaySegmentDetails();
+  displaySegmentDetails(1);
+  displaySegmentDetails(2);
 });
 
 $(window).on('load', function () {

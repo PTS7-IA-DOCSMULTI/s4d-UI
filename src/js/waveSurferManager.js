@@ -162,12 +162,13 @@ function drawWaveForm() {
 function displayRegions() {
     //remove all regions on waveform
     wavesurfer.clearRegions();
-    for(let i = 0; i < clustersToDisplay.length; i++) { 
-        let color = drawRandomColor();
-        let cluster = segsToDisplay.filter(seg => seg[1] == clusters[clustersToDisplay[i]]);
+    for(let i = 0; i < clustersToDisplay.length; i++) {
+        let indexCluster = clusters.indexOf(clustersToDisplay[i])
+        let color = colors[indexCluster]
+        let segList = i == 0 ? segList1 : segList2
 
-        for(let j = 0; j < cluster.length; j++) {
-            let seg = cluster[j];
+        for(let j = 0; j < segList.length; j++) {
+            let seg = segList[j];
             let options =
             {
                 id: seg["data-id"],
@@ -187,24 +188,13 @@ function displayRegions() {
     let regionHeight = waveformHeight / clustersToDisplay.length;
     let regionTop = 100 / clustersToDisplay.length;
     var regions = document.getElementsByClassName("wavesurfer-region");
-    for(let i = 0; i < clustersToDisplay.length; i++) {
-        for(let j = 0; j < regions.length; j++) {
-            let groupId = regions[j].getAttribute('data-id').split('-')[0];
-            if(groupId == clustersToDisplay[i]) {
-                regions[j].style.height = regionHeight + 'px';
-                regions[j].style.top = regionTop * i * waveformHeight / 100 + 'px';
-            }        
-        }
+    for(let i = 0; i < regions.length; i++) {
+        let groupId = regions[i].getAttribute('data-id').split('-')[0];
+        regions[i].style.height = regionHeight + 'px';
+        regions[i].style.top = regionTop * groupId * waveformHeight / 100 + 'px';                    
     }
 
    updateBoundaries();
-}
-
-function drawRandomColor() {
-    let r = Math.floor(Math.random() * 256); 
-    let g = Math.floor(Math.random() * 256); 
-    let b = Math.floor(Math.random() * 256); 
-    return "rgba(" + r + ", " + g + ", " + b + ", 1)";
 }
 
 function getNextRegionFromSameSpeaker(region) {

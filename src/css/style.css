@@ -132,8 +132,8 @@ i.icon.play:before {
 	text-align: center;
 }
 
-#segTable {
-	max-height: calc(100% - 100px);
+#segTable, #segTable2 {
+	max-height: calc(50% - 100px);
     overflow: auto;
 }
 

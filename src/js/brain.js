@@ -98,7 +98,6 @@ function loadFile(fileName) {
 
     request(options).then(function(res) {
     	data = JSON.parse(res);
-    	drawDendrogram(data.tree);
     	loadData(data);
         nextQuestionButton.style.display = "";
         derButton.style.display = "";
