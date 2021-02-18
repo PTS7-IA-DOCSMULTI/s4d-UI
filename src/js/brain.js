@@ -75,6 +75,10 @@ ipcRenderer.on('openFile', (event, arg) => {
 	loadFile(url);
 });
 
+ipcRenderer.on('saveFile', (event, arg) => {
+    saveFile(arg);
+});
+
 function loadFile(fileName) {
 
     var jsonPath = path.join(__dirname, '..', 'settings.json');
@@ -143,4 +147,17 @@ function updateDER(der_track) {
     derTrack = der_track
     der_log = der_track.der_log;
     document.getElementById('der').innerHTML = "(DER: " +  der_log[der_log.length - 1].toFixed(2) + "%)";
+}
+
+function saveFile(path) {
+    var options = {
+        method: 'POST',
+        uri: 'http://127.0.0.1:5000/save_file',
+        form: {
+            path: path
+        }
+    }
+
+    // send path
+    request(options);
 }

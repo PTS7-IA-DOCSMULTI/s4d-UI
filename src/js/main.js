@@ -71,10 +71,17 @@ const mainMenuTemplate =  [
     label: 'File',
     submenu: [
     {
-      label: 'Open',
+      label: 'Open Audio',
       accelerator:process.platform == 'darwin' ? 'Command+O' : 'Ctrl+O',
       click(item, focusedWindow) {
-        showOpen();
+        openFile();
+      }
+    },
+    {
+      label: 'Save to MDTM',
+      accelerator:process.platform == 'darwin' ? 'Command+S' : 'Ctrl+S',
+      click(item, focusedWindow) {
+        saveFile();
       }
     }
     ]
@@ -102,7 +109,7 @@ const mainMenuTemplate =  [
   } 
 ];
 
-var showOpen = function() {
+var openFile = function() {
   dialog.showOpenDialog({
     properties: [ 'openFile'], 
     filters: [
@@ -163,4 +170,22 @@ var openSettings = function() {
 
   settingsWindow.setMenu(null);
 }
+
+var saveFile = function() {
+  dialog.showSaveDialog({
+    filters: [
+      { 
+        name: 'MDTM File',
+        extensions: ['mdtm']
+      }
+    ]
+  }).then(result => {
+    if(!result.canceled) {
+      //send event to save the file to brain.js
+      mainWindow.webContents.send('saveFile', result.filePath);
+    }
+  }).catch(err => {
+    console.log(err)
+  })
+};
 

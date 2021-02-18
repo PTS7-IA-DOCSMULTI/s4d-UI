@@ -46,6 +46,7 @@ from evallies.lium_baseline.interactive import check_std_change
 from evallies.lium_baseline.interactive import get_segment_sorted_list
 from evallies.lium_baseline.interactive import get_node_spkeakers
 from evallies.lium_baseline.interactive import track_correction_process
+from evallies.lium_baseline.system import allies_write_diar
 
 from evallies.der_single import *
 import evallies
@@ -138,7 +139,7 @@ def load_file():
             temporary_link_list.append(l)  # final_links
 
     # create der_track dictionary and calculate intial DER
-    der, time, new_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
+    der, time, current_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
                                                                                 current_vec,
                                                                                 list(scores_per_cluster.modelset),
                                                                                 temporary_link_list,
@@ -226,7 +227,7 @@ def node_is_grouped(node):
 
 @app.route('/answer_question', methods=['POST'])
 def answer_question():
-    global links_to_check,  no_more_separation, no_more_clustering, der_track
+    global links_to_check,  no_more_separation, no_more_clustering, der_track, current_diar
     global stop_separation_list, separated_list, stop_clustering_list
     node = links_to_check[0]
     is_same_speaker = json.loads(request.form.get('is_same_speaker'))
@@ -240,7 +241,7 @@ def answer_question():
                 no_more_separation = True
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
                                                                     current_vec,
                                                                     scores_per_cluster,
                                                                     link_tmp,
@@ -259,7 +260,7 @@ def answer_question():
             # Record the correction and the DER
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
                                                                     current_vec,
                                                                     scores_per_cluster,
                                                                     link_tmp,
@@ -274,7 +275,7 @@ def answer_question():
             # Record the correction and the DER
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
                                                                     current_vec,
                                                                     scores_per_cluster,
                                                                     link_tmp,
@@ -292,7 +293,7 @@ def answer_question():
                 no_more_clustering = True
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
                                                                     current_vec,
                                                                     scores_per_cluster,
                                                                     link_tmp,
@@ -433,6 +434,11 @@ def next_question():
     res = dict(error="No more question")
     return json.dumps(res)
 
+@app.route('/save_file', methods=['POST'])
+def save_file():
+    path = request.form.get('path')
+    allies_write_diar(current_diar, path)
+    return json.dumps("")
 
 if __name__ == "__main__":
     # launch the flask server on a thread
