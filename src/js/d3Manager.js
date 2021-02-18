@@ -32,18 +32,15 @@ var selectedNode;
 var segments = [];
 var clusters = [];
 var colors = [];
-var segsToDisplay = [];
-var segList1 = [];
-var segList2 = [];
+var segLists = [];
 var clustersToDisplay = [];
 
 var timer;
 
 function generateIdForSegments() {
-  for(let i = 0; i < 2; i++) {
-    let segList = i == 0 ? segList1 : segList2;
-    for(let j = 0; j < segList.length; j++) {
-        let seg = segList[j]; 
+  for(let i = 0; i < segLists.length; i++) {
+    for(let j = 0; j < segLists[i].length; j++) {
+        let seg = segLists[i][j]; 
         seg["data-id"] = i + '-' + j;
     }
   }
@@ -69,22 +66,21 @@ function removeHighlight() {
 
   //now no node is selected
   selectedNode = null;
-  segsToDisplay = [];
-  segList1 = [];
-  segList2 = [];
+  segLists = [];
   clustersToDisplay = [];
 
   //update display
-  displaySegmentDetails(1);
-  displaySegmentDetails(2);
+  displaySegmentDetails();
   displayRegions();
 }
 
 //display node information on right panel
-function displaySegmentDetails(numList) {
+function displaySegmentDetails() {
 
-    segTableId = numList == 1 ? "segTable" : "segTable2"
-    segList =  numList == 1 ? segList1 : segList2
+  for (let numList = 0; numList < segLists.length; numList++) {
+
+    segTableId = "segTable" + (numList+1);
+    segList =  segLists[numList];
 
     let name = selectedNode == null ? "" : selectedNode.__data__.data.name
     let segTable = document.getElementById(segTableId);
@@ -100,6 +96,10 @@ function displaySegmentDetails(numList) {
     headerRow.insertCell(1).innerHTML = "<b>End</b>";
     headerRow.insertCell(2).innerHTML = "<b>Play</b>";
 
+    let indexCluster = clusters.indexOf(clustersToDisplay[numList])
+    let color = colors[indexCluster]
+    headerRow.style.backgroundColor = color;
+
     let tbody = table.createTBody();
     let j = 0;
 
@@ -108,7 +108,7 @@ function displaySegmentDetails(numList) {
         let row = tbody.insertRow(j++);
 
         //event to flash the region when the mouse is on a row
-        var hoverTimer;
+        let hoverTimer;
         row.addEventListener("mouseenter", function( event ) {
           hoverTimer = setTimeout(function() {
             flashRegion(event.target);
@@ -147,6 +147,7 @@ function displaySegmentDetails(numList) {
     }
     //add elems to html page
     segTable.appendChild(table);
+  }
 }
 
  //return all segments linked to the node
@@ -304,13 +305,12 @@ function loadQuestion(question) {
   highlightNode(node);
 
   //load segments to display
-  segList1 = question.segs1;
-  segList2 = question.segs2;
+  segLists.push(question.segs1);
+  segLists.push(question.segs2);
   generateIdForSegments();
-  displaySegmentDetails(1);
-  displaySegmentDetails(2);
-  clustersToDisplay.push(segList1[0][1])
-  clustersToDisplay.push(segList2[0][1])
+  clustersToDisplay.push(segLists[0][0][1])
+  clustersToDisplay.push(segLists[1][0][1])
+  displaySegmentDetails();
   displayRegions();
 
 }

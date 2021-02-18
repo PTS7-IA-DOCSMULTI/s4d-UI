@@ -132,7 +132,7 @@ i.icon.play:before {
 	text-align: center;
 }
 
-#segTable, #segTable2 {
+#segTable1, #segTable2 {
 	max-height: calc(50% - 100px);
     overflow: auto;
 }

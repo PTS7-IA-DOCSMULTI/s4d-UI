@@ -165,7 +165,7 @@ function displayRegions() {
     for(let i = 0; i < clustersToDisplay.length; i++) {
         let indexCluster = clusters.indexOf(clustersToDisplay[i])
         let color = colors[indexCluster]
-        let segList = i == 0 ? segList1 : segList2
+        let segList = segLists[i];
 
         for(let j = 0; j < segList.length; j++) {
             let seg = segList[j];
