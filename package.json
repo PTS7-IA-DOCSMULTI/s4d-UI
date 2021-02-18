@@ -13,5 +13,5 @@
     "wavesurfer.js": "^4.2.0"
   },
   "author": "Florian PLAUT, Nicolas POUPON, Adrien PUERTOLAS, Alexandre FLUCHA",
-  "license": "ISC"
+  "license": "LGPL3"
 }

@@ -1,3 +1,27 @@
+/*
+ © Copyright 2020-2021 Florian Plaut, Nicolas Poupon, Adrien Puertolas, Alexandre Flucha
+ * 
+ * This file is part of S4D-UI.
+ *
+ * S4D-UI is an interface for S4D to allow human supervision of the diarization
+ * S4D-UI home page: https://github.com/PTS7-IA-DOCSMULTI/s4d-UI
+ * S4D home page: http://www-lium.univ-lemans.fr/s4d/
+ * SIDEKIT home page: http://www-lium.univ-lemans.fr/sidekit/
+ *
+ * S4D-UI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * S4D-UI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with S4D-UI.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 //dimensions and margins of the graph
 var width = 335;
 var height = 335;
