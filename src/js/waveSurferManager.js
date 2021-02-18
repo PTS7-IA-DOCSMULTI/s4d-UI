@@ -28,6 +28,10 @@ const ipcRenderer = require('electron').ipcRenderer;
 var url;
 var wavesurfer;
 
+ipcRenderer.on('fileNotFound', (event, arg) => {
+    alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
+})
+
 ipcRenderer.on('openFile', (event, arg) => {
 
     var playIcon = document.getElementById("play");

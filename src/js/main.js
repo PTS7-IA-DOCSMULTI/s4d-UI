@@ -26,7 +26,8 @@ const electron = require('electron');
 const path = require('path');
 const url = require('url');
 const net = require('net');
-const { dialog } = require('electron')
+const { dialog } = require('electron');
+const fs = require('fs');
 
 var settings;
 
@@ -112,7 +113,21 @@ var showOpen = function() {
     ]
   }).then(result => {
     if(!result.canceled) {
-      mainWindow.webContents.send( 'openFile', result.filePaths[0] );
+      // remove the extension of the audio file
+      var url = result.filePaths[0].split('.');
+      url.pop();
+      url = url.join('.');
+
+      // check if the folder of the selected audio file contains the required files
+      var extensions = [".mdtm", ".first.mdtm", "_xv.h5", ".scores.h5", ".uem", ".ref.mdtm"]
+      for (i = 0; i < extensions.length; i++) {
+        let path = url + extensions[i];
+        if (!fs.existsSync(path)) {
+          mainWindow.webContents.send('fileNotFound', path);
+          return;
+        }
+      }
+      mainWindow.webContents.send('openFile', result.filePaths[0]);
     }
   }).catch(err => {
     console.log(err)
