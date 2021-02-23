@@ -63,6 +63,20 @@
   height: 100%;
 }
 
+.tag-color {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: calc(45px);
+    right: calc(20px);
+    border-radius: 10px;
+    box-shadow: black;
+}
+
+#speaker-tag2 {
+	right: calc(20px + 10px) !important;
+}
+
 .right-part-left {
 	background: transparent;
 	height: calc(47% - 30px);
