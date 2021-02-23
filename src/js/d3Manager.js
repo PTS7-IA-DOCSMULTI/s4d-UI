@@ -92,13 +92,19 @@ function displaySegmentDetails() {
 
     let header = table.createTHead();
     let headerRow = header.insertRow(0); 
-    headerRow.insertCell(0).innerHTML = "<b>Start</b>";
-    headerRow.insertCell(1).innerHTML = "<b>End</b>";
-    headerRow.insertCell(2).innerHTML = "<b>Play</b>";
+	var thStartElement = document.createElement("TH");
+	var thEndElement = document.createElement("TH");
+	var thPlayElement = document.createElement("TH");
+	headerRow.appendChild(thStartElement);
+	headerRow.appendChild(thEndElement);
+	headerRow.appendChild(thPlayElement);
+    thStartElement.innerHTML = "<b>Start</b>";
+    thEndElement.innerHTML = "<b>End</b>";
+	thPlayElement.innerHTML = "<b>Play</b>";
 
-    let indexCluster = clusters.indexOf(clustersToDisplay[numList])
-    let color = colors[indexCluster]
-    headerRow.style.backgroundColor = color;
+    //let indexCluster = clusters.indexOf(clustersToDisplay[numList])
+    //let color = colors[indexCluster]
+   // headerRow.style.backgroundColor = color;
 
     let tbody = table.createTBody();
     let j = 0;
