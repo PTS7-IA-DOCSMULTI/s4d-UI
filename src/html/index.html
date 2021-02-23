@@ -45,17 +45,46 @@
 				</div>
 			</div>
 		</div>
-		<div class="right-part">
+		<div class="right-part-left">
 			<div class="shadow block">
 				<div class="header">
-                    Segments
-                    <button id="nextQuestionButton">Next</button>
-                    <button id="trueButton">True</button>
-                    <button id="falseButton">False</button>
+                    Speaker 1
 				</div>
 				<div class="content">
 					<div id="segTable1"></div> 
+				</div>
+			</div>
+		</div>
+		<div class="right-part-right">
+			<div class="shadow block">
+				<div class="header">
+                    Speaker 2
+				</div>
+				<div class="content">
 					<div id="segTable2"></div>                  
+				</div>
+			</div>
+		</div>
+		<div class="right-part-bottom">
+			<div class="shadow block">
+				<div class="header">
+                    Question
+                    <div class="buttons right-pos">
+						<button class="action-button" id="nextQuestionButton">
+							Next
+						</button>
+
+						<button class="action-button" id="trueButton">
+							True
+						</button>
+
+						<button class="action-button" id="falseButton">
+							False
+						</button>
+					</div>
+				</div>
+				<div class="content center">
+					<span>Is the speaker 1 the same speaker that the same speaker 2 ?
 				</div>
 			</div>
 		</div>
@@ -72,8 +101,13 @@
 					</div>
 					
 					<div class="zoom">
-						Zoom
+						<div class="single-button">
+							<button class="action-button"><i id="zoom-out" class="zoom-out icon"></i></button>
+						</div>
 						<input id="slider" type="range" min="0" max="50" value="0">
+						<div class="single-button">
+							<button class="action-button"><i id="zoom-in" class="zoom-in icon"></i></button>
+						</div>
 						<span id="audioTime"></span>
 					</div>
                 </div>

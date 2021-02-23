@@ -63,18 +63,45 @@
   height: 100%;
 }
 
-.right-part {
+.right-part-left {
 	background: transparent;
-	height: calc(67% - 30px);
-	width: calc(50% - 30px);
+	height: calc(47% - 30px);
+	width: calc(25% - 25px);
 	position: absolute;
 	top: 0;
 	left: 50%;
-	padding-right: 20px;
+	padding-right: 10px;
 	padding-left: 10px;
 	padding-top: 20px;
 	padding-bottom:10px;
 }
+
+.right-part-right {
+	background: transparent;
+	height: calc(47% - 30px);
+	width: calc(25% - 25px);
+	position: absolute;
+	top: 0;
+	left: 75%;
+	padding-right: 20px;
+	padding-left: 5px;
+	padding-top: 20px;
+	padding-bottom:10px;
+}
+
+.right-part-bottom {
+	background: transparent;
+	height: calc(20% - 20px);
+	width: calc(50% - 30px);
+	position: absolute;
+	top: 47%;
+	left: 50%;
+	padding-right: 20px;
+	padding-left: 10px;
+	padding-top: 10px;
+	padding-bottom:10px;
+}
+
 .bottom-part {
 	background: transparent;
 	height: calc(33% - 30px);
@@ -117,6 +144,12 @@ i.icon.volume.up:before {
 }
 i.icon.play:before {
     content: "\f04b";
+}
+i.icon.zoom-out:before {
+	content: "\f010";
+}
+i.icon.zoom-in:before {
+	content: "\f00e";
 }
 
 .action-button {
@@ -203,6 +236,9 @@ i.icon {
 	margin-right: auto;
     display: block;
     max-height: inherit;
+}
+.content.center {
+	text-align: center;
 }
 .content.elements {
 	background: rgba(0,0,0,.15);
