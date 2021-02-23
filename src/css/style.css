@@ -182,6 +182,8 @@ i.icon.zoom-in:before {
 th {
 	top: 0px;
 	position: sticky;
+    background: #3e3d3d;
+    height: 35px;
 }
 
 #segTable1, #segTable2 {
