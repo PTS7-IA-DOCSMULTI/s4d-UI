@@ -59,10 +59,6 @@ function highlightNode(node) {
 }
 
 function removeHighlight() {
-  //set default style to the previous node selected
-  d3.select(selectedNode.children[0])
-      .attr("r",7)
-      .style("fill", "#69b3a2");
 
   //now no node is selected
   selectedNode = null;
@@ -72,19 +68,18 @@ function removeHighlight() {
   //update display
   displaySegmentDetails();
   displayRegions();
+  document.getElementById("question").innerHTML = "";
 }
 
 //display node information on right panel
 function displaySegmentDetails() {
 
-  for (let numList = 0; numList < segLists.length; numList++) {
+  for (let numList = 0; numList < 2; numList++) {
 
     segTableId = "segTable" + (numList+1);
     segList =  segLists[numList];
-
-    let name = selectedNode == null ? "" : selectedNode.__data__.data.name
     let segTable = document.getElementById(segTableId);
-    segTable.innerHTML = "";
+    segTable.innerHTML = "";    
 
     let table = document.createElement('table');
     table.setAttribute('border','0');
@@ -92,64 +87,81 @@ function displaySegmentDetails() {
 
     let header = table.createTHead();
     let headerRow = header.insertRow(0); 
-	var thStartElement = document.createElement("TH");
-	var thEndElement = document.createElement("TH");
-	var thPlayElement = document.createElement("TH");
-	headerRow.appendChild(thStartElement);
-	headerRow.appendChild(thEndElement);
-	headerRow.appendChild(thPlayElement);
+  	var thStartElement = document.createElement("TH");
+  	var thEndElement = document.createElement("TH");
+  	var thPlayElement = document.createElement("TH");
+  	headerRow.appendChild(thStartElement);
+  	headerRow.appendChild(thEndElement);
+  	headerRow.appendChild(thPlayElement);
     thStartElement.innerHTML = "<b>Start</b>";
     thEndElement.innerHTML = "<b>End</b>";
-	thPlayElement.innerHTML = "<b>Play</b>";
+  	thPlayElement.innerHTML = "<b>Play</b>";
 
-    //let indexCluster = clusters.indexOf(clustersToDisplay[numList])
-    //let color = colors[indexCluster]
-   // headerRow.style.backgroundColor = color;
+    let tagID = "speaker-tag" + (numList+1);
+    let tag = document.getElementById(tagID);
+
+    let spknameID = "spkname" + (numList+1);
+    let spkName = document.getElementById(spknameID);
+
+    if (segLists.length > 0) {
+      let indexCluster = clusters.indexOf(clustersToDisplay[numList]);
+      let color = colors[indexCluster];
+      tag.style.backgroundColor = color ? color : "rgba(71,71,71,255)";
+      tag.style.display = "";
+      firstSeg = segLists[numList][0]
+      let name = firstSeg[2] + "#" + firstSeg[1];
+      spkName.innerHTML = name;
+    } else {
+      tag.style.display = "none";
+      spkName.innerHTML = "Speaker " + (numList+1);
+    }
 
     let tbody = table.createTBody();
     let j = 0;
 
-    for(let i = 0; i < segList.length; i++) {
-        //add a row for each segment
-        let row = tbody.insertRow(j++);
+    if (segLists.length > 0) {
+      for(let i = 0; i < segList.length; i++) {
+          //add a row for each segment
+          let row = tbody.insertRow(j++);
 
-        //event to flash the region when the mouse is on a row
-        let hoverTimer;
-        row.addEventListener("mouseenter", function( event ) {
-          hoverTimer = setTimeout(function() {
-            flashRegion(event.target);
+          //event to flash the region when the mouse is on a row
+          let hoverTimer;
+          row.addEventListener("mouseenter", function( event ) {
+            hoverTimer = setTimeout(function() {
+              flashRegion(event.target);
+              clearInterval(hoverTimer);
+            }, 1000);
+          });
+          row.addEventListener("mouseleave", function( event ) {
             clearInterval(hoverTimer);
-          }, 1000);
-        });
-        row.addEventListener("mouseleave", function( event ) {
-          clearInterval(hoverTimer);
-          clearInterval(timer);
-        });
+            clearInterval(timer);
+          });
 
-        //create elems to add
-        let seg = segList[i];
-        let start = document.createTextNode(secondsToHms(seg[3] / 100));
-        let end = document.createTextNode(secondsToHms(seg[4] / 100));
+          //create elems to add
+          let seg = segList[i];
+          let start = document.createTextNode(secondsToHms(seg[3] / 100));
+          let end = document.createTextNode(secondsToHms(seg[4] / 100));
 
-		    let btns = document.createElement("DIV");
-		    btns.classList.add("single-button");
-        let btn = document.createElement("BUTTON");
-		    btn.classList.add('action-button');
-        btn.innerHTML = "<i class='play icon'></i>";
-        btn.onclick = function() {
-          seg.region.play();
-  		    let playIcon = document.getElementById("play");
-  		    playIcon.classList.remove("play");
-  		    playIcon.classList.remove("pause");
-  		    playIcon.classList.add("pause");
-        };
-        row.style["data-id"] = seg["data-id"];
-		    btns.appendChild(btn);
-        //add elem to row
-        row.insertCell(0).appendChild(start);
-        row.insertCell(1).appendChild(end);
-        row.insertCell(2).appendChild(btns);
-          
+  		    let btns = document.createElement("DIV");
+  		    btns.classList.add("single-button");
+          let btn = document.createElement("BUTTON");
+  		    btn.classList.add('action-button');
+          btn.innerHTML = "<i class='play icon'></i>";
+          btn.onclick = function() {
+            seg.region.play();
+    		    let playIcon = document.getElementById("play");
+    		    playIcon.classList.remove("play");
+    		    playIcon.classList.remove("pause");
+    		    playIcon.classList.add("pause");
+          };
+          row.style["data-id"] = seg["data-id"];
+  		    btns.appendChild(btn);
+          //add elem to row
+          row.insertCell(0).appendChild(start);
+          row.insertCell(1).appendChild(end);
+          row.insertCell(2).appendChild(btns);
+            
+      }
     }
     //add elems to html page
     segTable.appendChild(table);
@@ -189,6 +201,13 @@ function randomColorClusters() {
     let b = Math.floor(Math.random() * 256); 
     colors.push("rgba(" + r + ", " + g + ", " + b + ", 1)");
   } 
+}
+
+function displayQuestion() {
+  let intituleQuestion = document.getElementById("question");
+  let spk1 = document.getElementById("spkname1");
+  let spk2 = document.getElementById("spkname2");
+  intituleQuestion.innerHTML = "Are <b>" + spk1.textContent + "</b> and <b>" + spk2.textContent + "</b> the same speaker ?";
 }
 
 function drawDendrogram(data, threshold) {
@@ -318,7 +337,7 @@ function loadQuestion(question) {
   clustersToDisplay.push(segLists[1][0][1])
   displaySegmentDetails();
   displayRegions();
-
+  displayQuestion();
 }
 
 // Find a parent node from the ids of two children
@@ -347,8 +366,7 @@ function flashRegion(target) {
 }
 
 window.addEventListener('load', (event) => {
-  displaySegmentDetails(1);
-  displaySegmentDetails(2);
+  displaySegmentDetails();
 });
 
 $(window).on('load', function () {

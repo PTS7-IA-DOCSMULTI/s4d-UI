@@ -91,8 +91,6 @@ function stop() {
 	playIcon.classList.remove("pause");
 }
 
-
-
 function drawWaveForm() {
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
@@ -132,6 +130,22 @@ function drawWaveForm() {
       var zoomLevel = Number(slider.value);
       wavesurfer.zoom(zoomLevel);
     };
+
+    document.getElementById("zoom-out").onclick = function() {
+        let slider = document.getElementById("slider");
+        if (Number(slider.value) >= 1) {
+            slider.value = Number(slider.value) - 1;
+            wavesurfer.zoom(Number(slider.value));
+        }
+    }
+
+    document.getElementById("zoom-in").onclick = function() {
+        let slider = document.getElementById("slider");
+        if (Number(slider.value) <= 49) {
+            slider.value = Number(slider.value) + 1;
+            wavesurfer.zoom(Number(slider.value));
+        } 
+    }
 
     //called when a region is resized
     wavesurfer.on('region-update-end', function(d) {

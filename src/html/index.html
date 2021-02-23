@@ -38,8 +38,6 @@
 			<div class="shadow block">
 				<div class="header" id="dendrogramme-header">
 					Dendrogram
-					<span id="der"></span>
-					<button id="derButton">See history</button>
 				</div>
 				<div class="scaling-svg-container" id="svg">
 				</div>
@@ -48,8 +46,8 @@
 		<div class="right-part-left">
 			<div class="shadow block">
 				<div class="header">
-                    Speaker 1
-                    <div class="shadow tag-color" id="speaker-tag1" style="background: red"></div>
+                    <span id="spkname1">Speaker 1</span>
+                    <div class="shadow tag-color" id="speaker-tag1"></div>
 				</div>
 				<div class="content">
 					<div id="segTable1"></div> 
@@ -59,8 +57,8 @@
 		<div class="right-part-right">
 			<div class="shadow block">
 				<div class="header">
-                    Speaker 2
-                    <div class="shadow tag-color" id="speaker-tag2" style="background: red"></div>
+                    <span id="spkname2">Speaker 2</span>
+                    <div class="shadow tag-color" id="speaker-tag2"></div>
 				</div>
 				<div class="content">
 					<div id="segTable2"></div>                  
@@ -71,22 +69,23 @@
 			<div class="shadow block">
 				<div class="header">
                     Question
+                    <button id="derButton"></button>
                     <div class="buttons right-pos">
 						<button class="action-button" id="nextQuestionButton">
 							Next
 						</button>
 
-						<button class="action-button" id="trueButton">
-							True
+						<button class="action-button" id="yesButton">
+							Yes
 						</button>
 
-						<button class="action-button" id="falseButton">
-							False
+						<button class="action-button" id="noButton">
+							No
 						</button>
 					</div>
 				</div>
 				<div class="content center">
-					<span>Is the speaker 1 the same speaker that the same speaker 2 ?
+					<span id="question">Click the "Next" button to start the questions</span>
 				</div>
 			</div>
 		</div>

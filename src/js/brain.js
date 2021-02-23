@@ -30,14 +30,14 @@ var path = require('path');
 var derTrack;
 
 nextQuestionButton = document.getElementById('nextQuestionButton');
-falseButton = document.getElementById('falseButton');
-trueButton = document.getElementById('trueButton');
+noButton = document.getElementById('noButton');
+yesButton = document.getElementById('yesButton');
 derButton = document.getElementById('derButton');
 
 window.onload = function() {
     nextQuestionButton.style.display = "none";
-    falseButton.style.display = "none";
-    trueButton.style.display = "none";
+    noButton.style.display = "none";
+    yesButton.style.display = "none";
     derButton.style.display = "none";
 }
 
@@ -46,12 +46,12 @@ nextQuestionButton.onclick = function() {
     nextQuestionButton.style.display = "none";
 }
 
-falseButton.onclick = function() {
+noButton.onclick = function() {
     answerQuestion(false);
     updateDisplay();
 }
 
-trueButton.onclick = function() {
+yesButton.onclick = function() {
     answerQuestion(true);
     updateDisplay();
 }
@@ -62,8 +62,8 @@ derButton.onclick = function() {
 
 function updateDisplay() {
     nextQuestionButton.style.display = "";
-    falseButton.style.display = "none";
-    trueButton.style.display = "none";
+    noButton.style.display = "none";
+    yesButton.style.display = "none";
     removeHighlight();
 }
 
@@ -99,9 +99,9 @@ function loadFile(fileName) {
     request(options).then(function(res) {
     	data = JSON.parse(res);
     	loadData(data);
-        nextQuestionButton.style.display = "";
         derButton.style.display = "";
         updateDER(data.der_track);
+        getNextQuestion();
     })
 }
 
@@ -136,8 +136,8 @@ function getNextQuestion() {
             alert(question.error)
         } else {
             loadQuestion(question);
-            falseButton.style.display = "";
-            trueButton.style.display = "";
+            noButton.style.display = "";
+            yesButton.style.display = "";
         } 
     })
 }
@@ -145,7 +145,7 @@ function getNextQuestion() {
 function updateDER(der_track) {
     derTrack = der_track
     der_log = der_track.der_log;
-    document.getElementById('der').innerHTML = "(DER: " +  der_log[der_log.length - 1].toFixed(2) + "%)";
+    document.getElementById('derButton').innerHTML = "DER: " +  der_log[der_log.length - 1].toFixed(2) + "%";
 }
 
 function saveFile(path) {
