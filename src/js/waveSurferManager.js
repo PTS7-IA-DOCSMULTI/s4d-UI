@@ -42,7 +42,8 @@ ipcRenderer.on('openFile', (event, arg) => {
     url = arg;
     // Second parameter is an array of pre-generated peaks
     // Empty array avoid displaying the waveform
-    wavesurfer.load(url, []);
+    // wavesurfer.load(url, []);
+    wavesurfer.load(url);
     document.title = "s4d-UI - " + url;
     document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 });
@@ -97,8 +98,8 @@ function drawWaveForm() {
         plugins: [
             RegionPlugin.create({})
         ],
-        waveColor: 'yellow',
-        progressColor: 'yellow',
+        waveColor: 'white',
+        progressColor: 'white',
         scrollParent: true,
         partialRender: true,
         responsive: true,

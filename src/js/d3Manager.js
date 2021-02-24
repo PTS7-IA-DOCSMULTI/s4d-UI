@@ -330,6 +330,7 @@ function loadQuestion(question) {
   highlightNode(node);
 
   //load segments to display
+  segLists = [];
   segLists.push(question.segs1);
   segLists.push(question.segs2);
   generateIdForSegments();
