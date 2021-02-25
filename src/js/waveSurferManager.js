@@ -163,6 +163,7 @@ function drawWaveForm() {
 
     // prevent regions of the same speaker from overlapping
     wavesurfer.on('region-updated', region => {
+
         if(region.attributes.nextRegion && region.end > region.attributes.nextRegion.start) {
           region.end = region.attributes.nextRegion.start
         }

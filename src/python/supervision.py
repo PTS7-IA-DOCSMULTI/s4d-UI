@@ -308,7 +308,23 @@ def answer_question():
     tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
     json_tree = add_node(tree, None)
 
-    return dict(tree=json_tree, der_track=der_track)
+    return dict(tree=json_tree, der_track=der_track, segments=current_diar.segments)
+
+
+@app.route('/update_diar', methods=['POST'])
+def update_diar():
+    global current_diar
+
+    # Extract the json segments
+    json_str = str(request.get_json())
+    json_str = json_str.replace("\'", "\"")
+    segments = json.loads(json_str)['segments']
+
+    # Update current diar with the segments
+    current_diar = Diar()
+    current_diar.append_list(segments)
+
+    return json.dumps("")
 
 
 @app.route('/next_question', methods=['POST'])
@@ -439,6 +455,7 @@ def save_file():
     path = request.form.get('path')
     allies_write_diar(current_diar, path)
     return json.dumps("")
+
 
 if __name__ == "__main__":
     # launch the flask server on a thread

@@ -27,24 +27,9 @@ var width = 335;
 var height = 335;
 
 var rootHeight;
-
 var selectedNode;
-var segments = [];
-var clusters = [];
-var colors = [];
-var segLists = [];
-var clustersToDisplay = [];
-
 var timer;
 
-function generateIdForSegments() {
-  for(let i = 0; i < segLists.length; i++) {
-    for(let j = 0; j < segLists[i].length; j++) {
-        let seg = segLists[i][j]; 
-        seg["data-id"] = i + '-' + j;
-    }
-  }
-}
 
 function highlightNode(node) {
 
@@ -186,29 +171,6 @@ function changeNodesHeight(node) {
     node.y = graphHeight - (node.data.height / rootHeight * graphHeight);
 }
 
-function loadData(data) {
-    segments = data.segments;
-    clusters = data.clusters;
-    randomColorClusters();
-    drawDendrogram(data.tree);
-}
-
-function randomColorClusters() {
-  colors = [];
-  for (i = 0; i < clusters.length; i++) {
-    let r = Math.floor(Math.random() * 256); 
-    let g = Math.floor(Math.random() * 256); 
-    let b = Math.floor(Math.random() * 256); 
-    colors.push("rgba(" + r + ", " + g + ", " + b + ", 1)");
-  } 
-}
-
-function displayQuestion() {
-  let intituleQuestion = document.getElementById("question");
-  let spk1 = document.getElementById("spkname1");
-  let spk2 = document.getElementById("spkname2");
-  intituleQuestion.innerHTML = "Are <b>" + spk1.textContent + "</b> and <b>" + spk2.textContent + "</b> the same speaker ?";
-}
 
 function drawDendrogram(data, threshold) {
 
@@ -322,24 +284,6 @@ function colorNodesDownward(sortedNodes, node_id, parent) {
   }
 }
 
-// Load the question sent by the system
-function loadQuestion(question) {
-  // first find the node concerned by the question
-  let node = findParentNode(question.node[0], question.node[1]);
-  //highlight the node
-  highlightNode(node);
-
-  //load segments to display
-  segLists = [];
-  segLists.push(question.segs1);
-  segLists.push(question.segs2);
-  generateIdForSegments();
-  clustersToDisplay.push(segLists[0][0][1])
-  clustersToDisplay.push(segLists[1][0][1])
-  displaySegmentDetails();
-  displayRegions();
-  displayQuestion();
-}
 
 // Find a parent node from the ids of two children
 function findParentNode(childNodeId1, childNodeId2) {
@@ -366,13 +310,6 @@ function flashRegion(target) {
   }, 1600);
 }
 
-window.addEventListener('load', (event) => {
-  displaySegmentDetails();
-});
-
-$(window).on('load', function () {
-    $(window).resize();
-});
 
 function resizeSVG(){
   var dendrosvg = document.getElementById("dendrosvg");
