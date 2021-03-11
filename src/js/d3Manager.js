@@ -34,26 +34,26 @@ var timer;
 function highlightNode(node) {
 
   selectedNode = node;
-  d = node.__data__;
-  htmlNode = node.children[0];
 
   //make the node bigger
-  d3.select(htmlNode)
+  d3.select(selectedNode)
     .attr("r",10)
-    .style("fill", "red");
 }
 
 function removeHighlight() {
 
+  //reset selected node style to default
+  d3.select(selectedNode)
+    .attr("r",7)
+
   //now no node is selected
   selectedNode = null;
-  segLists = [];
+  segmentsToDisplay = [];
   clustersToDisplay = [];
 
   //update display
   displaySegmentDetails();
   displayRegions();
-  document.getElementById("question").innerHTML = "";
 }
 
 //display node information on right panel
@@ -230,13 +230,18 @@ function drawDendrogram(data, threshold) {
         .data(root.descendants())
         .enter()
         .append("g")
+        .style("cursor", "pointer")
         .attr("transform", function(d) {
             return "translate(" + d.x + "," + d.y + ")"
         })
         .append("circle")
           .attr("r", 7)
           .attr("stroke", "black")
+          .style("cursor", "pointer")
           .style("stroke-width", 2)
+          .on('click', function(d) { 
+            nodeClicked(this)
+          })
 
     // sort nodes by id
     var sortedNodes = Array.prototype.slice.call(svg.selectAll("g")._groups[0], 0).sort(sortNodesById);
@@ -310,6 +315,25 @@ function flashRegion(target) {
   timer = setInterval(function(){ 
       $(htmlRegion).fadeOut(800).fadeIn(800);
   }, 1600);
+}
+
+
+function nodeClicked(node) {
+
+  if (node == selectedNode) {
+    removeHighlight();
+  } else {
+    if (selectedNode) {
+      removeHighlight();
+    }
+    selectedNode = node
+    highlightNode(selectedNode);
+
+    nodeId = node.__data__.data["node_id"]
+    if (nodeId > clusters.length - 1) {
+      getSegmentsFromNode(nodeId - clusters.length);
+    }
+  }
 }
 
 

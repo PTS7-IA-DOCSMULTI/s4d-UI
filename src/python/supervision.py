@@ -460,6 +460,22 @@ def save_file():
     return json.dumps("")
 
 
+@app.route('/get_segments_from_node', methods=['POST'])
+def get_segments_from_node():
+    node_id = int(request.form.get('node_id'))
+    node = link[node_id]
+    first_seg_list_sorted, second_seg_list_sorted = get_segment_sorted_list(node,
+                                                                            link,
+                                                                            scores_per_cluster,
+                                                                            None,
+                                                                            init_diar,
+                                                                            current_vec,
+                                                                            selection_method)
+    data = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
+    return json.dumps(data)
+
+
+
 def correct_link_after_removing_node(number_cluster, node_idx, link_list, removed_nodes_number):
     removed_node_idx = number_cluster + node_idx
 

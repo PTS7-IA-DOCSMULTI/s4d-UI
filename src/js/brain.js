@@ -170,6 +170,23 @@ function updateDiar(segments) {
     request(options)
 }
 
+// ask the server to send the segments corresponding to the clicked node
+function getSegmentsFromNode(nodeId) {
+     var options = {
+         method: 'POST',
+         uri: 'http://127.0.0.1:5000/get_segments_from_node',
+         form: {
+            node_id: nodeId
+        }
+     }
+ 
+     // get the segments
+     request(options).then(function (res) {
+         data = JSON.parse(res);
+         loadSegmentsToDisplay(data.segs1, data.segs2);
+     })
+ }
+
 /*
  * IPC RENDERER
  * ipcRenderer is used to communicate with main.js
@@ -202,6 +219,7 @@ function updateDisplay() {
     noButton.style.display = "none";
     yesButton.style.display = "none";
     removeHighlight();
+    document.getElementById("question").innerHTML = "";
 }
 
 
@@ -237,15 +255,18 @@ function loadQuestion(question) {
   // first find the node concerned by the question
   let node = findParentNode(question.node[0], question.node[1]);
   //highlight the node
-  highlightNode(node);
+  highlightNode(node.children[0]);
 
   //load segments to display
-  findSegmentsToDisplay(question.segs1, question.segs2);
-  setClustersToDisplay();
-  displaySegmentDetails();
-  displayRegions();
+  loadSegmentsToDisplay(question.segs1, question.segs2)
   displayQuestion();
-  
+}
+
+function loadSegmentsToDisplay(segList1, segList2) {
+    findSegmentsToDisplay(segList1, segList2);
+    setClustersToDisplay();
+    displaySegmentDetails();
+    displayRegions();
 }
 
 
