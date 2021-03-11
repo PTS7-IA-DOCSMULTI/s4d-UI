@@ -63,6 +63,7 @@ prioritize_separation2clustering = None
 
 current_diar = None
 initial_diar = None
+init_diar = None
 current_vec = None
 scores_per_cluster = None
 uem = None
@@ -139,12 +140,13 @@ def load_file():
             temporary_link_list.append(l)  # final_links
 
     # create der_track dictionary and calculate intial DER
-    der, time, current_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
-                                                                                current_vec,
-                                                                                list(scores_per_cluster.modelset),
-                                                                                temporary_link_list,
-                                                                                uem,
-                                                                                ref)
+    der, time, new_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
+                                                                                    current_vec,
+                                                                                    list(scores_per_cluster.modelset),
+                                                                                    temporary_link_list,
+                                                                                    uem,
+                                                                                    ref)
+
     # prepare dendrogram for UI
     tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
     json_tree = add_node(tree, None)
@@ -163,7 +165,7 @@ def load_file():
     stop_separation_list = []  # a list of nodes that have gotten confirmation for separation question
     stop_clustering_list = []  # a list of nodes that have gotten confirmation for clustering question
 
-    data_for_ui = json.dumps(dict(tree=json_tree, threshold=th, clusters=complete_list, segments=current_diar.segments, der_track=der_track))
+    data_for_ui = json.dumps(dict(tree=json_tree, threshold=th, clusters=complete_list, segments=initial_diar.segments, der_track=der_track))
 
     return data_for_ui
 
@@ -228,7 +230,7 @@ def node_is_grouped(node):
 @app.route('/answer_question', methods=['POST'])
 def answer_question():
     global links_to_check,  no_more_separation, no_more_clustering, der_track, current_diar
-    global stop_separation_list, separated_list, stop_clustering_list
+    global stop_separation_list, separated_list, stop_clustering_list, temporary_link_list
     node = links_to_check[0]
     is_same_speaker = json.loads(request.form.get('is_same_speaker'))
 
@@ -241,7 +243,7 @@ def answer_question():
                 no_more_separation = True
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
                                                                     current_vec,
                                                                     scores_per_cluster,
                                                                     link_tmp,
@@ -257,17 +259,19 @@ def answer_question():
             for ii, fl in enumerate(temporary_link_list):
                 if np.array_equal(fl, node[:4]):
                     _ = temporary_link_list.pop(ii)
+                break
+            temporary_link_list = correct_link_after_removing_node(number_cluster, ii, temporary_link_list, 1)
             # Record the correction and the DER
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                    current_vec,
-                                                                    scores_per_cluster,
-                                                                    link_tmp,
-                                                                    der_track,
-                                                                    "separation",
-                                                                    uem,
-                                                                    ref)
+            der_track, new_diar_diar, new_vec = track_correction_process(diar_tmp,
+                                                                        current_vec,
+                                                                        scores_per_cluster,
+                                                                        link_tmp,
+                                                                        der_track,
+                                                                        "separation",
+                                                                        uem,
+                                                                        ref)
     else:
         # if the human validate the node (it has not been grouped and it must be)
         if is_same_speaker:
@@ -275,14 +279,14 @@ def answer_question():
             # Record the correction and the DER
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                    current_vec,
-                                                                    scores_per_cluster,
-                                                                    link_tmp,
-                                                                    der_track,
-                                                                    "clustering",
-                                                                    uem,
-                                                                    ref)
+            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
+                                                                        current_vec,
+                                                                        scores_per_cluster,
+                                                                        link_tmp,
+                                                                        der_track,
+                                                                        "clustering",
+                                                                        uem,
+                                                                        ref)
 
         # Else stop exploring the tree upward
         else:
@@ -293,7 +297,7 @@ def answer_question():
                 no_more_clustering = True
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
                                                                     current_vec,
                                                                     scores_per_cluster,
                                                                     link_tmp,
@@ -307,8 +311,7 @@ def answer_question():
     # prepare new dendrogram for UI
     tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
     json_tree = add_node(tree, None)
-
-    return dict(tree=json_tree, der_track=der_track, segments=current_diar.segments)
+    return dict(tree=json_tree, der_track=der_track, segments=init_diar.segments)
 
 
 @app.route('/update_diar', methods=['POST'])
@@ -455,6 +458,29 @@ def save_file():
     path = request.form.get('path')
     allies_write_diar(current_diar, path)
     return json.dumps("")
+
+
+def correct_link_after_removing_node(number_cluster, node_idx, link_list, removed_nodes_number):
+    removed_node_idx = number_cluster + node_idx
+
+    for idx_link in range(node_idx, len(link_list) - 1):
+
+        if link_list[idx_link][0] == removed_node_idx:
+            _ = link_list.pop(idx_link)
+            return correct_link_after_removing_node(number_cluster, idx_link, link_list, removed_nodes_number + 1)
+
+        elif link_list[idx_link][1] == removed_node_idx:
+            _ = link_list.pop(idx_link)
+            return correct_link_after_removing_node(number_cluster, idx_link, link_list, removed_nodes_number + 1)
+
+        else:
+            if link_list[idx_link][0] > removed_node_idx:
+                link_list[idx_link][0] = link_list[idx_link][0] - removed_nodes_number
+
+            if link_list[idx_link][1] > removed_node_idx:
+                link_list[idx_link][1] = link_list[idx_link][1] - removed_nodes_number
+
+    return link_list
 
 
 if __name__ == "__main__":

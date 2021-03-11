@@ -29,8 +29,9 @@ var path = require('path');
 var segments = [];
 var clusters = [];
 var colors = [];
-var segLists = [];
 var clustersToDisplay = [];
+var segmentsToDisplay = [];
+var separationIndex;
 var derTrack;
 
 /*
@@ -239,23 +240,55 @@ function loadQuestion(question) {
   highlightNode(node);
 
   //load segments to display
-  segLists = [];
-  segLists.push(question.segs1);
-  segLists.push(question.segs2);
-  generateIdForSegments();
-  clustersToDisplay.push(segLists[0][0][1])
-  clustersToDisplay.push(segLists[1][0][1])
+  findSegmentsToDisplay(question.segs1, question.segs2);
+  setClustersToDisplay();
   displaySegmentDetails();
   displayRegions();
   displayQuestion();
+  
 }
 
-function generateIdForSegments() {
-  for(let i = 0; i < segLists.length; i++) {
-    for(let j = 0; j < segLists[i].length; j++) {
-        let seg = segLists[i][j]; 
-        seg["data-id"] = i + '-' + j;
+
+function findSegmentsToDisplay(segList1, segList2) {
+    separationIndex = segList1.length;
+    segmentsToDisplay = [];
+    segs = segList1.concat(segList2)
+    for (let i = 0; i < segs.length; i++) {
+        for (let j = 0; j < segments.length; j++) {
+            if (arraysEqual(segments[j],segs[i])) {
+                segmentsToDisplay.push(j);
+                break;
+            }
+        }
+        if (segmentsToDisplay.length <= i) {
+            segmentsToDisplay.push(-1)
+        }
     }
-  }
 }
 
+
+function arraysEqual(a1,a2) {
+    return JSON.stringify(a1)==JSON.stringify(a2);
+}
+
+
+function getSegIndex(segment) {
+    for (let i = 0; i < segments.length; i++) {
+        if (arraysEqual(segments[i], segment)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+function setClustersToDisplay() {
+    clustersToDisplay = [];
+    for (let i = 0; i < segmentsToDisplay.length; i++) {
+        seg = segments[segmentsToDisplay[i]];
+        clusterId = seg[1]
+        if (!clustersToDisplay.includes(clusterId)) {
+            clustersToDisplay.push(clusterId)
+        }
+    }
+}

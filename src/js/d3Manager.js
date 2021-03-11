@@ -62,7 +62,6 @@ function displaySegmentDetails() {
   for (let numList = 0; numList < 2; numList++) {
 
     segTableId = "segTable" + (numList+1);
-    segList =  segLists[numList];
     let segTable = document.getElementById(segTableId);
     segTable.innerHTML = "";    
 
@@ -88,12 +87,13 @@ function displaySegmentDetails() {
     let spknameID = "spkname" + (numList+1);
     let spkName = document.getElementById(spknameID);
 
-    if (segLists.length > 0) {
+    if (segmentsToDisplay.length > 0) {
       let indexCluster = clusters.indexOf(clustersToDisplay[numList]);
       let color = colors[indexCluster];
       tag.style.backgroundColor = color ? color : "rgba(71,71,71,255)";
       tag.style.display = "";
-      firstSeg = segLists[numList][0]
+      let firstSegIndex = numList == 0 ? 0 : separationIndex
+      let firstSeg = segments[segmentsToDisplay[firstSegIndex]];
       let name = firstSeg[2] + "#" + firstSeg[1];
       spkName.innerHTML = name;
     } else {
@@ -104,8 +104,10 @@ function displaySegmentDetails() {
     let tbody = table.createTBody();
     let j = 0;
 
-    if (segLists.length > 0) {
-      for(let i = 0; i < segList.length; i++) {
+    if (segmentsToDisplay.length > 0) {
+      startIndex =  numList == 0 ? 0 : separationIndex;
+      endIndex = numList == 0 ? separationIndex : segmentsToDisplay.length;
+      for(let i = startIndex; i < endIndex; i++) {
           //add a row for each segment
           let row = tbody.insertRow(j++);
 
@@ -123,7 +125,7 @@ function displaySegmentDetails() {
           });
 
           //create elems to add
-          let seg = segList[i];
+          let seg = segments[segmentsToDisplay[i]]
           let start = document.createTextNode(secondsToHms(seg[3] / 100));
           let end = document.createTextNode(secondsToHms(seg[4] / 100));
 
@@ -139,7 +141,7 @@ function displaySegmentDetails() {
     		    playIcon.classList.remove("pause");
     		    playIcon.classList.add("pause");
           };
-          row.style["data-id"] = seg["data-id"];
+          row.style["data-id"] = segmentsToDisplay[i];
   		    btns.appendChild(btn);
           //add elem to row
           row.insertCell(0).appendChild(start);

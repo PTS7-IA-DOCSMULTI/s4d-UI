@@ -174,6 +174,7 @@ function drawWaveForm() {
 
 }
 
+
 // display regions on waveform
 function displayRegions() {
     //remove all regions on waveform
@@ -181,22 +182,24 @@ function displayRegions() {
     for(let i = 0; i < clustersToDisplay.length; i++) {
         let indexCluster = clusters.indexOf(clustersToDisplay[i])
         let color = colors[indexCluster]
-        let segList = segLists[i];
-
-        for(let j = 0; j < segList.length; j++) {
-            let seg = segList[j];
-            let options =
-            {
-                id: seg["data-id"],
-                start: seg[3] / 100,
-                end: seg[4] / 100,
-                loop: false,
-                drag: false,
-                color: color,
-                resize: true
-            } 
-            let region = wavesurfer.addRegion(options);
-            seg.region = region; 
+        
+        for (let j = 0; j < segmentsToDisplay.length; j++) {
+            let seg = segments[segmentsToDisplay[j]];
+            if (seg[1] == clustersToDisplay[i]) {
+                let options =
+                {
+                    id: segmentsToDisplay[j],
+                    start: seg[3] / 100,
+                    end: seg[4] / 100,
+                    loop: false,
+                    drag: false,
+                    color: color,
+                    resize: true
+                } 
+                let region = wavesurfer.addRegion(options);
+                region.element.style.groupId = i;
+                seg.region = region; 
+            }
         }
     }
 
@@ -205,30 +208,25 @@ function displayRegions() {
     let regionTop = 100 / clustersToDisplay.length;
     var regions = document.getElementsByClassName("wavesurfer-region");
     for(let i = 0; i < regions.length; i++) {
-        let groupId = regions[i].getAttribute('data-id').split('-')[0];
         regions[i].style.height = regionHeight + 'px';
-        regions[i].style.top = regionTop * groupId * waveformHeight / 100 + 'px';                    
+        regions[i].style.top = regionTop * regions[i].style.groupId * waveformHeight / 100 + 'px';                    
     }
 
    updateBoundaries();
 }
 
 function getNextRegionFromSameSpeaker(region) {
-    var data  = region.id.split('-');
-    var clusterId = parseInt(data[0]);
-    var segment = parseInt(data[1]);
+    let indexOfNextRegionId  = segmentsToDisplay.indexOf(region.id) + 1;
+    let nextRegionId = segmentsToDisplay[indexOfNextRegionId];
 
-    return wavesurfer.regions.list[clusterId + "-" + (segment+1)]
+    return wavesurfer.regions.list[nextRegionId]
 }
 
 function getBackRegionFromSameSpeaker(region) {
-    var data  = region.id.split('-');
-    var clusterId = parseInt(data[0]);
-    var segment = parseInt(data[1]);
+    let indexOfBackRegionId  = segmentsToDisplay.indexOf(region.id) - 1;
+    let backRegionId = segmentsToDisplay[indexOfBackRegionId];
 
-    if (segment > 0) {
-        return wavesurfer.regions.list[clusterId + "-" + (segment-1)]
-    }
+    return wavesurfer.regions.list[backRegionId]
 }
 
 //set next and back region for each region
