@@ -49,7 +49,8 @@ window.onload = function() {
     noButton.style.display = "none";
     yesButton.style.display = "none";
     derButton.style.display = "none";
-    displaySegmentDetails();
+    displaySegmentDetails([], 1);
+    displaySegmentDetails([], 2);
     $(window).resize();
 }
 
@@ -183,7 +184,12 @@ function getSegmentsFromNode(nodeId) {
      // get the segments
      request(options).then(function (res) {
          data = JSON.parse(res);
-         loadSegmentsToDisplay(data.segs1, data.segs2);
+         if (data.segs1 && data.segs2) {
+             loadSegmentsToDisplay(data.segs1, data.segs2);
+         } else if (data.segs) {
+             loadSegmentsToDisplay(data.segs, []);
+         }
+         
      })
  }
 
@@ -265,7 +271,8 @@ function loadQuestion(question) {
 function loadSegmentsToDisplay(segList1, segList2) {
     findSegmentsToDisplay(segList1, segList2);
     setClustersToDisplay();
-    displaySegmentDetails();
+    displaySegmentDetails(segmentsToDisplay.slice(0, separationIndex), 1);
+    displaySegmentDetails(segmentsToDisplay.slice(separationIndex, segmentsToDisplay.length), 2);
     displayRegions();
 }
 

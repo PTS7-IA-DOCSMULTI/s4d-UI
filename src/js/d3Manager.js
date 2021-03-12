@@ -52,107 +52,105 @@ function removeHighlight() {
   clustersToDisplay = [];
 
   //update display
-  displaySegmentDetails();
+  displaySegmentDetails([], 1);
+  displaySegmentDetails([], 2)
   displayRegions();
 }
 
 //display node information on right panel
-function displaySegmentDetails() {
+function displaySegmentDetails(segsIndex, position) {
 
-  for (let numList = 0; numList < 2; numList++) {
-
-    segTableId = "segTable" + (numList+1);
-    let segTable = document.getElementById(segTableId);
-    segTable.innerHTML = "";    
-
-    let table = document.createElement('table');
-    table.setAttribute('border','0');
-    table.setAttribute('width','100%');
-
-    let header = table.createTHead();
-    let headerRow = header.insertRow(0); 
-  	var thStartElement = document.createElement("TH");
-  	var thEndElement = document.createElement("TH");
-  	var thPlayElement = document.createElement("TH");
-  	headerRow.appendChild(thStartElement);
-  	headerRow.appendChild(thEndElement);
-  	headerRow.appendChild(thPlayElement);
-    thStartElement.innerHTML = "<b>Start</b>";
-    thEndElement.innerHTML = "<b>End</b>";
-  	thPlayElement.innerHTML = "<b>Play</b>";
-
-    let tagID = "speaker-tag" + (numList+1);
-    let tag = document.getElementById(tagID);
-
-    let spknameID = "spkname" + (numList+1);
-    let spkName = document.getElementById(spknameID);
-
-    if (segmentsToDisplay.length > 0) {
-      let indexCluster = clusters.indexOf(clustersToDisplay[numList]);
-      let color = colors[indexCluster];
-      tag.style.backgroundColor = color ? color : "rgba(71,71,71,255)";
-      tag.style.display = "";
-      let firstSegIndex = numList == 0 ? 0 : separationIndex
-      let firstSeg = segments[segmentsToDisplay[firstSegIndex]];
-      let name = firstSeg[2] + "#" + firstSeg[1];
-      spkName.innerHTML = name;
-    } else {
-      tag.style.display = "none";
-      spkName.innerHTML = "Speaker " + (numList+1);
-    }
-
-    let tbody = table.createTBody();
-    let j = 0;
-
-    if (segmentsToDisplay.length > 0) {
-      startIndex =  numList == 0 ? 0 : separationIndex;
-      endIndex = numList == 0 ? separationIndex : segmentsToDisplay.length;
-      for(let i = startIndex; i < endIndex; i++) {
-          //add a row for each segment
-          let row = tbody.insertRow(j++);
-
-          //event to flash the region when the mouse is on a row
-          let hoverTimer;
-          row.addEventListener("mouseenter", function( event ) {
-            hoverTimer = setTimeout(function() {
-              flashRegion(event.target);
-              clearInterval(hoverTimer);
-            }, 1000);
-          });
-          row.addEventListener("mouseleave", function( event ) {
-            clearInterval(hoverTimer);
-            clearInterval(timer);
-          });
-
-          //create elems to add
-          let seg = segments[segmentsToDisplay[i]]
-          let start = document.createTextNode(secondsToHms(seg[3] / 100));
-          let end = document.createTextNode(secondsToHms(seg[4] / 100));
-
-  		    let btns = document.createElement("DIV");
-  		    btns.classList.add("single-button");
-          let btn = document.createElement("BUTTON");
-  		    btn.classList.add('action-button');
-          btn.innerHTML = "<i class='play icon'></i>";
-          btn.onclick = function() {
-            seg.region.play();
-    		    let playIcon = document.getElementById("play");
-    		    playIcon.classList.remove("play");
-    		    playIcon.classList.remove("pause");
-    		    playIcon.classList.add("pause");
-          };
-          row.style["data-id"] = segmentsToDisplay[i];
-  		    btns.appendChild(btn);
-          //add elem to row
-          row.insertCell(0).appendChild(start);
-          row.insertCell(1).appendChild(end);
-          row.insertCell(2).appendChild(btns);
-            
-      }
-    }
-    //add elems to html page
-    segTable.appendChild(table);
+  if(position < 1 || position > 2) {
+    console.error("Position arg must be 1 or 2");
+    return;
   }
+
+  segTableId = "segTable" + position;
+  let segTable = document.getElementById(segTableId);
+  segTable.innerHTML = "";    
+
+  let table = document.createElement('table');
+  table.setAttribute('border','0');
+  table.setAttribute('width','100%');
+
+  let header = table.createTHead();
+  let headerRow = header.insertRow(0); 
+  var thStartElement = document.createElement("TH");
+  var thEndElement = document.createElement("TH");
+  var thPlayElement = document.createElement("TH");
+  headerRow.appendChild(thStartElement);
+  headerRow.appendChild(thEndElement);
+  headerRow.appendChild(thPlayElement);
+  thStartElement.innerHTML = "<b>Start</b>";
+  thEndElement.innerHTML = "<b>End</b>";
+  thPlayElement.innerHTML = "<b>Play</b>";
+
+  let tagID = "speaker-tag" + position;
+  let tag = document.getElementById(tagID);
+
+  let spknameID = "spkname" + position;
+  let spkName = document.getElementById(spknameID);
+
+  let tbody = table.createTBody();
+  let j = 0;
+
+  if (segsIndex.length > 0) {
+    let firstSeg = segments[segsIndex[0]];
+    let indexCluster = clusters.indexOf(firstSeg[1]);
+    let color = colors[indexCluster];
+    tag.style.backgroundColor = color ? color : "rgba(71,71,71,255)";
+    tag.style.display = "";
+    let name = firstSeg[2] + "#" + firstSeg[1];
+    spkName.innerHTML = name;
+  } else {
+    tag.style.display = "none";
+    spkName.innerHTML = "Speaker";
+  }
+
+  for(let i = 0; i < segsIndex.length; i++) {
+      //add a row for each segment
+      let row = tbody.insertRow(j++);
+
+      //event to flash the region when the mouse is on a row
+      let hoverTimer;
+      row.addEventListener("mouseenter", function( event ) {
+        hoverTimer = setTimeout(function() {
+          flashRegion(event.target);
+          clearInterval(hoverTimer);
+        }, 1000);
+      });
+      row.addEventListener("mouseleave", function( event ) {
+        clearInterval(hoverTimer);
+        clearInterval(timer);
+      });
+
+      //create elems to add
+      let seg = segments[segsIndex[i]]
+      let start = document.createTextNode(secondsToHms(seg[3] / 100));
+      let end = document.createTextNode(secondsToHms(seg[4] / 100));
+
+      let btns = document.createElement("DIV");
+      btns.classList.add("single-button");
+      let btn = document.createElement("BUTTON");
+      btn.classList.add('action-button');
+      btn.innerHTML = "<i class='play icon'></i>";
+      btn.onclick = function() {
+        seg.region.play();
+        let playIcon = document.getElementById("play");
+        playIcon.classList.remove("play");
+        playIcon.classList.remove("pause");
+        playIcon.classList.add("pause");
+      };
+      row.style["data-id"] = segsIndex[i];
+      btns.appendChild(btn);
+      //add elem to row
+      row.insertCell(0).appendChild(start);
+      row.insertCell(1).appendChild(end);
+      row.insertCell(2).appendChild(btns);
+
+  }
+  //add elems to html page
+  segTable.appendChild(table);
 }
 
  //return all segments linked to the node
@@ -330,9 +328,7 @@ function nodeClicked(node) {
     highlightNode(selectedNode);
 
     nodeId = node.__data__.data["node_id"]
-    if (nodeId > clusters.length - 1) {
-      getSegmentsFromNode(nodeId - clusters.length);
-    }
+    getSegmentsFromNode(nodeId);
   }
 }
 

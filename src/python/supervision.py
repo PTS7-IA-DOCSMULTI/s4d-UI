@@ -141,11 +141,11 @@ def load_file():
 
     # create der_track dictionary and calculate intial DER
     der, time, new_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
-                                                                                    current_vec,
-                                                                                    list(scores_per_cluster.modelset),
-                                                                                    temporary_link_list,
-                                                                                    uem,
-                                                                                    ref)
+                                                                                current_vec,
+                                                                                list(scores_per_cluster.modelset),
+                                                                                temporary_link_list,
+                                                                                uem,
+                                                                                ref)
 
     # prepare dendrogram for UI
     tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
@@ -165,7 +165,8 @@ def load_file():
     stop_separation_list = []  # a list of nodes that have gotten confirmation for separation question
     stop_clustering_list = []  # a list of nodes that have gotten confirmation for clustering question
 
-    data_for_ui = json.dumps(dict(tree=json_tree, threshold=th, clusters=complete_list, segments=initial_diar.segments, der_track=der_track))
+    data_for_ui = json.dumps(
+        dict(tree=json_tree, threshold=th, clusters=complete_list, segments=initial_diar.segments, der_track=der_track))
 
     return data_for_ui
 
@@ -229,7 +230,7 @@ def node_is_grouped(node):
 
 @app.route('/answer_question', methods=['POST'])
 def answer_question():
-    global links_to_check,  no_more_separation, no_more_clustering, der_track, current_diar
+    global links_to_check, no_more_separation, no_more_clustering, der_track, current_diar
     global stop_separation_list, separated_list, stop_clustering_list, temporary_link_list
     node = links_to_check[0]
     is_same_speaker = json.loads(request.form.get('is_same_speaker'))
@@ -265,13 +266,13 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, new_diar_diar, new_vec = track_correction_process(diar_tmp,
-                                                                        current_vec,
-                                                                        scores_per_cluster,
-                                                                        link_tmp,
-                                                                        der_track,
-                                                                        "separation",
-                                                                        uem,
-                                                                        ref)
+                                                                         current_vec,
+                                                                         scores_per_cluster,
+                                                                         link_tmp,
+                                                                         der_track,
+                                                                         "separation",
+                                                                         uem,
+                                                                         ref)
     else:
         # if the human validate the node (it has not been grouped and it must be)
         if is_same_speaker:
@@ -280,13 +281,13 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, new_diar, new_vec = track_correction_process(diar_tmp,
-                                                                        current_vec,
-                                                                        scores_per_cluster,
-                                                                        link_tmp,
-                                                                        der_track,
-                                                                        "clustering",
-                                                                        uem,
-                                                                        ref)
+                                                                    current_vec,
+                                                                    scores_per_cluster,
+                                                                    link_tmp,
+                                                                    der_track,
+                                                                    "clustering",
+                                                                    uem,
+                                                                    ref)
 
         # Else stop exploring the tree upward
         else:
@@ -417,8 +418,8 @@ def next_question():
             branch1_nodes = get_node_spkeakers(node[0], number_cluster, link)
             branch2_nodes = get_node_spkeakers(node[1], number_cluster, link)
             if set(branch1_nodes + branch2_nodes).issubset(set(stop_clustering_list)):
-                    no_more_clustering = True
-                    pass
+                no_more_clustering = True
+                pass
 
             # If we already decided not to explore up the tree
             if no_more_clustering:
@@ -441,7 +442,7 @@ def next_question():
                 # Il peut ensuite décider si les deux clusters appartiennent à la même personne ou pas
                 # cette réponse est récupérée dans un booleen : is_same_speaker
 
-                #question = dict(node=node)
+                # question = dict(node=node)
 
                 question = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
                 return json.dumps(question)
@@ -453,6 +454,7 @@ def next_question():
     res = dict(error="No more question")
     return json.dumps(res)
 
+
 @app.route('/save_file', methods=['POST'])
 def save_file():
     path = request.form.get('path')
@@ -463,17 +465,28 @@ def save_file():
 @app.route('/get_segments_from_node', methods=['POST'])
 def get_segments_from_node():
     node_id = int(request.form.get('node_id'))
-    node = link[node_id]
-    first_seg_list_sorted, second_seg_list_sorted = get_segment_sorted_list(node,
-                                                                            link,
-                                                                            scores_per_cluster,
-                                                                            None,
-                                                                            init_diar,
-                                                                            current_vec,
-                                                                            selection_method)
-    data = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
-    return json.dumps(data)
+    data = None
+    if node_id > number_cluster - 1:
+        node = link[node_id - number_cluster]
+        first_seg_list_sorted, second_seg_list_sorted = get_segment_sorted_list(node,
+                                                                                link,
+                                                                                scores_per_cluster,
+                                                                                None,
+                                                                                init_diar,
+                                                                                current_vec,
+                                                                                selection_method)
+        data = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
+    else:
+        seg_list_sorted, _ = get_segment_sorted_list([node_id, node_id],
+                                                  link,
+                                                  scores_per_cluster,
+                                                  None,
+                                                  init_diar,
+                                                  current_vec,
+                                                  selection_method)
+        data = dict(segs=seg_list_sorted)
 
+    return json.dumps(data)
 
 
 def correct_link_after_removing_node(number_cluster, node_idx, link_list, removed_nodes_number):
