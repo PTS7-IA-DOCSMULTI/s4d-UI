@@ -27,6 +27,7 @@ var RegionPlugin = require ('wavesurfer.js/dist/plugin/wavesurfer.regions.min.js
 const ipcRenderer = require('electron').ipcRenderer;
 var url;
 var wavesurfer;
+var regionCreated;
 
 ipcRenderer.on('fileNotFound', (event, arg) => {
     alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
@@ -92,6 +93,14 @@ function stop() {
 	playIcon.classList.remove("pause");
 }
 
+function setDragSelection(dragSelection) {
+    if (dragSelection) {
+        wavesurfer.enableDragSelection(true);
+    } else {
+        wavesurfer.disableDragSelection();
+    }
+}
+
 function initWavesurfer() {
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
@@ -135,6 +144,7 @@ function initWavesurfer() {
     };
 
     document.getElementById("zoom-out").onclick = function() {
+        wavesurfer.disableDragSelection = true;
         let slider = document.getElementById("slider");
         if (Number(slider.value) >= 1) {
             slider.value = Number(slider.value) - 1;
@@ -151,17 +161,22 @@ function initWavesurfer() {
     }
 
     //called when a region is resized
-    wavesurfer.on('region-update-end', function(d) {
-        for (i = 0; i < segments.length; i++) {
-            let seg = segments[i];
-            if (seg["data-id"] == d.id) {
-                seg[3] = Math.round(d.start * 100);
-                seg[4] = Math.round(d.end * 100);
-                break;
+    wavesurfer.on('region-update-end', function(region) {
+
+        if (region.id.toString().startsWith("wavesurfer")) {
+            generateSegmentCreatedByUser(region);
+        } else {
+            for (i = 0; i < segments.length; i++) {
+                let seg = segments[i];
+                if (seg["data-id"] == region.id) {
+                    seg[3] = Math.round(region.start * 100);
+                    seg[4] = Math.round(region.end * 100);
+                    break;
+                }
             }
+            displaySegmentDetails(segmentsToDisplay.slice(0, separationIndex), 1);
+            displaySegmentDetails(segmentsToDisplay.slice(separationIndex, segmentsToDisplay.length), 2);
         }
-        displaySegmentDetails(segmentsToDisplay.slice(0, separationIndex), 1);
-        displaySegmentDetails(segmentsToDisplay.slice(separationIndex, segmentsToDisplay.length), 2);
     });
 
     // prevent regions of the same speaker from overlapping
@@ -175,6 +190,13 @@ function initWavesurfer() {
         }
     });
 
+    wavesurfer.on('region-created', region => {
+        if (region.id.toString().startsWith("wavesurfer")) {
+            regionCreated = region
+            document.addEventListener('mousemove', colorRegionCreatedByUser, false);
+        }
+        
+    });
 }
 
 
@@ -239,4 +261,47 @@ function updateBoundaries() {
         region.attributes.nextRegion = getNextRegionFromSameSpeaker(region);
         region.attributes.backRegion = getBackRegionFromSameSpeaker(region);
     }
+}
+
+function colorRegionCreatedByUser(mouseEvent) {
+    mouseY = mouseEvent.pageY;
+    waveform = document.getElementById('waveform');
+    let waveformTop = waveform.offsetTop;
+    let waveformHeight = waveform.offsetHeight;
+    let mouseRelativePos = mouseY - waveformTop;
+
+    iCluster = Math.trunc((mouseRelativePos/waveformHeight) * clustersToDisplay.length);
+
+    let regionHeight = waveformHeight / clustersToDisplay.length;
+    let regionTop = 100 / clustersToDisplay.length;
+
+    regionCreated.element.style.height = regionHeight + 'px';
+    regionCreated.element.style.top = regionTop * iCluster * waveformHeight / 100 + 'px';
+
+    cluster = clustersToDisplay[iCluster];
+    let indexCluster = clusters.indexOf(cluster)
+    let color = colors[indexCluster]
+    regionCreated.color = color;
+    regionCreated.element.style.backgroundColor = color;
+    regionCreated.loop = false;
+    regionCreated.drag = false;
+    regionCreated.resize = true;
+    regionCreated.style.groupId = iCluster;
+    document.removeEventListener('mousemove', colorRegionCreatedByUser);
+}
+
+function generateSegmentCreatedByUser(region) {
+
+    //create the segment
+    showName = segments[0][0];
+    cluster = clustersToDisplay[region.style.groupId];
+    speaker = "speaker";
+    start = Math.round(region.start * 1000);
+    end = Math.round(region.end * 1000);
+    u = "U";
+    seg = [showName, cluster, speaker, start, end, u];
+
+    // add the segment in segments
+    segId = segments.push(seg);
+    region.id = segId;
 }
