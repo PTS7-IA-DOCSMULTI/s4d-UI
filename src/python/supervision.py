@@ -260,7 +260,7 @@ def answer_question():
             for ii, fl in enumerate(temporary_link_list):
                 if np.array_equal(fl, node[:4]):
                     _ = temporary_link_list.pop(ii)
-                break
+                    break
             temporary_link_list = correct_link_after_removing_node(number_cluster, ii, temporary_link_list, 1)
             # Record the correction and the DER
             link_tmp = copy.deepcopy(temporary_link_list)
