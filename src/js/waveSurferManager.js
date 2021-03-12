@@ -92,11 +92,13 @@ function stop() {
 	playIcon.classList.remove("pause");
 }
 
-function drawWaveForm() {
+function initWavesurfer() {
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
         plugins: [
-            RegionPlugin.create({})
+            RegionPlugin.create({
+                dragSelection: true
+            })
         ],
         waveColor: 'white',
         progressColor: 'white',
@@ -158,7 +160,8 @@ function drawWaveForm() {
                 break;
             }
         }
-        displaySegmentDetails();
+        displaySegmentDetails(segmentsToDisplay.slice(0, separationIndex), 1);
+        displaySegmentDetails(segmentsToDisplay.slice(separationIndex, segmentsToDisplay.length), 2);
     });
 
     // prevent regions of the same speaker from overlapping

@@ -225,6 +225,8 @@ function updateDisplay() {
     noButton.style.display = "none";
     yesButton.style.display = "none";
     removeHighlight();
+    clearInterval(flashNodeTimer);
+    questionNode = null;
     document.getElementById("question").innerHTML = "";
 }
 
@@ -262,6 +264,7 @@ function loadQuestion(question) {
   let node = findParentNode(question.node[0], question.node[1]);
   //highlight the node
   highlightNode(node.children[0]);
+  flashNode(node.children[0]);
 
   //load segments to display
   loadSegmentsToDisplay(question.segs1, question.segs2)

@@ -28,7 +28,9 @@ var height = 335;
 
 var rootHeight;
 var selectedNode;
-var timer;
+var questionNode;
+var flashRegionTimer;
+var flashNodeTimer
 
 
 function highlightNode(node) {
@@ -121,7 +123,7 @@ function displaySegmentDetails(segsIndex, position) {
       });
       row.addEventListener("mouseleave", function( event ) {
         clearInterval(hoverTimer);
-        clearInterval(timer);
+        clearInterval(flashRegionTimer);
       });
 
       //create elems to add
@@ -310,8 +312,15 @@ function flashRegion(target) {
   let segID = target.style["data-id"];
   let htmlRegion = wavesurfer.regions.list[segID].element;
   $(htmlRegion).fadeOut(800).fadeIn(800);
-  timer = setInterval(function(){ 
+  flashRegionTimer = setInterval(function(){ 
       $(htmlRegion).fadeOut(800).fadeIn(800);
+  }, 1600);
+}
+
+function flashNode(target) {
+  $(target).fadeOut(800).fadeIn(800);
+  flashNodeTimer = setInterval(function(){ 
+      $(target).fadeOut(800).fadeIn(800);
   }, 1600);
 }
 
