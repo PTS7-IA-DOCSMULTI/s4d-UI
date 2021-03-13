@@ -70,7 +70,8 @@ yesButton.onclick = function() {
 }
 
 derButton.onclick = function() {
-    alert(derTrack.der_log)
+    saveDERToFile(derTrack)
+    ipcRenderer.sendSync('open-der', derTrack)
 }
 
 /*
@@ -322,4 +323,12 @@ function setClustersToDisplay() {
             clustersToDisplay.push(clusterId)
         }
     }
+}
+
+
+function saveDERToFile(der) {
+    //third parameter is for pretty print
+    let data = JSON.stringify(der, null, 4);
+    var jsonPath = path.join(__dirname, '..', 'der.json');
+    fs.writeFileSync(jsonPath, data);
 }

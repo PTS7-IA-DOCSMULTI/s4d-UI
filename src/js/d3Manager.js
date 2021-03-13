@@ -32,7 +32,6 @@ var questionNode;
 var flashRegionTimer;
 var flashNodeTimer
 
-
 function highlightNode(node) {
 
   selectedNode = node;

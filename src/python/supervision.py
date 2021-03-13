@@ -265,7 +265,7 @@ def answer_question():
             # Record the correction and the DER
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, new_diar_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
                                                                          current_vec,
                                                                          scores_per_cluster,
                                                                          link_tmp,

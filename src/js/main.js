@@ -189,3 +189,37 @@ var saveFile = function() {
   })
 };
 
+var openDER = function() {
+  let derWindow;
+  derWindow = new BrowserWindow({
+    parent: mainWindow,
+    modal: true,
+    width: 900,
+    height: 700,
+    show: false,
+    center: true,
+    titre: 'DER',
+    webPreferences: {
+      nodeIntegration: true,
+      enableRemoteModule: true
+    }
+  });
+  derWindow.show();
+  // Load html in window
+  derWindow.loadURL(url.format({
+    pathname: path.join(__dirname, '../html/der.html'),
+    protocol: 'file:',
+    slashes:true
+  }));
+  
+  derWindow.on('closed', function(){
+    derWindow = null;
+  });
+
+//  derWindow.setMenu(null);
+}
+
+ipcMain.on('open-der', (event, arg) => {
+  openDER();
+})
+
