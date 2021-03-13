@@ -192,13 +192,12 @@ var saveFile = function() {
 var openDER = function() {
   let derWindow;
   derWindow = new BrowserWindow({
-    parent: mainWindow,
+   parent: mainWindow,
     modal: true,
-    width: 900,
-    height: 700,
+    width: 500,
+    height: 500,
     show: false,
     center: true,
-    titre: 'DER',
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true
@@ -216,10 +215,11 @@ var openDER = function() {
     derWindow = null;
   });
 
-//  derWindow.setMenu(null);
+  derWindow.setMenu(null);
 }
 
 ipcMain.on('open-der', (event, arg) => {
   openDER();
+  event.returnValue = null;
 })
 

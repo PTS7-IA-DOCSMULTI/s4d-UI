@@ -84,7 +84,9 @@ function drawChart() {
     // Add the valueline path.
     svg.append("path")
         .data([data])
-        .attr("class", "line")
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", "2px")
         .attr("d", valueline);
 
     // Add the X Axis
