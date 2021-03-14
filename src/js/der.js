@@ -26,6 +26,9 @@ const fs = require('fs');
 var path = require('path');
 
 var derTrack;
+var svg;
+var xScale;
+var yScale;
 
 window.addEventListener('load', function () {
     loadDER();
@@ -41,29 +44,36 @@ function loadDER() {
 function drawChart() {
 
     // remove previous chart
-    document.getElementById('svg-container').innerHTML = '';
+    document.body.innerHTML = '';
 
-    docWidth = $(document).width();
-    docHeight = $(document).height();
+    var docWidth = $(document).width();
+    var docHeight = $(document).height();
 
-    var margin = {top: 20, right: 20, bottom: 50, left: 50},
-    width = docWidth - margin.left - margin.right,
-    height = docHeight - margin.top - margin.bottom;
+    var margin = {
+        top: 20,
+        right: 20,
+        bottom: 50,
+        left: 50
+    }
+
+    chartWidth = docWidth - margin.left - margin.right,
+    chartHeight = docHeight - margin.top - margin.bottom;
 
     // set the ranges
-    var x = d3.scaleLinear().range([0, width]);
-    var y = d3.scaleLinear().range([height, 0]);
+    xScale = d3.scaleLinear().range([0, chartWidth]);
+    yScale = d3.scaleLinear().range([chartHeight, 0]);
 
     // define the line
     var valueline = d3.line()
-        .x(function(d) { return x(d.x); })
-        .y(function(d) { return y(d.y); });
+        .x(function(d) { return xScale(d.x); })
+        .y(function(d) { return yScale(d.y); });
 
     // appends a 'group' element to 'svg'
     // moves the 'group' element to the top left margin
-    var svg = d3.select("#svg-container").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
+    svg = d3.select("body").append("svg")
+        .attr("id", "svg")
+        .attr("width", docWidth)
+        .attr("height", docHeight)
     .append("g")
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
@@ -73,13 +83,14 @@ function drawChart() {
     derTrack.der_log.forEach(function(d,i) {
         data.push({
             x: i,
-            y: d
+            y: d,
+            correction: derTrack.correction[i]
         })
     });
 
     // Scale the range of the data
-    x.domain([0, d3.max(data, function(d) { return d.x; })]);
-    y.domain([0, d3.max(data, function(d) { return d.y; })]);
+    xScale.domain([0, d3.max(data, function(d) { return d.x; })]);
+    yScale.domain([0, d3.max(data, function(d) { return d.y; })]);
 
     // Add the valueline path.
     svg.append("path")
@@ -91,18 +102,18 @@ function drawChart() {
 
     // Add the X Axis
     svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        .attr("transform", "translate(0," + chartHeight + ")")
+        .call(d3.axisBottom(xScale));
 
     // Add the Y Axis
     svg.append("g")
-        .call(d3.axisLeft(y));
+        .call(d3.axisLeft(yScale));
 
     // text label for the x axis
     svg.append("text")             
         .attr("transform",
-            "translate(" + (width/2) + " ," + 
-                        (height + margin.top + 20) + ")")
+            "translate(" + (chartWidth/2) + " ," + 
+                        (chartHeight + margin.bottom - 10) + ")")
         .style("text-anchor", "middle")
         .text("Number of corrections");
 
@@ -110,13 +121,68 @@ function drawChart() {
     svg.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 0 - margin.left)
-        .attr("x",0 - (height / 2))
+        .attr("x",0 - (chartHeight / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("DER");  
+        .text("Diarization Error Rate (%)");  
+
+     // Add the circles
+     svg.selectAll("circles")
+     .data(data)
+     .enter()
+     .append("circle")
+        .attr("fill", "steelblue")
+        .attr("stroke", "none")
+        .attr("cx", function(d) { return xScale(d.x) })
+        .attr("cy", function(d) { return yScale(d.y) })
+        .attr("r", 5)
+        .on("mouseover", handleMouseOver)
+        .on("mouseout", handleMouseOut);
         
 };
   
 window.addEventListener('resize', function(event){
     drawChart();
 });
+
+function handleMouseOver(d, i) {  // Add interactivity
+
+    this.setAttribute("fill", "orange")
+    this.setAttribute("r", 10)
+
+     svg.append("text")
+        .attr("id", "t-" + i)
+        .attr("x", getX(d))
+        .attr("y", getY(d))
+        .attr("fill", "white")
+     d3.select("#t-" + i)
+        .text(function() {
+            return d.correction + " " + d.y.toFixed(2) + "%";  // Value of the text
+        });
+  }
+
+function handleMouseOut(d, i) {
+    
+    this.setAttribute("fill", "steelblue")
+    this.setAttribute("r", 5)
+
+    d3.select("#t-" + i).remove();  // Remove text location
+}
+
+function getX(d) {
+    res = xScale(d.x);
+    if (res + 250 > $("#svg").width()) {
+        res = $("#svg").width() - 250
+    }
+    return res;
+}
+
+function getY(d) {
+    res = yScale(d.y) - 20;
+    if (res < 0) {
+        res = 40;
+    }
+    return res;
+}
+
+
