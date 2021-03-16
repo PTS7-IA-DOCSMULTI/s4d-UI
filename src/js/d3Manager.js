@@ -101,7 +101,7 @@ function displaySegmentDetails(segsIndex, position) {
     let color = colors[indexCluster];
     tag.style.backgroundColor = color ? color : "rgba(71,71,71,255)";
     tag.style.display = "";
-    let name = firstSeg[2] + "#" + firstSeg[1];
+    let name = firstSeg[1];
     spkName.innerHTML = name;
   } else {
     tag.style.display = "none";

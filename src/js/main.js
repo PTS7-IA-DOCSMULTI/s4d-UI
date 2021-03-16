@@ -28,6 +28,7 @@ const url = require('url');
 const net = require('net');
 const { dialog } = require('electron');
 const fs = require('fs');
+const prompt = require('electron-prompt');
 
 var settings;
 
@@ -222,4 +223,37 @@ ipcMain.on('open-der', (event, arg) => {
   openDER();
   event.returnValue = null;
 })
+
+ipcMain.on('display-information-msg', (event, arg) => {
+
+  const options = {
+    type: 'info',
+    title: 'Information',
+    message: arg,
+  };
+
+  dialog.showMessageBox(null, options);
+  event.returnValue = null;
+})
+
+
+ipcMain.on('testprompt', (event, arg) => {
+
+  prompt({
+    title: 'Rename speaker',
+    label: 'Name',
+    value: arg,
+    inputAttrs: {
+        type: 'text'
+    },
+    type: 'input',
+    alwaysOnTop: true
+  }, mainWindow)
+  .then((r) => {
+    event.returnValue = r;
+  })
+})
+
+
+
 

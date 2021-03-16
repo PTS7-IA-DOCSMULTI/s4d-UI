@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "electron": "^11.1.0",
+    "electron-prompt": "^1.6.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "wavesurfer.js": "^4.2.0"

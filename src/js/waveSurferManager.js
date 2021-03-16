@@ -24,16 +24,16 @@
 
 var WaveSurfer = require('wavesurfer.js');
 var RegionPlugin = require ('wavesurfer.js/dist/plugin/wavesurfer.regions.min.js');
-const ipcRenderer = require('electron').ipcRenderer;
+const ipcRendererWaveSurfer = require('electron').ipcRenderer;
 var url;
 var wavesurfer;
 var regionCreated;
 
-ipcRenderer.on('fileNotFound', (event, arg) => {
+ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
     alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
 })
 
-ipcRenderer.on('openFile', (event, arg) => {
+ipcRendererWaveSurfer.on('openFile', (event, arg) => {
 
     var playIcon = document.getElementById("play");
     playIcon.classList.remove("play");

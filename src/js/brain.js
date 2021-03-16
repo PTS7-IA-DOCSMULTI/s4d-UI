@@ -25,6 +25,7 @@
 var request = require('request-promise');
 var fs = require('fs');
 var path = require('path');
+const { ipcRenderer } = require('electron');
 
 var segments = [];
 var clusters = [];
@@ -43,6 +44,8 @@ nextQuestionButton = document.getElementById('nextQuestionButton');
 noButton = document.getElementById('noButton');
 yesButton = document.getElementById('yesButton');
 derButton = document.getElementById('derButton');
+spkname1 = document.getElementById('spkname1');
+spkname2 = document.getElementById('spkname2');
 
 window.onload = function() {
     nextQuestionButton.style.display = "none";
@@ -72,6 +75,22 @@ yesButton.onclick = function() {
 derButton.onclick = function() {
     saveDERToFile(derTrack)
     ipcRenderer.sendSync('open-der', derTrack)
+}
+
+spkname1.onclick = function() {
+    let currentName = spkname1.innerHTML
+    let newName = ipcRenderer.sendSync('testprompt', currentName)
+    if (newName && newName.replaceAll(' ', '')) {
+        spkname1.innerHTML = newName
+    }
+}
+
+spkname2.onclick = function() {
+    let currentName = spkname2.innerHTML
+    let newName = ipcRenderer.sendSync('testprompt', currentName)
+    if (newName && newName.replaceAll(' ', '')) {
+        spkname2.innerHTML = newName
+    }
 }
 
 /*
@@ -134,7 +153,7 @@ function getNextQuestion() {
     request(options).then(function (res) {
         question = JSON.parse(res)
         if (question.error) {
-            alert(question.error)
+            ipcRenderer.sendSync('display-information-msg', question.error);
         } else {
             loadQuestion(question);
             noButton.style.display = "";
