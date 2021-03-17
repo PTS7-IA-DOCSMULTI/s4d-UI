@@ -28,6 +28,7 @@ const ipcRendererWaveSurfer = require('electron').ipcRenderer;
 var url;
 var wavesurfer;
 var regionCreated;
+var isPlayingRegionOnly = false;
 
 ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
     alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
@@ -77,6 +78,7 @@ function playPause() {
 	playIcon.classList.toggle("play");
 	playIcon.classList.toggle("pause");
 }
+
 
 function toggleMute() {
     wavesurfer.toggleMute();
@@ -193,9 +195,17 @@ function initWavesurfer() {
         if (region.id.toString().startsWith("wavesurfer")) {
             regionCreated = region
             document.addEventListener('mousemove', colorRegionCreatedByUser, false);
-        }
-        
+        } 
     });
+
+    wavesurfer.on('region-out', function() {
+        if (isPlayingRegionOnly) {
+            var playIcon = document.getElementById("play");
+	        playIcon.classList.add("play");
+	        playIcon.classList.remove("pause");
+            isPlayingRegionOnly = false;
+        }
+    })
 }
 
 

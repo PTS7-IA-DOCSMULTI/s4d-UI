@@ -136,10 +136,10 @@ function displaySegmentDetails(segsIndex, position) {
       btn.classList.add('action-button');
       btn.innerHTML = "<i class='play icon'></i>";
       btn.onclick = function() {
+        isPlayingRegionOnly = true;
         seg.region.play();
         let playIcon = document.getElementById("play");
         playIcon.classList.remove("play");
-        playIcon.classList.remove("pause");
         playIcon.classList.add("pause");
       };
       row.style["data-id"] = segsIndex[i];
