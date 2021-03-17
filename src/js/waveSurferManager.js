@@ -36,6 +36,8 @@ ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
 
 ipcRendererWaveSurfer.on('openFile', (event, arg) => {
 
+    wavesurfer.pause();
+
     var playIcon = document.getElementById("play");
     playIcon.classList.remove("play");
     playIcon.classList.add("play");
@@ -77,6 +79,7 @@ function playPause() {
 	var playIcon = document.getElementById("play");
 	playIcon.classList.toggle("play");
 	playIcon.classList.toggle("pause");
+    isPlayingRegionOnly = false;
 }
 
 
@@ -90,7 +93,6 @@ function toggleMute() {
 function stop() {
     wavesurfer.stop();
 	var playIcon = document.getElementById("play");
-	playIcon.classList.remove("play");
 	playIcon.classList.add("play");
 	playIcon.classList.remove("pause");
 }
@@ -199,12 +201,25 @@ function initWavesurfer() {
     });
 
     wavesurfer.on('region-out', function() {
-        if (isPlayingRegionOnly) {
-            var playIcon = document.getElementById("play");
-	        playIcon.classList.add("play");
-	        playIcon.classList.remove("pause");
+
+        setTimeout(function(){
+            if (isPlayingRegionOnly && !wavesurfer.isPlaying()) {
+                var playIcon = document.getElementById("play");
+                playIcon.classList.add("play");
+                playIcon.classList.remove("pause"); 
+            }
             isPlayingRegionOnly = false;
-        }
+        }, 200);
+    })
+
+    wavesurfer.on('waveform-ready', function() {
+        let slider = document.getElementById("slider");
+        let zoomLevel = Number(slider.value);
+        let maxZoom = slider.getAttribute("max");
+        // play with zoom levels to update the display and get the waveform
+        wavesurfer.zoom(maxZoom);
+        wavesurfer.zoom(0);
+        wavesurfer.zoom(zoomLevel);
     })
 }
 

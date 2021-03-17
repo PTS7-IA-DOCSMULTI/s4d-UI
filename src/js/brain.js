@@ -49,13 +49,7 @@ spkname1 = document.getElementById('spkname1');
 spkname2 = document.getElementById('spkname2');
 
 window.onload = function() {
-    nextQuestionButton.style.display = "none";
-    noButton.style.display = "none";
-    yesButton.style.display = "none";
-    derButton.style.display = "none";
-    displaySegmentDetails([], 1);
-    displaySegmentDetails([], 2);
-    $(window).resize();
+    initDisplay();
 }
 
 nextQuestionButton.onclick = function() {
@@ -117,6 +111,7 @@ function loadFile(fileName) {
     }
 
     request(options).then(function(res) {
+        initDisplay();
         data = JSON.parse(res);
         loadData(data);
         derButton.style.display = "";
@@ -353,4 +348,15 @@ function saveDERToFile(der) {
     let data = JSON.stringify(der, null, 4);
     var jsonPath = path.join(__dirname, '..', 'der.json');
     fs.writeFileSync(jsonPath, data);
+}
+
+
+function initDisplay() {
+    nextQuestionButton.style.display = "none";
+    noButton.style.display = "none";
+    yesButton.style.display = "none";
+    derButton.style.display = "none";
+    displaySegmentDetails([], 1);
+    displaySegmentDetails([], 2);
+    $(window).resize();
 }
