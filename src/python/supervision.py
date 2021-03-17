@@ -140,7 +140,7 @@ def load_file():
             temporary_link_list.append(l)  # final_links
 
     # create der_track dictionary and calculate intial DER
-    der, time, new_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
+    der, time, current_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
                                                                                 current_vec,
                                                                                 list(scores_per_cluster.modelset),
                                                                                 temporary_link_list,
@@ -244,7 +244,7 @@ def answer_question():
                 no_more_separation = True
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
                                                                     current_vec,
                                                                     scores_per_cluster,
                                                                     link_tmp,
@@ -265,7 +265,7 @@ def answer_question():
             # Record the correction and the DER
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
                                                                          current_vec,
                                                                          scores_per_cluster,
                                                                          link_tmp,
@@ -280,7 +280,7 @@ def answer_question():
             # Record the correction and the DER
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
                                                                     current_vec,
                                                                     scores_per_cluster,
                                                                     link_tmp,
@@ -298,7 +298,7 @@ def answer_question():
                 no_more_clustering = True
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
-            der_track, new_diar, new_vec = track_correction_process(diar_tmp,
+            der_track, current_diar, new_vec = track_correction_process(diar_tmp,
                                                                     current_vec,
                                                                     scores_per_cluster,
                                                                     link_tmp,
@@ -333,7 +333,7 @@ def update_diar():
 
 @app.route('/next_question', methods=['POST'])
 def next_question():
-    global no_more_clustering, no_more_separation, links_to_check
+    global no_more_clustering, no_more_separation, links_to_check, node_waiting_for_answer_is_grouped
 
     length = len(links_to_check)
     while length > 0:
@@ -380,13 +380,7 @@ def next_question():
                                                                                         init_diar,
                                                                                         current_vec,
                                                                                         selection_method)
-
-                # On présente les deux listes de segments ordonnées à l'utilisateur pour qu'il puisse écouter ceux qu'il veut
-                # L'utilisateur selectionne un segment dans chacune des deux listes (first_seg_list_sorted, second_seg_list_sorted )
-                # et peux alors écouter les segments correspondant.
-                # Il peut ensuite décider si les deux clusters appartiennent à la même personne ou pas
-                # cette réponse est récupérée dans un booleen : is_same_speaker
-
+                node_waiting_for_answer_is_grouped = True
                 question = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
                 return json.dumps(question)
 
@@ -435,15 +429,7 @@ def next_question():
                                                                                         init_diar,
                                                                                         current_vec,
                                                                                         selection_method)
-
-                # On présente les deux listes de segments ordonnées à l'utilisateur pour qu'il puisse écouter ceux qu'il veut
-                # L'utilisateur selectionne un segment dans chacune des deux listes (first_seg_list_sorted, second_seg_list_sorted )
-                # et peux alors écouter les segments correspondant.
-                # Il peut ensuite décider si les deux clusters appartiennent à la même personne ou pas
-                # cette réponse est récupérée dans un booleen : is_same_speaker
-
-                # question = dict(node=node)
-
+                node_waiting_for_answer_is_grouped = False
                 question = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
                 return json.dumps(question)
 
