@@ -29,7 +29,8 @@ const { ipcRenderer } = require('electron');
 
 var segments = [];
 var clusters = [];
-var colors = [];
+var currentColors = [];
+var initialColors = [];
 var clustersToDisplay = [];
 var segmentsToDisplay = [];
 var separationIndex;
@@ -260,13 +261,15 @@ function loadData(data) {
 
 
 function randomColorClusters() {
-  colors = [];
+  initialColors = [];
   for (i = 0; i < clusters.length; i++) {
     let r = Math.floor(Math.random() * 256); 
     let g = Math.floor(Math.random() * 256); 
     let b = Math.floor(Math.random() * 256); 
-    colors.push("rgba(" + r + ", " + g + ", " + b + ", 1)");
-  } 
+    initialColors.push("rgba(" + r + ", " + g + ", " + b + ", 1)");
+  }
+  //clone initialColors
+  currentColors = [...initialColors]
 }
 
 

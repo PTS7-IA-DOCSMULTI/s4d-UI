@@ -206,7 +206,7 @@ function displayRegions() {
     wavesurfer.clearRegions();
     for(let i = 0; i < clustersToDisplay.length; i++) {
         let indexCluster = clusters.indexOf(clustersToDisplay[i])
-        let color = colors[indexCluster]
+        let color = currentColors[indexCluster]
         
         for (let j = 0; j < segmentsToDisplay.length; j++) {
             let seg = segments[segmentsToDisplay[j]];
@@ -280,7 +280,7 @@ function colorRegionCreatedByUser(mouseEvent) {
 
     cluster = clustersToDisplay[iCluster];
     let indexCluster = clusters.indexOf(cluster)
-    let color = colors[indexCluster]
+    let color = currentColors[indexCluster]
     regionCreated.color = color;
     regionCreated.element.style.backgroundColor = color;
     regionCreated.loop = false;

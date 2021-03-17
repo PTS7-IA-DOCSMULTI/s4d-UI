@@ -98,7 +98,7 @@ function displaySegmentDetails(segsIndex, position) {
   if (segsIndex.length > 0) {
     let firstSeg = segments[segsIndex[0]];
     let indexCluster = clusters.indexOf(firstSeg[1]);
-    let color = colors[indexCluster];
+    let color = currentColors[indexCluster];
     tag.style.backgroundColor = color ? color : "rgba(71,71,71,255)";
     tag.style.display = "";
     let name = firstSeg[1];
@@ -258,7 +258,7 @@ function colorNodesUpward(sortedNodes) {
     let node = sortedNodes[i];
     let cssText = "stroke-width: 2;"
     if (node.__data__.data.children.length == 0) {
-      cssText += "fill: " + colors[node.__data__.data.node_id] + ";"
+      cssText += "fill: " + initialColors[node.__data__.data.node_id] + ";"
     } else if (node.__data__.data.isGrouped) {
       let childId = node.__data__.data.children[0].node_id;
       cssText = sortedNodes[childId].childNodes[0].style.cssText;
@@ -286,7 +286,7 @@ function colorNodesDownward(sortedNodes, node_id, parent) {
       let start = cssText.indexOf("rgb");
       cssText = cssText.substring(start, cssText.length);
       let end = cssText.indexOf(";");
-      colors[node_id] = cssText.substring(0, end);
+      currentColors[node_id] = cssText.substring(0, end);
   }
 }
 
