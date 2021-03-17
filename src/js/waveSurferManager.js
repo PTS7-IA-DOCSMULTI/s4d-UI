@@ -144,7 +144,6 @@ function initWavesurfer() {
     };
 
     document.getElementById("zoom-out").onclick = function() {
-        wavesurfer.disableDragSelection = true;
         let slider = document.getElementById("slider");
         if (Number(slider.value) >= 1) {
             slider.value = Number(slider.value) - 1;
@@ -202,8 +201,11 @@ function initWavesurfer() {
 
 // display regions on waveform
 function displayRegions() {
-    //remove all regions on waveform
+    //remove all regions displayed on waveform
     wavesurfer.clearRegions();
+    //remove remaining regions
+    wavesurfer.regions.list = {}
+
     for(let i = 0; i < clustersToDisplay.length; i++) {
         let indexCluster = clusters.indexOf(clustersToDisplay[i])
         let color = currentColors[indexCluster]
@@ -238,6 +240,9 @@ function displayRegions() {
     }
 
    updateBoundaries();
+
+   dragSelection = Object.keys(wavesurfer.regions.list).length > 0
+   setDragSelection(dragSelection)
 }
 
 function getNextRegionFromSameSpeaker(region) {
