@@ -36,7 +36,7 @@ var settings;
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
 let mainWindow;
-let shouldShowMenu;
+let shouldShowMenu = false;
 
 // Listen for app to be ready
 app.on('ready', function(){
@@ -264,13 +264,13 @@ const contextMenuTemplate =  [
   {
     label: 'Delete',
     click(item, focusedWindow) {
-      console.log(item);
+      mainWindow.webContents.send('delete-region');
     },
   },
   {
     label: 'Split',
     click(item, focusedWindow) {
-      console.log(item);
+      mainWindow.webContents.send('split-region');
     },
   }
 ]
@@ -289,7 +289,8 @@ function initContextMenu() {
         x: parameters.x,
         y: parameters.y
       }
-      answer = shouldShowMenu;
+      // inform renderer of the right-click
+      mainWindow.webContents.send('right-click', position);
       //display or not the menu
       return shouldShowMenu;
     } 

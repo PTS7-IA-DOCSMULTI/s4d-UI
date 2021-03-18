@@ -29,7 +29,8 @@ var url;
 var wavesurfer;
 var regionCreated;
 var isPlayingRegionOnly = false;
-var hoveredRegion;
+var shouldShowMenu = false;
+var rightClickData;
 
 ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
     alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
@@ -53,22 +54,35 @@ ipcRendererWaveSurfer.on('openFile', (event, arg) => {
     document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 });
 
+ipcRendererWaveSurfer.on('right-click', (event, arg) => {
+    let element = document.elementFromPoint(arg.x, arg.y)
+    if (element && element.tagName.toLowerCase() == 'region') {
+        rightClickData = {
+            region: element,
+            x: arg.x,
+            y: arg.y
+        }
+    } else {
+        rightClickData = null;
+    }
+});
+
+ipcRendererWaveSurfer.on('delete-region', (event, arg) => {
+    deleteRegion(rightClickData.region)
+});
+
+ipcRendererWaveSurfer.on('split-region', (event, arg) => {
+    splitRegion(rightClickData.region, rightClickData.x)
+});
+
 
 window.addEventListener('mousemove', e => {
     let element = document.elementFromPoint(e.x, e.y)
-    let shouldShowMenu;
-    if (element.tagName.toLowerCase() == 'region') {
-        shouldShowMenu = true
-        hoveredRegion = {
-            region: element,
-            x: e.x,
-            y: e.y
-        }
-    } else {
-        shouldShowMenu = false
-        hoveredRegion = null
-    }
-    ipcRendererWaveSurfer.send('should-show-menu', shouldShowMenu)
+    let elemIsRegion = (element && element.tagName.toLowerCase() == 'region')
+    if (shouldShowMenu != elemIsRegion) {
+        shouldShowMenu = elemIsRegion
+        ipcRendererWaveSurfer.send('should-show-menu', shouldShowMenu)
+    }  
   });
 
 function displayTime() {
@@ -353,4 +367,34 @@ function generateSegmentCreatedByUser(region) {
     // add the segment in segments
     segId = segments.push(seg);
     region.id = segId;
+    console.log(segments)
+}
+
+function deleteRegion(region) {
+    let id = region.getAttribute('data-id');
+    //remove segment
+    segments.splice(id, 1)
+    console.log(segments)  
+}
+
+function splitRegion(region, x) {
+    // duplicate the segment
+    let id = region.getAttribute('data-id');
+    let duplicatedSeg = [...segments[id]]
+   
+    // compute boundaries of segments
+    let rect = region.getBoundingClientRect();
+    let percentage = (x - rect.left) / (rect.right - rect.left)
+    let startTime = Number(duplicatedSeg[3])
+    let endTime = Number(duplicatedSeg[4])
+    let time = Math.round((endTime - startTime) * percentage + startTime)
+
+    // update boundaries
+    duplicatedSeg[3] = time
+    segments[id][4] = time
+
+    // add the duplicated segment in segments
+    segId = segments.push(duplicatedSeg);
+
+    console.log(segments)
 }
