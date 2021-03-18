@@ -68,7 +68,6 @@ yesButton.onclick = function() {
 }
 
 derButton.onclick = function() {
-    shutdownServer();
     saveDERToFile(derTrack)
     ipcRenderer.sendSync('open-der', derTrack)
 }

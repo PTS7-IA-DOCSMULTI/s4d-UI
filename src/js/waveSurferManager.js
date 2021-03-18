@@ -29,7 +29,7 @@ var url;
 var wavesurfer;
 var regionCreated;
 var isPlayingRegionOnly = false;
-var rightClickData;
+var hoveredRegion;
 
 ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
     alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
@@ -53,22 +53,23 @@ ipcRendererWaveSurfer.on('openFile', (event, arg) => {
     document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 });
 
-ipcRendererWaveSurfer.on('right-click', (event, arg) => {
-    let element = document.elementFromPoint(arg.x, arg.y)
+
+window.addEventListener('mousemove', e => {
+    let element = document.elementFromPoint(e.x, e.y)
     let shouldShowMenu;
     if (element.tagName.toLowerCase() == 'region') {
         shouldShowMenu = true
-        rightClickData = {
+        hoveredRegion = {
             region: element,
-            x: arg.x,
-            y: arg.y
+            x: e.x,
+            y: e.y
         }
     } else {
         shouldShowMenu = false
+        hoveredRegion = null
     }
-    console.log("Should show menu = " + shouldShowMenu)
     ipcRendererWaveSurfer.send('should-show-menu', shouldShowMenu)
-})
+  });
 
 function displayTime() {
     let text = secondsToHms(wavesurfer.getCurrentTime()) + " - " + secondsToHms(wavesurfer.getDuration());

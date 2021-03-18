@@ -36,7 +36,6 @@ var settings;
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
 let mainWindow;
-let flag = false;
 let shouldShowMenu;
 
 // Listen for app to be ready
@@ -290,17 +289,9 @@ function initContextMenu() {
         x: parameters.x,
         y: parameters.y
       }
-      //ask renderer if a region was clicked
-      mainWindow.webContents.send('right-click', position);
-      //wait for answer and get it
-  
-      //TO DO IMPLEMENT WAIT
-      checkFlag();
-      console.log("passed")
       answer = shouldShowMenu;
       //display or not the menu
-      //return answer;
-      return answer;
+      return shouldShowMenu;
     } 
   });
 
@@ -311,23 +302,7 @@ function initContextMenu() {
 
 ipcMain.on('should-show-menu', (event, arg) => {
   shouldShowMenu = arg;
-  console.log(shouldShowMenu)
 })
-
-function checkFlag() {
-  console.log("checking")
-  if(flag == false) {
-     setTimeout(checkFlag, 2000); /* this checks the flag every 100 milliseconds*/
-  } else {
-    //flag = false;
-
-  }
-}
-
-
-
-
-
 
 
 
