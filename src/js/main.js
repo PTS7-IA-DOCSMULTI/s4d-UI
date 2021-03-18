@@ -29,12 +29,15 @@ const net = require('net');
 const { dialog } = require('electron');
 const fs = require('fs');
 const prompt = require('electron-prompt');
+const contextMenu = require('electron-context-menu');
 
 var settings;
 
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
 let mainWindow;
+let flag = false;
+let shouldShowMenu;
 
 // Listen for app to be ready
 app.on('ready', function(){
@@ -42,7 +45,8 @@ app.on('ready', function(){
   mainWindow = new BrowserWindow({
     show: false,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      spellcheck: true
     }
   });
   mainWindow.maximize();
@@ -62,6 +66,8 @@ app.on('ready', function(){
   const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
   // Insert menu
   Menu.setApplicationMenu(mainMenu);
+
+  initContextMenu();
 });
 
 
@@ -237,7 +243,7 @@ ipcMain.on('display-information-msg', (event, arg) => {
 })
 
 
-ipcMain.on('testprompt', (event, arg) => {
+ipcMain.on('rename-speaker', (event, arg) => {
 
   prompt({
     title: 'Rename speaker',
@@ -253,6 +259,74 @@ ipcMain.on('testprompt', (event, arg) => {
     event.returnValue = r;
   })
 })
+
+// Create contextMenu template
+const contextMenuTemplate =  [
+  {
+    label: 'Delete',
+    click(item, focusedWindow) {
+      console.log(item);
+    },
+  },
+  {
+    label: 'Split',
+    click(item, focusedWindow) {
+      console.log(item);
+    },
+  }
+]
+
+
+function initContextMenu() {
+  contextMenu({
+    append: () => {return contextMenuTemplate},
+    showInspectElement: false,
+    showLookUpSelection: false,
+    showSearchWithGoogle: false,
+    showCopyImage: false,
+    shouldShowMenu: function(event, parameters) {
+      //get mouse position
+      position = {
+        x: parameters.x,
+        y: parameters.y
+      }
+      //ask renderer if a region was clicked
+      mainWindow.webContents.send('right-click', position);
+      //wait for answer and get it
+  
+      //TO DO IMPLEMENT WAIT
+      checkFlag();
+      console.log("passed")
+      answer = shouldShowMenu;
+      //display or not the menu
+      //return answer;
+      return answer;
+    } 
+  });
+
+  const dispose = contextMenu();
+  dispose();
+}
+
+
+ipcMain.on('should-show-menu', (event, arg) => {
+  shouldShowMenu = arg;
+  console.log(shouldShowMenu)
+})
+
+function checkFlag() {
+  console.log("checking")
+  if(flag == false) {
+     setTimeout(checkFlag, 2000); /* this checks the flag every 100 milliseconds*/
+  } else {
+    //flag = false;
+
+  }
+}
+
+
+
+
 
 
 

@@ -86,7 +86,7 @@ stop_clustering_list = []  # a list of nodes that have gotten confirmation for c
 node_waiting_for_answer_is_grouped = False
 
 
-class Flash_Thread(threading.Thread):
+class FlaskThread(threading.Thread):
     def __init__(self, app):
         threading.Thread.__init__(self)
         self.app = app
@@ -475,6 +475,14 @@ def get_segments_from_node():
     return json.dumps(data)
 
 
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    func = request.environ.get('werkzeug.server.shutdown')
+    if func is None:
+        raise RuntimeError('Not running with the Werkzeug Server')
+    func()
+    return json.dumps("")
+
 def correct_link_after_removing_node(number_cluster, node_idx, link_list, removed_nodes_number):
     removed_node_idx = number_cluster + node_idx
 
@@ -500,5 +508,5 @@ def correct_link_after_removing_node(number_cluster, node_idx, link_list, remove
 
 if __name__ == "__main__":
     # launch the flask server on a thread
-    thread = Flash_Thread(app=app)
+    thread = FlaskThread(app=app)
     thread.start()

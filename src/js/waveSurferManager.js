@@ -29,6 +29,7 @@ var url;
 var wavesurfer;
 var regionCreated;
 var isPlayingRegionOnly = false;
+var rightClickData;
 
 ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
     alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
@@ -51,6 +52,23 @@ ipcRendererWaveSurfer.on('openFile', (event, arg) => {
     document.title = "s4d-UI - " + url;
     document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 });
+
+ipcRendererWaveSurfer.on('right-click', (event, arg) => {
+    let element = document.elementFromPoint(arg.x, arg.y)
+    let shouldShowMenu;
+    if (element.tagName.toLowerCase() == 'region') {
+        shouldShowMenu = true
+        rightClickData = {
+            region: element,
+            x: arg.x,
+            y: arg.y
+        }
+    } else {
+        shouldShowMenu = false
+    }
+    console.log("Should show menu = " + shouldShowMenu)
+    ipcRendererWaveSurfer.send('should-show-menu', shouldShowMenu)
+})
 
 function displayTime() {
     let text = secondsToHms(wavesurfer.getCurrentTime()) + " - " + secondsToHms(wavesurfer.getDuration());

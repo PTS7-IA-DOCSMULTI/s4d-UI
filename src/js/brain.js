@@ -68,13 +68,14 @@ yesButton.onclick = function() {
 }
 
 derButton.onclick = function() {
+    shutdownServer();
     saveDERToFile(derTrack)
     ipcRenderer.sendSync('open-der', derTrack)
 }
 
 spkname1.onclick = function() {
     let currentName = spkname1.innerHTML
-    let newName = ipcRenderer.sendSync('testprompt', currentName)
+    let newName = ipcRenderer.sendSync('rename-speaker', currentName)
     if (newName && newName.replaceAll(' ', '')) {
         spkname1.innerHTML = newName
     }
@@ -82,7 +83,7 @@ spkname1.onclick = function() {
 
 spkname2.onclick = function() {
     let currentName = spkname2.innerHTML
-    let newName = ipcRenderer.sendSync('testprompt', currentName)
+    let newName = ipcRenderer.sendSync('rename-speaker', currentName)
     if (newName && newName.replaceAll(' ', '')) {
         spkname2.innerHTML = newName
     }
@@ -208,6 +209,17 @@ function getSegmentsFromNode(nodeId) {
          
      })
  }
+
+ function shutdownServer() {
+    var options = {
+        method: 'POST',
+        uri: 'http://127.0.0.1:5000/shutdown',
+    }
+
+    request(options).then(function (res) {
+        console.log("Server down")
+    })
+}
 
 /*
  * IPC RENDERER
