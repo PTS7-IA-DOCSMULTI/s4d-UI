@@ -52,7 +52,7 @@ app.on('ready', function(){
   mainWindow.show();
   // Load html in window
   mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, '../html/index.html'),
+    pathname: path.join(__dirname, '../html/segmentation.html'),
     protocol: 'file:',
     slashes:true
   }));
@@ -259,6 +259,13 @@ ipcMain.on('rename-speaker', (event, arg) => {
   })
 })
 
+
+ipcMain.on('validate-segmentation', (event, arg) => {
+  displayClusteringStep();
+  event.returnValue = null;
+})
+
+
 // Create contextMenu template
 const contextMenuTemplate =  [
   {
@@ -304,6 +311,24 @@ function initContextMenu() {
 ipcMain.on('should-show-menu', (event, arg) => {
   shouldShowMenu = arg;
 })
+
+function displaySegmentationStep() {
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, '../html/segmentation.html'),
+    protocol: 'file:',
+    slashes:true
+  }));
+}
+
+
+function displayClusteringStep() {
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, '../html/clustering.html'),
+    protocol: 'file:',
+    slashes:true
+  }));
+}
+
 
 
 

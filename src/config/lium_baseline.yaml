@@ -1,0 +1,114 @@
+
+# tmp_dir: ./tmp/
+tmp_dir: /lium/raid01_b/mshamsi/ALLIES/system1.1_20210304/tmp_Sylvain20210304_ref/
+# tmp_dir: /lium/raid01_b/mshamsi/ALLIES/system1.1_20210304/tmp_Sylvain20210304_VAD/
+
+# tmp_dir: /lium/raid01_b/mshamsi/ALLIES/system1.1_20210304/tmp_Anthony20210226_ref/
+# tmp_dir: /lium/raid01_b/mshamsi/ALLIES/system1.1_20210304/tmp_Anthony20210226_VAD/
+
+
+nb_thread: 30
+
+model:
+
+
+    feature_extractor:
+        audio_filename_structure: 
+        feature_filename_structure: feat/{}.h5
+        sampling_frequency: 16000
+        lower_frequency: 133.3333
+        higher_frequency: 6855.4976
+        filter_bank: log
+        filter_bank_size: 40
+        window_size: 0.025
+        shift: 0.01
+        ceps_number: 13
+        pre_emphasis: 0.97
+        keep_all_features: True
+        vad: percentil
+        save_param: ["energy", "cep", "vad"]
+        compressed: percentile
+
+    vad:
+        type: from_file_ref
+#         extention: "seg
+        dir_ref: /lium/corpus/base/ALLIES/mdtm/
+        dir_VAD: /lium/raid01_c/larcher/ALLIES/vad_integration/vad/
+
+    type: lium_iv
+
+    vectors:
+        type: i
+        size: 300
+
+        ivectors:
+            distrib_nb: 1024
+            feature_server:
+                dataset_list: ['energy', 'cep']
+                keep_all_features: true,
+                delta: true,
+                double_delta: true,
+                feat_norm: cmvn_sliding 
+
+
+        xvectors:
+            opt: sgd
+            loss: cce
+            min_nb_sessions: 3
+            duration: 1.
+            xtractor_yaml: cfg/xtractor_sincnet.yaml
+            db_yaml: cfg/allies.yaml 
+            epochs: 50
+            lr: 0.0001
+            transforms: 
+
+    classifier:
+
+        type: plda
+        plda_rank: 150
+
+first_seg:
+
+    feature_server:
+        dataset_list: ['energy', 'cep']
+        keep_all_features: true
+        delta: false
+        double_delta: false
+
+    hac_feature_server:
+        dataset_list: ['energy', 'cep']
+        keep_all_features: true
+        delta: false
+        double_delta: false
+
+
+
+    type: bic
+    bic_lin: false
+    hac_bic: true
+    viterbi: false
+    thr_l: 2
+    thr_h: 3
+    thr_vit: -250
+
+    slidding_window: 1.5
+    slidding_shift: 0.75
+
+second_seg: true
+   
+
+within_show:
+
+    th_w: 38.0
+    hac_method: complete
+    perform_hal: true
+    process_all_nodes: true
+    selection_method: longest
+#     selection_method: "newCorrection"
+    conditional_questioning: False
+
+    cross_show:
+
+    th_x: -29
+    perform_model_adaptation: false
+    adaptation_alpha: 0.5
