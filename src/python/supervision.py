@@ -28,17 +28,17 @@ __license__ = "LGPL"
 __author__ = "Florian Plaut, Nicolas Poupon, Adrien Puertolas, Alexandre Flucha"
 __copyright__ = "Copyright 2020-2021 Florian Plaut, Nicolas Poupon, Adrien Puertolas, Alexandre Flucha"
 
+import pickle
 import threading
 
+import soundfile
 from flask import Flask, request
-import copy
 import json
-import numpy as np
 import scipy
 import sidekit
 import s4d
 
-from s4d.s4d.clustering.hac_utils import scores2distance
+from s4d.clustering.hac_utils import scores2distance
 from scipy.cluster import hierarchy as hac
 from scipy.spatial.distance import squareform
 
@@ -46,14 +46,18 @@ from evallies.lium_baseline.interactive import check_std_change
 from evallies.lium_baseline.interactive import get_segment_sorted_list
 from evallies.lium_baseline.interactive import get_node_spkeakers
 from evallies.lium_baseline.interactive import track_correction_process
-from evallies.lium_baseline.system import allies_write_diar
+from evallies.lium_baseline.system import allies_write_diar, extract_vectors, perform_iv_seg
 
 from evallies.der_single import *
 import evallies
-from s4d.s4d.diar import Diar
-from s4d.s4d.scoring import DER
+from s4d.diar import Diar
+import os
+import yaml
 
 app = Flask(__name__)
+
+# Parameter fixed in the code
+threshold = 30
 
 # Settings
 clustering_method = None
@@ -111,9 +115,6 @@ def load_file():
     conditional_questioning = json.loads(request.form.get('conditional_questioning'))
     prioritize_separation2clustering = json.loads(request.form.get('prioritize_separation2clustering'))
 
-    # Parameter fixed in the code
-    threshold = 30
-
     init_diar = copy.deepcopy(initial_diar)
     # Get the linkage matrix from the scores
     distances, th = scores2distance(scores_per_cluster, threshold)
@@ -141,11 +142,11 @@ def load_file():
 
     # create der_track dictionary and calculate intial DER
     der, time, current_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
-                                                                                current_vec,
-                                                                                list(scores_per_cluster.modelset),
-                                                                                temporary_link_list,
-                                                                                uem,
-                                                                                ref)
+                                                                                    current_vec,
+                                                                                    list(scores_per_cluster.modelset),
+                                                                                    temporary_link_list,
+                                                                                    uem,
+                                                                                    ref)
 
     # prepare dendrogram for UI
     tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
@@ -171,10 +172,21 @@ def load_file():
     return data_for_ui
 
 
+@app.route('/get_init_diar', methods=['POST'])
+def get_init_diar():
+    json_str = str(request.get_json())
+    json_str = json_str.replace("\'", "\"")
+    show_name = json.loads(json_str)['show_name']
+
+    global initial_diar
+    initial_diar = s4d.Diar.read_mdtm(f"{show_name}.first.mdtm")
+    return json.dumps(dict(segments=initial_diar.segments))
+
+
 def s4d_ui_load(show_name):
     # Load data depending on the selected WAV file
-    current_diar = s4d.s4d.Diar.read_mdtm(f"{show_name}.mdtm")
-    initial_diar = s4d.s4d.Diar.read_mdtm(f"{show_name}.first.mdtm")
+    current_diar = s4d.Diar.read_mdtm(f"{show_name}.mdtm")
+    initial_diar = s4d.Diar.read_mdtm(f"{show_name}.first.mdtm")
     current_vec = sidekit.StatServer(f"{show_name}_xv.h5")
     scores_per_cluster = sidekit.Scores(f"{show_name}.scores.h5")
     # GET UEM
@@ -245,13 +257,13 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                    current_vec,
-                                                                    scores_per_cluster,
-                                                                    link_tmp,
-                                                                    der_track,
-                                                                    "not_separation",
-                                                                    uem,
-                                                                    ref)
+                                                                        current_vec,
+                                                                        scores_per_cluster,
+                                                                        link_tmp,
+                                                                        der_track,
+                                                                        "not_separation",
+                                                                        uem,
+                                                                        ref)
             # if the human decide to separate the node
         else:
             # update list to avoid a conflict with clustering
@@ -266,13 +278,13 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                         current_vec,
-                                                                         scores_per_cluster,
-                                                                         link_tmp,
-                                                                         der_track,
-                                                                         "separation",
-                                                                         uem,
-                                                                         ref)
+                                                                        current_vec,
+                                                                        scores_per_cluster,
+                                                                        link_tmp,
+                                                                        der_track,
+                                                                        "separation",
+                                                                        uem,
+                                                                        ref)
     else:
         # if the human validate the node (it has not been grouped and it must be)
         if is_same_speaker:
@@ -281,13 +293,13 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                    current_vec,
-                                                                    scores_per_cluster,
-                                                                    link_tmp,
-                                                                    der_track,
-                                                                    "clustering",
-                                                                    uem,
-                                                                    ref)
+                                                                        current_vec,
+                                                                        scores_per_cluster,
+                                                                        link_tmp,
+                                                                        der_track,
+                                                                        "clustering",
+                                                                        uem,
+                                                                        ref)
 
         # Else stop exploring the tree upward
         else:
@@ -299,13 +311,13 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                    current_vec,
-                                                                    scores_per_cluster,
-                                                                    link_tmp,
-                                                                    der_track,
-                                                                    "not_clustering",
-                                                                    uem,
-                                                                    ref)
+                                                                        current_vec,
+                                                                        scores_per_cluster,
+                                                                        link_tmp,
+                                                                        der_track,
+                                                                        "not_clustering",
+                                                                        uem,
+                                                                        ref)
     # remove the link we just processed
     links_to_check = np.delete(links_to_check, 0, axis=0)
 
@@ -315,18 +327,67 @@ def answer_question():
     return dict(tree=json_tree, der_track=der_track, segments=init_diar.segments)
 
 
-@app.route('/update_diar', methods=['POST'])
-def update_diar():
-    global current_diar
-
+@app.route('/update_init_diar', methods=['POST'])
+def update_init_diar():
     # Extract the json segments
     json_str = str(request.get_json())
     json_str = json_str.replace("\'", "\"")
-    segments = json.loads(json_str)['segments']
+    json_data = json.loads(json_str)
 
-    # Update current diar with the segments
-    current_diar = Diar()
-    current_diar.append_list(segments)
+    segments = json_data['segments']
+
+    # Create new init diar with the segments
+    new_init_diar = Diar()
+    if not new_init_diar._attributes.exist('gender'):
+        new_init_diar.add_attribut(new_attribut='gender', default='U')
+    for seg in segments:
+        new_init_diar.append(show=seg[0], cluster=seg[1], cluster_type=seg[2],
+                             start=seg[3], stop=seg[4], gender=seg[5])
+
+    # Save the diar to MDTM
+    mdtm_path = json_data['mdtm_path']
+    allies_write_diar(new_init_diar, mdtm_path)
+
+    # Load config
+    system_config = json_data['system_config_path']
+    with open(system_config, 'r') as fh:
+        model_cfg = yaml.load(fh, Loader=yaml.FullLoader)
+
+    # Edit config
+    model_cfg['within_show']['th_w'] = threshold
+    model_cfg['within_show']['hac_method'] = json_data['clustering_method']
+    model_cfg['within_show']['selection_method'] = json_data['selection_method']
+    model_cfg['within_show']['conditional_questioning'] = (json_data['conditional_questioning'] == 'true')
+
+    model_cfg["tmp_dir"] = json_data['tmp_dir']
+    model_cfg["ref_mdtm_directory"] = ""
+    model_cfg["model"]["vad"]["type"] = "from_file"
+    model_cfg["model"]["vad"]["dir"] = mdtm_path
+
+    model_cfg["model"]["type"] = "lium_" + json_data['vectors_type'] + "v"
+    model_cfg["model"]["vectors"]["type"] = json_data['vectors_type']
+
+    model_cfg["model"]["vectors"]["xvectors"]["dir"] = json_data['best_xtractor_path']
+
+    # Load model
+    model_allies = json_data['model_allies_path']
+    with open(model_allies, 'rb') as fh:
+        model = pickle.load(fh)
+
+    file_info = ""
+    filename = json_data['wav_file']  # wav file address
+    root_folder = json_data['root_folder']
+    show = json_data['show']
+
+    # Init seg
+    current_diar, first_pass_diar, current_vec, current_vec_per_seg, first_pass_vec, first_pass_vec_per_seg, scores = allies_init_seg(
+        model=model,
+        system_config=model_cfg,
+        show=show,
+        file_info=file_info,
+        filename=filename,
+        root_folder=root_folder,
+        verbose=True)
 
     return json.dumps("")
 
@@ -464,12 +525,12 @@ def get_segments_from_node():
         data = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
     else:
         seg_list_sorted, _ = get_segment_sorted_list([node_id, node_id],
-                                                  link,
-                                                  scores_per_cluster,
-                                                  None,
-                                                  init_diar,
-                                                  current_vec,
-                                                  selection_method)
+                                                     link,
+                                                     scores_per_cluster,
+                                                     None,
+                                                     init_diar,
+                                                     current_vec,
+                                                     selection_method)
         data = dict(segs=seg_list_sorted)
 
     return json.dumps(data)
@@ -482,6 +543,7 @@ def shutdown():
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
     return json.dumps("")
+
 
 def correct_link_after_removing_node(number_cluster, node_idx, link_list, removed_nodes_number):
     removed_node_idx = number_cluster + node_idx
@@ -504,6 +566,121 @@ def correct_link_after_removing_node(number_cluster, node_idx, link_list, remove
                 link_list[idx_link][1] = link_list[idx_link][1] - removed_nodes_number
 
     return link_list
+
+
+def allies_init_seg(model, system_config, show, file_info, filename, root_folder, verbose=False):
+    model_cfg = system_config
+
+    first_seg_path = f"{model_cfg['tmp_dir']}/seg/first_th{model_cfg['first_seg']['thr_h']}/"
+    second_seg_path = first_seg_path + f"second_th{model_cfg['within_show']['th_w']}/"
+
+    if not os.path.isdir(first_seg_path):
+        os.makedirs(first_seg_path)
+    if not os.path.isdir(second_seg_path):
+        os.makedirs(second_seg_path)
+
+    # perform first seg
+    if model_cfg["first_seg"]["type"] == "bic":
+        print("EXTRACT features")
+        if not os.path.isfile(f"{model_cfg['tmp_dir']}/feat/{show}.h5"):
+            # Load MFCC
+            fe = sidekit.FeaturesExtractor(**model_cfg["model"]["feature_extractor"])
+            print(f"compression: {fe.compressed}")
+            fe.save(show,
+                    channel=0,
+                    input_audio_filename=filename,
+                    output_feature_filename=f"{model_cfg['tmp_dir']}/feat/{show}.h5")
+
+        fs_seg = sidekit.FeaturesServer(feature_filename_structure=model_cfg['tmp_dir'] + "/feat/{}.h5",
+                                        **model_cfg["first_seg"]["feature_server"])
+
+        cep, _ = fs_seg.load(show)
+
+        if model_cfg["model"]["vad"]["type"] == "none":
+            init_diar = s4d.segmentation.init_seg(cep, show)
+            if verbose: print(f"Initial segments ({len(init_diar)} segs): {len(init_diar.unique('cluster'))} clusters")
+
+        elif model_cfg["model"]["vad"]["type"] == "from_file":
+            if 'extention' in model_cfg['model']['vad'] and model_cfg['model']['vad']['extention'] == "uem":
+                print(f"Load ref segmentation: {model_cfg['model']['vad']['dir']}/{show}.uem")
+                init_diar = s4d.Diar.read_uem(f"{model_cfg['model']['vad']['dir']}/{show}.uem")
+            elif 'extention' in model_cfg['model']['vad'] and model_cfg['model']['vad']['extention'] == "seg":
+                print(f"Load ref segmentation: {model_cfg['model']['vad']['dir']}/{show}.seg")
+                init_diar = s4d.Diar.read_seg(f"{model_cfg['model']['vad']['dir']}/{show}.seg")
+            else:
+                print(f"Load ref segmentation: {model_cfg['model']['vad']['dir']}")
+                # READ MDTM FROM THE FILE
+                init_diar = s4d.Diar.read_mdtm(f"{model_cfg['model']['vad']['dir']}")
+                for i in range(len(init_diar)):
+                    init_diar[i]['cluster'] = "tmp_" + str(i)
+            if verbose: print(f"after loading segments ({len(init_diar)} segs): {len(init_diar.unique('cluster'))} clusters")
+
+        if model_cfg["first_seg"]["bic_lin"]:
+            # Bic_lin is not useful when loading the reference and hurts a lot
+            current_diar = s4d.segmentation.segmentation(cep, init_diar)
+            if verbose: print(f"after inital segmentation ({len(current_diar)} segs): {len(current_diar.unique('cluster'))} clusters")
+            current_diar = s4d.segmentation.bic_linear(cep, current_diar, model_cfg['first_seg']['thr_l'], sr=False)
+            if verbose: print(f"after s4d.bic_linear_{model_cfg['first_seg']['thr_l']} ({len(current_diar)} segs): {len(current_diar.unique('cluster'))} clusters")
+        else:
+            current_diar = init_diar
+
+        if model_cfg["first_seg"]["hac_bic"]:
+
+            fs_seg = sidekit.FeaturesServer(feature_filename_structure=model_cfg['tmp_dir'] + "/feat/{}.h5",
+                                            **model_cfg["first_seg"]["hac_feature_server"])
+            cep, _ = fs_seg.load(show)
+
+            hac = s4d.clustering.hac_bic.HAC_BIC(cep, current_diar, model_cfg['first_seg']['thr_h'], sr=False)
+            current_diar = hac.perform()
+
+            if verbose: print(f"after s4d.bic_hac_{model_cfg['first_seg']['thr_h']} ({len(current_diar)} segs): {len(current_diar.unique('cluster'))} clusters")
+
+        if model_cfg["first_seg"]["viterbi"]:
+            current_diar = s4d.viterbi.viterbi_decoding(cep, current_diar, model_cfg['first_seg']['thr_vit'])
+            if verbose: print(f"after s4d.viterbi_{model_cfg['first_seg']['thr_vit']} ({len(current_diar)} segs): {len(current_diar.unique('cluster'))} clusters")
+
+        allies_write_diar(current_diar, f"{first_seg_path}/{show}.mdtm")
+
+    if model_cfg["second_seg"]:
+
+        current_diar = s4d.Diar.read_mdtm(f"{first_seg_path}/{show}.mdtm")
+
+        # Extract segment representation (i-vectors or x-vectors)
+        first_pass_vec, first_pass_vec_per_seg = extract_vectors(model, model_cfg, current_diar, root_folder)
+        first_pass_vec.write(f"{first_seg_path}/{show}_{model_cfg['model']['vectors']['type']}v.h5")
+        first_pass_vec_per_seg.write(f"{first_seg_path}/{show}_{model_cfg['model']['vectors']['type']}v_per_seg.h5")
+
+        # perform the clustering
+        first_pass_diar = s4d.Diar.read_mdtm(f"{first_seg_path}/{show}.mdtm")
+        current_diar = copy.deepcopy(first_pass_diar)
+        current_vec = copy.deepcopy(first_pass_vec)
+        current_vec_per_seg = copy.deepcopy(first_pass_vec_per_seg)
+
+        # Perform HAC-xv if necessary
+        current_diar, current_vec, current_vec_per_seg, scores = perform_iv_seg(model["model_iv"].norm_mean,
+                                                                                model["model_iv"].norm_cov,
+                                                                                model["model_iv"].plda_mean,
+                                                                                model["model_iv"].plda_f,
+                                                                                model["model_iv"].plda_sigma,
+                                                                                model_cfg['within_show']['th_w'],
+                                                                                current_diar,
+                                                                                current_vec,
+                                                                                current_vec_per_seg,
+                                                                                model_cfg["within_show"][
+                                                                                    "hac_method"])
+
+        current_vec.write(f"{second_seg_path}/{show}_{model_cfg['model']['vectors']['type']}v.h5")
+        current_vec_per_seg.write(f"{second_seg_path}/{show}_{model_cfg['model']['vectors']['type']}v_per_seg.h5")
+
+        if scores != None:
+            scores.write(f"{second_seg_path}/{show}_{model_cfg['model']['vectors']['type']}v_scores.h5")
+        allies_write_diar(current_diar, f"{second_seg_path}/{show}.mdtm")
+
+        if verbose:
+            print(
+                f"after HAC PLDA {model_cfg['model']['vectors']['type']}vector {model_cfg['within_show']['th_w']} ({len(current_diar)} segs): {len(current_diar.unique('cluster'))} clusters")
+
+    return current_diar, first_pass_diar, current_vec, current_vec_per_seg, first_pass_vec, first_pass_vec_per_seg, scores
 
 
 if __name__ == "__main__":

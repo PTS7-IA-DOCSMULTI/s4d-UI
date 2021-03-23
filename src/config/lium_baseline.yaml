@@ -1,11 +1,5 @@
 
-# tmp_dir: ./tmp/
-tmp_dir: /lium/raid01_b/mshamsi/ALLIES/system1.1_20210304/tmp_Sylvain20210304_ref/
-# tmp_dir: /lium/raid01_b/mshamsi/ALLIES/system1.1_20210304/tmp_Sylvain20210304_VAD/
-
-# tmp_dir: /lium/raid01_b/mshamsi/ALLIES/system1.1_20210304/tmp_Anthony20210226_ref/
-# tmp_dir: /lium/raid01_b/mshamsi/ALLIES/system1.1_20210304/tmp_Anthony20210226_VAD/
-
+tmp_dir: ./tmp/
 
 nb_thread: 30
 
@@ -30,15 +24,14 @@ model:
         compressed: percentile
 
     vad:
-        type: from_file_ref
-#         extention: "seg
-        dir_ref: /lium/corpus/base/ALLIES/mdtm/
-        dir_VAD: /lium/raid01_c/larcher/ALLIES/vad_integration/vad/
-
-    type: lium_iv
+        type: from_file
+        extention: .mdtm
+        dir: /lium/corpus/base/ALLIES/mdtm/
+   
+    type: lium_xv
 
     vectors:
-        type: i
+        type: x
         size: 300
 
         ivectors:

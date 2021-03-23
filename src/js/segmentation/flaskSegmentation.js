@@ -94,8 +94,11 @@ function updateInitDiar(segments) {
     var jsonPath = path.join(__dirname, '..', 'settings.json');
     let settings = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
 
+    let vectors_type = settings.vectors_type;
+
     let system_config_path = path.join(__dirname, '../config/lium_baseline.yaml')
-    let model_allies_path = path.join(__dirname, '../config/model_allies_baseline_xv.p')
+    let model_allies_path = path.join(__dirname, '../config/model_allies_baseline_' + vectors_type + 'v.p')
+    let best_xtractor_path = path.join(__dirname, '../config/best_xtractor.pt')
 
     console.log(settings.conditional_questioning)
     var options = {
@@ -110,9 +113,11 @@ function updateInitDiar(segments) {
             tmp_dir: path.join(folderPath, "tmp"),
             mdtm_path: path.join(folderPath, shortFileName + ".user_seg.mdtm"),
             wav_file: path.join(folderPath, shortFileName + extension),
+            best_xtractor_path: best_xtractor_path,
             clustering_method: settings.clustering_method,
             selection_method: settings.selection_method,
-            conditional_questioning: ""+settings.conditional_questioning
+            conditional_questioning: ""+settings.conditional_questioning,
+            vectors_type: vectors_type
         }
     }
     request(options)

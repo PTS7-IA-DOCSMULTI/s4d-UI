@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+src/config/model_allies_baseline_iv.p
+src/config/model_allies_baseline_xv.p
+src/config/tv_stat.h5

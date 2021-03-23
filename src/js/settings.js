@@ -38,6 +38,7 @@ window.addEventListener('load', function () {
  	//fill settings
 	document.getElementById("clustering").value = settings.clustering_method;
 	document.getElementById("selection").value = settings.selection_method;
+	document.getElementById("vectors").value = settings.vectors_type;
 	document.getElementById("conditionnal").checked = settings.conditional_questioning;
 	document.getElementById("prioritize").checked = settings.prioritize_separation2clustering;
 })
@@ -49,6 +50,7 @@ function cancel() {
 function validate() {
 	settings.clustering_method = document.getElementById("clustering").value;
 	settings.selection_method = document.getElementById("selection").value;
+	settings.vectors_type = document.getElementById("vectors").value;
 	settings.conditional_questioning = document.getElementById("conditionnal").checked;
 	settings.prioritize_separation2clustering = document.getElementById("prioritize").checked;
 	save();
@@ -60,6 +62,7 @@ function reset() {
 	document.getElementById("selection").value = "longest";
 	document.getElementById("conditionnal").checked = false;
 	document.getElementById("prioritize").checked = false;
+	document.getElementById("vectors").value = "i";
 }
 
 function save() {
