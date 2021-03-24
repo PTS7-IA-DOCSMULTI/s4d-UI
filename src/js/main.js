@@ -133,7 +133,7 @@ var openFile = function() {
       url = url.join('.');
 
       // check if the folder of the selected audio file contains the required files
-      var extensions = [".mdtm", ".first.mdtm", "_xv.h5", ".scores.h5", ".uem", ".ref.mdtm"]
+      var extensions = [".first.mdtm", ".uem", ".ref.mdtm"]
       for (i = 0; i < extensions.length; i++) {
         let path = url + extensions[i];
         if (!fs.existsSync(path)) {
