@@ -154,8 +154,6 @@ function initWavesurfer() {
         normalize: false
     });
 
-    wavesurfer.setHeight(300)
-
     wavesurfer.on('audioprocess', function() {
         displayTime();
     })
@@ -330,9 +328,12 @@ function colorRegionCreatedByUser(mouseEvent) {
 
     mouseY = mouseEvent.pageY;
     waveform = document.getElementById('waveform');
-    let waveformTop = waveform.offsetTop;
+    scrollContainer = document.getElementById('scrollContainer');
+
+    let waveformTop = scrollContainer.offsetTop;
+    let waveformScroll = scrollContainer.scrollTop;
     let waveformHeight = waveform.offsetHeight;
-    let mouseRelativePos = mouseY - waveformTop;
+    let mouseRelativePos = mouseY - waveformTop + waveformScroll;
 
     iCluster = Math.trunc((mouseRelativePos/waveformHeight) * clusters.length);
 
@@ -414,7 +415,10 @@ function splitRegion(region, x) {
 }
 
 function resizeWaveform(){
-    //TODO
+    let speakers = document.getElementById("speakers")
+    let table = speakers.childNodes[0]
+    let height = parseFloat($(table).css('height'))
+    wavesurfer.setHeight(height)
 }
 
 window.addEventListener('resize', function(event){

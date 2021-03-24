@@ -382,7 +382,6 @@ i.icon {
     max-height: inherit;
     position: relative;
     width: calc(100% - 200px);
-    top: 10px;
 }
 .flex {
 	display: flex;

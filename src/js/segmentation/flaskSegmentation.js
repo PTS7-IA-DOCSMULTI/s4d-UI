@@ -310,6 +310,7 @@ function flashRegion(target) {
 function displayData() {
     displaySpeakerNames();
     updateSelectedSpeaker();
+    resizeWaveform();
     displayRegions();
 }
 

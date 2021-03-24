@@ -1,23 +1,9 @@
 {
-    "correction": [
-        "initial",
-        "separation",
-        "clustering",
-        "clustering",
-        "not_clustering",
-        "not_clustering",
-        "not_clustering",
-        "not_clustering"
-    ],
+    "time": 738.2639999999998,
     "der_log": [
-        5.655158588255686,
-        11.131248442291641,
-        11.131248442291641,
-        13.879452336833431,
-        13.879452336833431,
-        13.879452336833431,
-        13.879452336833431,
-        13.879452336833431
+        70.3070988155998
     ],
-    "time": 738.2639999999998
+    "correction": [
+        "initial"
+    ]
 }
