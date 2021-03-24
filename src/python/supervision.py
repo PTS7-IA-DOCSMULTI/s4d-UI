@@ -31,7 +31,6 @@ __copyright__ = "Copyright 2020-2021 Florian Plaut, Nicolas Poupon, Adrien Puert
 import pickle
 import threading
 
-import soundfile
 from flask import Flask, request
 import json
 import scipy
@@ -66,13 +65,17 @@ conditional_questioning = None
 prioritize_separation2clustering = None
 
 current_diar = None
-initial_diar = None
-init_diar = None
+first_pass_diar = None
 current_vec = None
+current_vec_per_seg = None
+first_pass_vec = None
+first_pass_vec_per_seg = None
 scores_per_cluster = None
+
+init_diar = None
+
 uem = None
-speakers = []
-ref = None
+ref = []
 der_log = []
 
 links_to_check = None
@@ -95,6 +98,7 @@ root_folder = None
 show_name = None
 vectors_type = None
 
+
 class FlaskThread(threading.Thread):
     def __init__(self, app):
         threading.Thread.__init__(self)
@@ -106,7 +110,7 @@ class FlaskThread(threading.Thread):
 
 @app.route('/load_data_for_ui', methods=['POST'])
 def load_data_for_ui():
-    global current_diar, initial_diar, current_vec, scores_per_cluster, uem, ref, speakers
+    global current_diar, first_pass_diar, current_vec_per_seg, scores_per_cluster, uem, ref
     global clustering_method, selection_method, conditional_questioning, prioritize_separation2clustering
     global links_to_check, init_diar, link, number_cluster, complete_list, temporary_link_list, der_log, der_track
     global no_more_clustering, no_more_separation, separated_list, stop_separation_list, stop_clustering_list
@@ -129,9 +133,9 @@ def load_data_for_ui():
         ref_st.append(np.cast["float64"](round(float(e[2]), 3)))
         ref_en.append(np.cast["float64"](round(float(e[2]) + float(e[3]), 3)))
         spk.append(e[7])
-    speakers = evallies.user_simulation.Reference(spk, ref_st, ref_en)
+    ref = evallies.user_simulation.Reference(spk, ref_st, ref_en)
 
-    init_diar = copy.deepcopy(initial_diar)
+    init_diar = copy.deepcopy(first_pass_diar)
     # Get the linkage matrix from the scores
     distances, th = scores2distance(scores_per_cluster, threshold)
     distance_sym = squareform(distances)
@@ -157,14 +161,12 @@ def load_data_for_ui():
             temporary_link_list.append(l)  # final_links
 
     # create der_track dictionary and calculate intial DER
-    der = 0
-    time = 0
-    """der, time, current_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
-                                                                                    current_vec,
+    der, time, current_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
+                                                                                    current_vec_per_seg,
                                                                                     list(scores_per_cluster.modelset),
                                                                                     temporary_link_list,
                                                                                     uem,
-                                                                                    ref)"""
+                                                                                    ref)
 
     # prepare dendrogram for UI
     tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
@@ -185,7 +187,7 @@ def load_data_for_ui():
     stop_clustering_list = []  # a list of nodes that have gotten confirmation for clustering question
 
     data_for_ui = json.dumps(
-        dict(tree=json_tree, threshold=th, clusters=complete_list, segments=initial_diar.segments, der_track=der_track))
+        dict(tree=json_tree, threshold=th, clusters=complete_list, segments=first_pass_diar.segments, der_track=der_track))
 
     return data_for_ui
 
@@ -196,9 +198,9 @@ def get_init_diar():
     json_str = json_str.replace("\'", "\"")
     show_name = json.loads(json_str)['show_name']
 
-    global initial_diar
-    initial_diar = s4d.Diar.read_mdtm(f"{show_name}.first.mdtm")
-    return json.dumps(dict(segments=initial_diar.segments))
+    global first_pass_diar
+    first_pass_diar = s4d.Diar.read_mdtm(f"{show_name}.first.mdtm")
+    return json.dumps(dict(segments=first_pass_diar.segments))
 
 
 # Create a nested dictionary from the ClusterNode's returned by SciPy
@@ -247,7 +249,7 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                        current_vec,
+                                                                        current_vec_per_seg,
                                                                         scores_per_cluster,
                                                                         link_tmp,
                                                                         der_track,
@@ -268,7 +270,7 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                        current_vec,
+                                                                        current_vec_per_seg,
                                                                         scores_per_cluster,
                                                                         link_tmp,
                                                                         der_track,
@@ -283,7 +285,7 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                        current_vec,
+                                                                        current_vec_per_seg,
                                                                         scores_per_cluster,
                                                                         link_tmp,
                                                                         der_track,
@@ -301,7 +303,7 @@ def answer_question():
             link_tmp = copy.deepcopy(temporary_link_list)
             diar_tmp = copy.deepcopy(init_diar)
             der_track, current_diar, new_vec = track_correction_process(diar_tmp,
-                                                                        current_vec,
+                                                                        current_vec_per_seg,
                                                                         scores_per_cluster,
                                                                         link_tmp,
                                                                         der_track,
@@ -377,7 +379,7 @@ def update_init_diar():
 
     filename = json_data['wav_file']  # wav file address
 
-    global current_diar, initial_diar, current_vec, scores_per_cluster
+    global current_diar, first_pass_diar, current_vec, current_vec_per_seg, first_pass_vec, first_pass_vec_per_seg, scores_per_cluster
 
     # Init seg
     current_diar, first_pass_diar, current_vec, current_vec_per_seg, first_pass_vec, first_pass_vec_per_seg, scores_per_cluster = allies_init_seg(
@@ -413,7 +415,7 @@ def next_question():
                 not_suitable_question = check_std_change(node,
                                                          scores_per_cluster,
                                                          init_diar,
-                                                         current_vec,
+                                                         current_vec_per_seg,
                                                          link,
                                                          "separation")
                 # if the node has been labeled as sure enough, we don't ask question to the human
@@ -439,7 +441,7 @@ def next_question():
                                                                                         scores_per_cluster,
                                                                                         None,
                                                                                         init_diar,
-                                                                                        current_vec,
+                                                                                        current_vec_per_seg,
                                                                                         selection_method)
                 node_waiting_for_answer_is_grouped = True
                 question = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
@@ -453,7 +455,7 @@ def next_question():
                 not_suitable_question = check_std_change(node,
                                                          scores_per_cluster,
                                                          init_diar,
-                                                         current_vec,
+                                                         current_vec_per_seg,
                                                          link,
                                                          "clustering")
                 # if the node has been labeled as sure enough, we don't ask question to the human
@@ -488,7 +490,7 @@ def next_question():
                                                                                         scores_per_cluster,
                                                                                         None,
                                                                                         init_diar,
-                                                                                        current_vec,
+                                                                                        current_vec_per_seg,
                                                                                         selection_method)
                 node_waiting_for_answer_is_grouped = False
                 question = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
@@ -520,7 +522,7 @@ def get_segments_from_node():
                                                                                 scores_per_cluster,
                                                                                 None,
                                                                                 init_diar,
-                                                                                current_vec,
+                                                                                current_vec_per_seg,
                                                                                 selection_method)
         data = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
     else:
@@ -529,7 +531,7 @@ def get_segments_from_node():
                                                      scores_per_cluster,
                                                      None,
                                                      init_diar,
-                                                     current_vec,
+                                                     current_vec_per_seg,
                                                      selection_method)
         data = dict(segs=seg_list_sorted)
 
