@@ -100,7 +100,6 @@ function updateInitDiar(segments) {
     let model_allies_path = path.join(__dirname, '../config/model_allies_baseline_' + vectors_type + 'v.p')
     let best_xtractor_path = path.join(__dirname, '../config/best_xtractor.pt')
 
-    console.log(settings.conditional_questioning)
     var options = {
         method: 'POST',
         uri: 'http://127.0.0.1:5000/update_init_diar',
@@ -117,10 +116,13 @@ function updateInitDiar(segments) {
             clustering_method: settings.clustering_method,
             selection_method: settings.selection_method,
             conditional_questioning: ""+settings.conditional_questioning,
+            prioritize_separation2clustering: ""+settings.prioritize_separation2clustering,
             vectors_type: vectors_type
         }
     }
-    request(options)
+    request(options).then(function (res) {
+        ipcRenderer.sendSync('validate-segmentation');
+    })
 }
 
  function shutdownServer() {
@@ -204,7 +206,6 @@ function getSegIndex(segment) {
 
 function validateSegmentation() {
     updateInitDiar(segments);
-    ipcRenderer.sendSync('validate-segmentation');
 }
 
 

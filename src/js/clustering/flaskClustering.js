@@ -93,6 +93,10 @@ window.onload = function() {
     }
 
     initDisplay();
+    loadDataForUI();
+
+    let path = ipcRenderer.sendSync('get-audio-path');
+    openFile(path);
 }
 
 /*
@@ -100,26 +104,20 @@ window.onload = function() {
  * Post requests are used to communicate with the server
 */
 
-function loadFile(fileName) {
+function loadDataForUI() {
 
     var jsonPath = path.join(__dirname, '..', 'settings.json');
     settings = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
 
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/load_file',
-        form: {
-            showName: fileName,
-            clustering_method: settings.clustering_method,
-            selection_method: settings.selection_method,
-            conditional_questioning: settings.conditional_questioning,
-            prioritize_separation2clustering: settings.prioritize_separation2clustering
-        }
+        uri: 'http://127.0.0.1:5000/load_data_for_ui',
     }
 
     request(options).then(function(res) {
         initDisplay();
         data = JSON.parse(res);
+        console.log(data);
         loadData(data);
         derButton.style.display = "";
         updateDER(data.der_track);
@@ -236,14 +234,6 @@ function getSegmentsFromNode(nodeId) {
  * IPC RENDERER
  * ipcRenderer is used to communicate with main.js
 */
-
-ipcRenderer.on('openFile', (event, arg) => {
-    //remove the extension 
-    url = arg.split('.');
-    url.pop();
-    url = url.join('.');
-    loadFile(url);
-});
 
 ipcRenderer.on('saveFile', (event, arg) => {
     saveFile(arg);

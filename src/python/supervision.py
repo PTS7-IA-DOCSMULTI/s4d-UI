@@ -71,7 +71,9 @@ init_diar = None
 current_vec = None
 scores_per_cluster = None
 uem = None
+speakers = []
 ref = None
+der_log = []
 
 links_to_check = None
 link = None
@@ -89,6 +91,9 @@ stop_clustering_list = []  # a list of nodes that have gotten confirmation for c
 
 node_waiting_for_answer_is_grouped = False
 
+root_folder = None
+show_name = None
+vectors_type = None
 
 class FlaskThread(threading.Thread):
     def __init__(self, app):
@@ -99,21 +104,32 @@ class FlaskThread(threading.Thread):
         self.app.run(port=5000)
 
 
-@app.route('/load_file', methods=['POST'])
-def load_file():
-    global current_diar, initial_diar, current_vec, scores_per_cluster, uem, ref
+@app.route('/load_data_for_ui', methods=['POST'])
+def load_data_for_ui():
+    global current_diar, initial_diar, current_vec, scores_per_cluster, uem, ref, speakers
     global clustering_method, selection_method, conditional_questioning, prioritize_separation2clustering
     global links_to_check, init_diar, link, number_cluster, complete_list, temporary_link_list, der_log, der_track
     global no_more_clustering, no_more_separation, separated_list, stop_separation_list, stop_clustering_list
 
-    show_name = request.form.get('showName')
-    current_diar, initial_diar, current_vec, scores_per_cluster, uem, ref = s4d_ui_load(show_name)
-
-    # Load settings
-    clustering_method = request.form.get('clustering_method')
-    selection_method = request.form.get('selection_method')
-    conditional_questioning = json.loads(request.form.get('conditional_questioning'))
-    prioritize_separation2clustering = json.loads(request.form.get('prioritize_separation2clustering'))
+    # GET UEM
+    st = []
+    en = []
+    for l in open(f"{root_folder}/{show_name}.uem", "r"):
+        e = l.split()
+        st.append(e[2])
+        en.append(e[3])
+    # uem = {"start_time": np.cast["float64"](st), "end_time": np.cast["float64"](en)}
+    uem = evallies.user_simulation.UEM(np.cast["float64"](st), np.cast["float64"](en))
+    # GET Speakers
+    spk = []
+    ref_st = []
+    ref_en = []
+    for l in open(f"{root_folder}/{show_name}.ref.mdtm", "r"):
+        e = l.split()
+        ref_st.append(np.cast["float64"](round(float(e[2]), 3)))
+        ref_en.append(np.cast["float64"](round(float(e[2]) + float(e[3]), 3)))
+        spk.append(e[7])
+    speakers = evallies.user_simulation.Reference(spk, ref_st, ref_en)
 
     init_diar = copy.deepcopy(initial_diar)
     # Get the linkage matrix from the scores
@@ -141,12 +157,14 @@ def load_file():
             temporary_link_list.append(l)  # final_links
 
     # create der_track dictionary and calculate intial DER
-    der, time, current_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
+    der = 0
+    time = 0
+    """der, time, current_diar, new_vec = evallies.lium_baseline.interactive.check_der(current_diar,
                                                                                     current_vec,
                                                                                     list(scores_per_cluster.modelset),
                                                                                     temporary_link_list,
                                                                                     uem,
-                                                                                    ref)
+                                                                                    ref)"""
 
     # prepare dendrogram for UI
     tree = scipy.cluster.hierarchy.to_tree(link, rd=False)
@@ -181,34 +199,6 @@ def get_init_diar():
     global initial_diar
     initial_diar = s4d.Diar.read_mdtm(f"{show_name}.first.mdtm")
     return json.dumps(dict(segments=initial_diar.segments))
-
-
-def s4d_ui_load(show_name):
-    # Load data depending on the selected WAV file
-    current_diar = s4d.Diar.read_mdtm(f"{show_name}.mdtm")
-    initial_diar = s4d.Diar.read_mdtm(f"{show_name}.first.mdtm")
-    current_vec = sidekit.StatServer(f"{show_name}_xv.h5")
-    scores_per_cluster = sidekit.Scores(f"{show_name}.scores.h5")
-    # GET UEM
-    st = []
-    en = []
-    for l in open(f"{show_name}.uem", "r"):
-        e = l.split()
-        st.append(e[2])
-        en.append(e[3])
-    # uem = {"start_time": np.cast["float64"](st), "end_time": np.cast["float64"](en)}
-    uem = evallies.user_simulation.UEM(np.cast["float64"](st), np.cast["float64"](en))
-    # GET Speakers
-    spk = []
-    ref_st = []
-    ref_en = []
-    for l in open(f"{show_name}.ref.mdtm", "r"):
-        e = l.split()
-        ref_st.append(np.cast["float64"](round(float(e[2]), 3)))
-        ref_en.append(np.cast["float64"](round(float(e[2]) + float(e[3]), 3)))
-        spk.append(e[7])
-    speakers = evallies.user_simulation.Reference(spk, ref_st, ref_en)
-    return current_diar, initial_diar, current_vec, scores_per_cluster, uem, speakers
 
 
 # Create a nested dictionary from the ClusterNode's returned by SciPy
@@ -329,14 +319,25 @@ def answer_question():
 
 @app.route('/update_init_diar', methods=['POST'])
 def update_init_diar():
-    # Extract the json segments
+
+    global clustering_method, selection_method, conditional_questioning, prioritize_separation2clustering
+    global root_folder, show_name, vectors_type
+
+    # Extract json data
     json_str = str(request.get_json())
     json_str = json_str.replace("\'", "\"")
     json_data = json.loads(json_str)
 
-    segments = json_data['segments']
+    show_name = json_data['show']
+    root_folder = json_data['root_folder']
+    clustering_method = json_data['clustering_method']
+    selection_method = json_data['selection_method']
+    conditional_questioning = (json_data['conditional_questioning'] == 'true')
+    prioritize_separation2clustering = (json_data['prioritize_separation2clustering'] == 'true')
+    vectors_type = json_data['vectors_type']
 
     # Create new init diar with the segments
+    segments = json_data['segments']
     new_init_diar = Diar()
     if not new_init_diar._attributes.exist('gender'):
         new_init_diar.add_attribut(new_attribut='gender', default='U')
@@ -355,17 +356,17 @@ def update_init_diar():
 
     # Edit config
     model_cfg['within_show']['th_w'] = threshold
-    model_cfg['within_show']['hac_method'] = json_data['clustering_method']
-    model_cfg['within_show']['selection_method'] = json_data['selection_method']
-    model_cfg['within_show']['conditional_questioning'] = (json_data['conditional_questioning'] == 'true')
+    model_cfg['within_show']['hac_method'] = clustering_method
+    model_cfg['within_show']['selection_method'] = selection_method
+    model_cfg['within_show']['conditional_questioning'] = conditional_questioning
 
     model_cfg["tmp_dir"] = json_data['tmp_dir']
     model_cfg["ref_mdtm_directory"] = ""
     model_cfg["model"]["vad"]["type"] = "from_file"
     model_cfg["model"]["vad"]["dir"] = mdtm_path
 
-    model_cfg["model"]["type"] = "lium_" + json_data['vectors_type'] + "v"
-    model_cfg["model"]["vectors"]["type"] = json_data['vectors_type']
+    model_cfg["model"]["type"] = "lium_" + vectors_type + "v"
+    model_cfg["model"]["vectors"]["type"] = vectors_type
 
     model_cfg["model"]["vectors"]["xvectors"]["dir"] = json_data['best_xtractor_path']
 
@@ -374,17 +375,16 @@ def update_init_diar():
     with open(model_allies, 'rb') as fh:
         model = pickle.load(fh)
 
-    file_info = ""
     filename = json_data['wav_file']  # wav file address
-    root_folder = json_data['root_folder']
-    show = json_data['show']
+
+    global current_diar, initial_diar, current_vec, scores_per_cluster
 
     # Init seg
-    current_diar, first_pass_diar, current_vec, current_vec_per_seg, first_pass_vec, first_pass_vec_per_seg, scores = allies_init_seg(
+    current_diar, first_pass_diar, current_vec, current_vec_per_seg, first_pass_vec, first_pass_vec_per_seg, scores_per_cluster = allies_init_seg(
         model=model,
         system_config=model_cfg,
-        show=show,
-        file_info=file_info,
+        show=show_name,
+        file_info=None,
         filename=filename,
         root_folder=root_folder,
         verbose=True)
@@ -672,7 +672,7 @@ def allies_init_seg(model, system_config, show, file_info, filename, root_folder
         current_vec.write(f"{second_seg_path}/{show}_{model_cfg['model']['vectors']['type']}v.h5")
         current_vec_per_seg.write(f"{second_seg_path}/{show}_{model_cfg['model']['vectors']['type']}v_per_seg.h5")
 
-        if scores != None:
+        if scores is not None:
             scores.write(f"{second_seg_path}/{show}_{model_cfg['model']['vectors']['type']}v_scores.h5")
         allies_write_diar(current_diar, f"{second_seg_path}/{show}.mdtm")
 

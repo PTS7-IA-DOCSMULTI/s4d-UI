@@ -37,6 +37,7 @@ const {app, BrowserWindow, Menu, ipcMain} = electron;
 
 let mainWindow;
 let shouldShowMenu = false;
+let audioPath;
 
 // Listen for app to be ready
 app.on('ready', function(){
@@ -140,6 +141,7 @@ var openFile = function() {
           return;
         }
       }
+      audioPath = result.filePaths[0]
       mainWindow.webContents.send('openFile', result.filePaths[0]);
     }
   }).catch(err => {
@@ -328,6 +330,10 @@ function displayClusteringStep() {
     slashes:true
   }));
 }
+
+ipcMain.on('get-audio-path', (event, arg) => {
+  event.returnValue = audioPath;
+})
 
 
 

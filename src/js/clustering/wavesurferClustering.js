@@ -36,24 +36,6 @@ ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
     alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
 })
 
-ipcRendererWaveSurfer.on('openFile', (event, arg) => {
-
-    wavesurfer.pause();
-
-    var playIcon = document.getElementById("play");
-    playIcon.classList.remove("play");
-    playIcon.classList.add("play");
-    playIcon.classList.remove("pause");
-
-    url = arg;
-    // Second parameter is an array of pre-generated peaks
-    // Empty array avoid displaying the waveform
-    // wavesurfer.load(url, []);
-    wavesurfer.load(url);
-    document.title = "s4d-UI - " + url;
-    document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
-});
-
 ipcRendererWaveSurfer.on('right-click', (event, arg) => {
     let element = document.elementFromPoint(arg.x, arg.y)
     if (element && element.tagName.toLowerCase() == 'region') {
@@ -328,77 +310,22 @@ function updateBoundaries() {
     }
 }
 
-function colorRegionCreatedByUser(mouseEvent) {
-    mouseY = mouseEvent.pageY;
-    waveform = document.getElementById('waveform');
-    let waveformTop = waveform.offsetTop;
-    let waveformHeight = waveform.offsetHeight;
-    let mouseRelativePos = mouseY - waveformTop;
+function openFile(audioFilePath) {
 
-    iCluster = Math.trunc((mouseRelativePos/waveformHeight) * clustersToDisplay.length);
+    wavesurfer.pause();
 
-    let regionHeight = waveformHeight / clustersToDisplay.length;
-    let regionTop = 100 / clustersToDisplay.length;
+    var playIcon = document.getElementById("play");
+    playIcon.classList.remove("play");
+    playIcon.classList.add("play");
+    playIcon.classList.remove("pause");
 
-    regionCreated.element.style.height = regionHeight + 'px';
-    regionCreated.element.style.top = regionTop * iCluster * waveformHeight / 100 + 'px';
-
-    cluster = clustersToDisplay[iCluster];
-    let indexCluster = clusters.indexOf(cluster)
-    let color = currentColors[indexCluster]
-    regionCreated.color = color;
-    regionCreated.element.style.backgroundColor = color;
-    regionCreated.loop = false;
-    regionCreated.drag = false;
-    regionCreated.resize = true;
-    regionCreated.style.groupId = iCluster;
-    document.removeEventListener('mousemove', colorRegionCreatedByUser);
-}
-
-function generateSegmentCreatedByUser(region) {
-
-    //create the segment
-    showName = segments[0][0];
-    cluster = clustersToDisplay[region.style.groupId];
-    speaker = "speaker";
-    start = Math.round(region.start * 1000);
-    end = Math.round(region.end * 1000);
-    u = "U";
-    seg = [showName, cluster, speaker, start, end, u];
-
-    // add the segment in segments
-    segId = segments.push(seg);
-    region.id = segId;
-    console.log(segments)
-}
-
-function deleteRegion(region) {
-    let id = region.getAttribute('data-id');
-    //remove segment
-    segments.splice(id, 1)
-    console.log(segments)  
-}
-
-function splitRegion(region, x) {
-    // duplicate the segment
-    let id = region.getAttribute('data-id');
-    let duplicatedSeg = [...segments[id]]
-   
-    // compute boundaries of segments
-    let rect = region.getBoundingClientRect();
-    let percentage = (x - rect.left) / (rect.right - rect.left)
-    let startTime = Number(duplicatedSeg[3])
-    let endTime = Number(duplicatedSeg[4])
-    let time = Math.round((endTime - startTime) * percentage + startTime)
-
-    // update boundaries
-    duplicatedSeg[3] = time
-    segments[id][4] = time
-
-    // add the duplicated segment in segments
-    segId = segments.push(duplicatedSeg);
-
-    console.log(segments)
+    url = audioFilePath;
+    // Second parameter is an array of pre-generated peaks
+    // Empty array avoid displaying the waveform
+    // wavesurfer.load(url, []);
+    wavesurfer.load(url);
+    document.title = "s4d-UI - " + url;
+    document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 }
 
 function resizeWaveform(){
