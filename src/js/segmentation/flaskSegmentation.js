@@ -321,7 +321,7 @@ function displaySpeakerNames() {
   
     let table = document.createElement('table');
     table.setAttribute('border','0');
-    table.setAttribute('width','10%');
+    table.setAttribute('width','200px');
   
     let tbody = table.createTBody();
     let j = 0;
