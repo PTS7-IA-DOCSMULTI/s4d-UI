@@ -50,6 +50,16 @@ window.onload = function() {
     validateButton.onclick = function() {
         validateSegmentation();
     }
+
+    initWavesurfer();
+    let audioPath = ipcRenderer.sendSync('get-audio-path');
+    wavesurferLoadFile(audioPath);
+
+    folderPath = path.dirname(audioPath);
+    extension = path.extname(audioPath)
+    shortFileName = path.basename(audioPath, extension)
+    url = path.join(folderPath, shortFileName)
+    loadFile(url);
 }
 
 /*
@@ -140,14 +150,6 @@ function updateInitDiar(segments) {
  * IPC RENDERER
  * ipcRenderer is used to communicate with main.js
 */
-
-ipcRenderer.on('openFile', (event, arg) => {
-    folderPath = path.dirname(arg);
-    extension = path.extname(arg)
-    shortFileName = path.basename(arg, extension)
-    url = path.join(folderPath, shortFileName)
-    loadFile(url);
-});
 
 ipcRenderer.on('saveFile', (event, arg) => {
     saveFile(arg);

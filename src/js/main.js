@@ -31,13 +31,13 @@ const fs = require('fs');
 const prompt = require('electron-prompt');
 const contextMenu = require('electron-context-menu');
 
-var settings;
-
 const {app, BrowserWindow, Menu, ipcMain} = electron;
 
 let mainWindow;
 let shouldShowMenu = false;
 let audioPath;
+
+let openFileErrorMsg
 
 // Listen for app to be ready
 app.on('ready', function(){
@@ -53,7 +53,7 @@ app.on('ready', function(){
   mainWindow.show();
   // Load html in window
   mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, '../html/segmentation.html'),
+    pathname: path.join(__dirname, '../html/index.html'),
     protocol: 'file:',
     slashes:true
   }));
@@ -126,6 +126,7 @@ var openFile = function() {
     }
     ]
   }).then(result => {
+    openFileErrorMsg = ""
     if(!result.canceled) {
       // remove the extension of the audio file
       var url = result.filePaths[0].split('.');
@@ -137,12 +138,13 @@ var openFile = function() {
       for (i = 0; i < extensions.length; i++) {
         let path = url + extensions[i];
         if (!fs.existsSync(path)) {
-          mainWindow.webContents.send('fileNotFound', path);
+          displayOpenFileStep();
+          openFileErrorMsg = "File not found:\n" + path + "\n Make sure to put this file in the same folder than the audio file";
           return;
         }
       }
       audioPath = result.filePaths[0]
-      mainWindow.webContents.send('openFile', result.filePaths[0]);
+      displaySegmentationStep();
     }
   }).catch(err => {
     console.log(err)
@@ -331,8 +333,28 @@ function displayClusteringStep() {
   }));
 }
 
+
+function displayOpenFileStep() {
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, '../html/index.html'),
+    protocol: 'file:',
+    slashes:true
+  }));
+}
+
+
 ipcMain.on('get-audio-path', (event, arg) => {
   event.returnValue = audioPath;
+})
+
+
+ipcMain.on('get-error-msg', (event, arg) => {
+  event.returnValue = openFileErrorMsg;
+})
+
+
+ipcMain.on('open-file', (event, arg) => {
+  openFile();
 })
 
 

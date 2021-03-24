@@ -29,11 +29,7 @@ var url;
 var wavesurfer;
 var isPlayingRegionOnly = false;
 
-ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
-    alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
-})
-
-function openFile(audioFilePath) {
+function wavesurferOpenFile(audioFilePath) {
 
     wavesurfer.pause();
 

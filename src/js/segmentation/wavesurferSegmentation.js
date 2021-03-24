@@ -32,29 +32,6 @@ var isPlayingRegionOnly = false;
 var shouldShowMenu = false;
 var rightClickData;
 
-
-ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
-    alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
-})
-
-ipcRendererWaveSurfer.on('openFile', (event, arg) => {
-
-    wavesurfer.pause();
-
-    var playIcon = document.getElementById("play");
-    playIcon.classList.remove("play");
-    playIcon.classList.add("play");
-    playIcon.classList.remove("pause");
-
-    url = arg;
-    // Second parameter is an array of pre-generated peaks
-    // Empty array avoid displaying the waveform
-    // wavesurfer.load(url, []);
-    wavesurfer.load(url);
-    document.title = "s4d-UI - " + url;
-    document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
-});
-
 ipcRendererWaveSurfer.on('right-click', (event, arg) => {
     let element = document.elementFromPoint(arg.x, arg.y)
     if (element && element.tagName.toLowerCase() == 'region') {
@@ -90,6 +67,24 @@ function displayTime() {
     let text = secondsToHms(wavesurfer.getCurrentTime()) + " - " + secondsToHms(wavesurfer.getDuration());
     document.getElementById("audioTime").innerHTML = text;
 }
+
+function wavesurferLoadFile(filename) {
+
+    wavesurfer.pause();
+
+    var playIcon = document.getElementById("play");
+    playIcon.classList.remove("play");
+    playIcon.classList.add("play");
+    playIcon.classList.remove("pause");
+
+    url = filename;
+    // Second parameter is an array of pre-generated peaks
+    // Empty array avoid displaying the waveform
+    // wavesurfer.load(url, []);
+    wavesurfer.load(url);
+    document.title = "s4d-UI - " + url;
+    document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
+};
 
 //duration must be in second
 function secondsToHms(d) {

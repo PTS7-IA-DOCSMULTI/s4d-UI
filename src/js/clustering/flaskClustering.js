@@ -92,11 +92,12 @@ window.onload = function() {
         }
     }
 
+    initWavesurfer();
     initDisplay();
     loadDataForUI();
 
     let path = ipcRenderer.sendSync('get-audio-path');
-    openFile(path);
+    wavesurferOpenFile(path);
 }
 
 /*
@@ -117,7 +118,6 @@ function loadDataForUI() {
     request(options).then(function(res) {
         initDisplay();
         data = JSON.parse(res);
-        console.log(data);
         loadData(data);
         derButton.style.display = "";
         updateDER(data.der_track);
