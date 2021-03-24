@@ -27,45 +27,29 @@ var RegionPlugin = require ('wavesurfer.js/dist/plugin/wavesurfer.regions.min.js
 const ipcRendererWaveSurfer = require('electron').ipcRenderer;
 var url;
 var wavesurfer;
-var regionCreated;
 var isPlayingRegionOnly = false;
-var shouldShowMenu = false;
-var rightClickData;
 
 ipcRendererWaveSurfer.on('fileNotFound', (event, arg) => {
     alert("File not found:\n" +  arg + "\n Make sure to put this file in the same folder than the audio file");
 })
 
-ipcRendererWaveSurfer.on('right-click', (event, arg) => {
-    let element = document.elementFromPoint(arg.x, arg.y)
-    if (element && element.tagName.toLowerCase() == 'region') {
-        rightClickData = {
-            region: element,
-            x: arg.x,
-            y: arg.y
-        }
-    } else {
-        rightClickData = null;
-    }
-});
+function openFile(audioFilePath) {
 
-ipcRendererWaveSurfer.on('delete-region', (event, arg) => {
-    deleteRegion(rightClickData.region)
-});
+    wavesurfer.pause();
 
-ipcRendererWaveSurfer.on('split-region', (event, arg) => {
-    splitRegion(rightClickData.region, rightClickData.x)
-});
+    var playIcon = document.getElementById("play");
+    playIcon.classList.remove("play");
+    playIcon.classList.add("play");
+    playIcon.classList.remove("pause");
 
-
-window.addEventListener('mousemove', e => {
-    let element = document.elementFromPoint(e.x, e.y)
-    let elemIsRegion = (element && element.tagName.toLowerCase() == 'region')
-    if (shouldShowMenu != elemIsRegion) {
-        shouldShowMenu = elemIsRegion
-        ipcRendererWaveSurfer.send('should-show-menu', shouldShowMenu)
-    }  
-  });
+    url = audioFilePath;
+    // Second parameter is an array of pre-generated peaks
+    // Empty array avoid displaying the waveform
+    // wavesurfer.load(url, []);
+    wavesurfer.load(url);
+    document.title = "s4d-UI - " + url;
+    document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
+}
 
 function displayTime() {
     let text = secondsToHms(wavesurfer.getCurrentTime()) + " - " + secondsToHms(wavesurfer.getDuration());
@@ -112,20 +96,12 @@ function stop() {
 	playIcon.classList.remove("pause");
 }
 
-function setDragSelection(dragSelection) {
-    if (dragSelection) {
-        wavesurfer.enableDragSelection(true);
-    } else {
-        wavesurfer.disableDragSelection();
-    }
-}
-
 function initWavesurfer() {
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
         plugins: [
             RegionPlugin.create({
-                dragSelection: true
+                dragSelection: false
             })
         ],
         waveColor: 'white',
@@ -179,43 +155,6 @@ function initWavesurfer() {
         } 
     }
 
-    //called when a region is resized
-    wavesurfer.on('region-update-end', function(region) {
-
-        if (region.id.toString().startsWith("wavesurfer")) {
-            generateSegmentCreatedByUser(region);
-        } else {
-            for (i = 0; i < segments.length; i++) {
-                let seg = segments[i];
-                if (seg["data-id"] == region.id) {
-                    seg[3] = Math.round(region.start * 100);
-                    seg[4] = Math.round(region.end * 100);
-                    break;
-                }
-            }
-            displaySegmentDetails(segmentsToDisplay.slice(0, separationIndex), 1);
-            displaySegmentDetails(segmentsToDisplay.slice(separationIndex, segmentsToDisplay.length), 2);
-        }
-    });
-
-    // prevent regions of the same speaker from overlapping
-    wavesurfer.on('region-updated', region => {
-
-        if(region.attributes.nextRegion && region.end > region.attributes.nextRegion.start) {
-          region.end = region.attributes.nextRegion.start
-        }
-        if(region.attributes.backRegion && region.start < region.attributes.backRegion.end) {
-          region.start = region.attributes.backRegion.end
-        }
-    });
-
-    wavesurfer.on('region-created', region => {
-        if (region.id.toString().startsWith("wavesurfer")) {
-            regionCreated = region
-            document.addEventListener('mousemove', colorRegionCreatedByUser, false);
-        } 
-    });
-
     wavesurfer.on('region-out', function() {
 
         setTimeout(function(){
@@ -264,7 +203,7 @@ function displayRegions() {
                     loop: false,
                     drag: false,
                     color: color,
-                    resize: true
+                    resize: false
                 } 
                 let region = wavesurfer.addRegion(options);
                 region.element.style.groupId = i;
@@ -280,52 +219,6 @@ function displayRegions() {
         regions[i].style.height = regionHeight + 'px';
         regions[i].style.top = regionTop * regions[i].style.groupId * waveformHeight / 100 + 'px';                    
     }
-
-   updateBoundaries();
-
-   dragSelection = Object.keys(wavesurfer.regions.list).length > 0
-   setDragSelection(dragSelection)
-}
-
-function getNextRegionFromSameSpeaker(region) {
-    let indexOfNextRegionId  = segmentsToDisplay.indexOf(region.id) + 1;
-    let nextRegionId = segmentsToDisplay[indexOfNextRegionId];
-
-    return wavesurfer.regions.list[nextRegionId]
-}
-
-function getBackRegionFromSameSpeaker(region) {
-    let indexOfBackRegionId  = segmentsToDisplay.indexOf(region.id) - 1;
-    let backRegionId = segmentsToDisplay[indexOfBackRegionId];
-
-    return wavesurfer.regions.list[backRegionId]
-}
-
-//set next and back region for each region
-function updateBoundaries() {
-    for (id in wavesurfer.regions.list) {
-        let region = wavesurfer.regions.list[id];
-        region.attributes.nextRegion = getNextRegionFromSameSpeaker(region);
-        region.attributes.backRegion = getBackRegionFromSameSpeaker(region);
-    }
-}
-
-function openFile(audioFilePath) {
-
-    wavesurfer.pause();
-
-    var playIcon = document.getElementById("play");
-    playIcon.classList.remove("play");
-    playIcon.classList.add("play");
-    playIcon.classList.remove("pause");
-
-    url = audioFilePath;
-    // Second parameter is an array of pre-generated peaks
-    // Empty array avoid displaying the waveform
-    // wavesurfer.load(url, []);
-    wavesurfer.load(url);
-    document.title = "s4d-UI - " + url;
-    document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 }
 
 function resizeWaveform(){
