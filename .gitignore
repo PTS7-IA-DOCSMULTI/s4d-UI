@@ -1,6 +1,8 @@
 # Logs
 logs
 *.log
+*.h5
+*.mdtm
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -105,3 +107,5 @@ dist
 src/config/model_allies_baseline_iv.p
 src/config/model_allies_baseline_xv.p
 src/config/tv_stat.h5
+src/config/model_allies_baseline_iv.p
+src/config/lium_baseline.yaml

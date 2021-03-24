@@ -33,27 +33,29 @@
         <script src="../js/segmentation/flaskSegmentation.js"></script>
     </head>
 	<body>
-		<div class="left-part" id="dendrogramme">
+		<div class="app-header">
+			<div class="shadow block">
+				<div class="header">
+					<img src="../img/lium.png"></img>
+					<img src="../img/ensim.png"></img>
+					<div class="buttons right-pos">
+						<button id="validateButton" class="action-button">
+							Validate
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>	
+		<div class="left-big-part" id="dendrogramme">
 			<div class="shadow block">
 				<div class="header" id="dendrogramme-header">
-					Dendrogram
+					/
 				</div>
 				<div class="scaling-svg-container" id="svg">
 				</div>
 			</div>
 		</div>
-		<div class="right-part-left">
-			<div class="shadow block">
-				<div class="header">
-                    <span id="spkname1">Speaker</span>
-                    <div class="shadow tag-color" id="speaker-tag1"></div>
-				</div>
-				<div class="content">
-					<div id="segTable1"></div> 
-				</div>
-			</div>
-		</div>
-		<div class="right-part-right">
+		<div class="right-big-part">
 			<div class="shadow block">
 				<div class="header">
                     <span id="spkname2">Speaker</span>
@@ -64,7 +66,7 @@
 				</div>
 			</div>
 		</div>
-        <div class="bottom-part">
+        <div class="bottom-big-part">
             <div class="shadow block">
                 <div class="header">
 					<div class="buttons">
@@ -93,6 +95,5 @@
             </div>
         </div>
 		<div id=speakers></div>
-		<button id="validateButton">Validate segmentation</button>
     </body>
 </html>

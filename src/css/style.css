@@ -24,13 +24,52 @@
 
 .left-part {
 	background: transparent;
-	height:calc(67% - 30px);
+	height:calc(67% - 85px);
 	width: calc(50% - 30px);
 	padding: 20px;
 	padding-right: 10px;
 	padding-left: 20px;
 	padding-top: 20px;
 	padding-bottom:10px;
+}
+
+.right-part {
+	background: transparent;
+	height:calc(67% - 85px);
+	width: calc(50% - 30px);
+	padding: 20px;
+	padding-right: 20px;
+	padding-left: 10px;
+	padding-top: 20px;
+	padding-bottom:10px;
+	position: absolute;
+	top: 55px;
+	left: 50%;
+}
+
+.left-big-part {
+	background: transparent;
+	height:calc(50% - 85px);
+	width: calc(50% - 30px);
+	padding: 20px;
+	padding-right: 10px;
+	padding-left: 20px;
+	padding-top: 20px;
+	padding-bottom:10px;
+}
+
+.right-big-part {
+	background: transparent;
+	height:calc(50% - 85px);
+	width: calc(50% - 30px);
+	padding: 20px;
+	padding-right: 20px;
+	padding-left: 10px;
+	padding-top: 20px;
+	padding-bottom:10px;
+	position: absolute;
+	top: 55px;
+	left: 50%;
 }
 
 .main-part {
@@ -41,6 +80,31 @@
 	padding-left: 20px;
 	padding-top: 20px;
 	padding-bottom:20px;
+}
+
+.middle-part {
+	background: transparent;
+	height: 250px;
+	width: 450px;
+	position: absolute;
+	top: calc(50% - 125px);
+	left: calc(50% - 225px);
+}
+
+.app-header {
+	height:calc(55px);
+	background: rgba(0,0,0,.05);
+}
+
+.app-header .header {
+	background: rgb(0 0 0 / 45%) !important;
+}
+
+.app-header img {
+	height: 40px;
+	width: auto;
+	margin-top: -5px;
+	margin-right: 15px;
 }
 
 ::-webkit-scrollbar {
@@ -79,10 +143,10 @@
 
 .right-part-left {
 	background: transparent;
-	height: calc(47% - 30px);
+	height: calc(47% - 85px);
 	width: calc(25% - 25px);
 	position: absolute;
-	top: 0;
+	top: 55px;
 	left: 50%;
 	padding-right: 10px;
 	padding-left: 10px;
@@ -92,10 +156,10 @@
 
 .right-part-right {
 	background: transparent;
-	height: calc(47% - 30px);
+	height: calc(47% - 85px);
 	width: calc(25% - 25px);
 	position: absolute;
-	top: 0;
+	top: 55px;
 	left: 75%;
 	padding-right: 20px;
 	padding-left: 5px;
@@ -125,6 +189,17 @@
 	padding-top: 10px;
 	padding-bottom:20px;
 }
+
+.bottom-big-part {
+	background: transparent;
+	height: calc(50% - 30px);
+	width: calc(100% - 40px);
+	padding-right: 20px;
+	padding-left: 20px;
+	padding-top: 10px;
+	padding-bottom:20px;
+}
+
 .shadow {
 	box-shadow: 0 0 12px rgba(0,0,0,.35);
 }
@@ -144,6 +219,45 @@ body {
 	right: calc(20px + 10px);
 }
 
+i.big.icon, i.big.icons {
+    line-height: 1;
+    vertical-align: middle;
+    font-size: 3.5em;
+}
+
+.open-icon i {
+	position: relative;
+	top: calc(50%);
+    transform: translateY(-28px);
+}
+
+.no-margin {
+	margin: 0px !important;
+}
+
+.file-path {
+	margin-top: 15px;
+	text-align: center;
+}
+
+.subcontent {
+    padding: 15px;
+    background: #00000021;
+    border-radius: 15px;
+	margin-top: 10px;
+}
+
+.open-icon {
+	margin-top : -10px;
+	border-radius: 1000px;
+	background: #00000021;
+	width: 120px;
+	height: 120px;
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 i.icon.stop:before {
     content: "\f04d";
 }
@@ -152,6 +266,9 @@ i.icon.pause:before {
 }
 i.icon.volume.off:before {
     content: "\f026";
+}
+i.icon.upload:before {
+    content: "\f093";
 }
 i.icon.volume.up:before {
     content: "\f028";
