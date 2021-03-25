@@ -43,10 +43,6 @@ var derButton;
 var spkname1;
 var spkname2;
 
-/*
- * Display initialisation
- *
-*/
 
 window.onload = function() {
     nextQuestionButton = document.getElementById('nextQuestionButton');
@@ -83,7 +79,9 @@ window.onload = function() {
         let newName = ipcRenderer.sendSync('rename-speaker', currentName)
         if (newName && newName.replaceAll(' ', '')) {
             spkname1.innerHTML = newName
+            renameSpeaker(currentName, newName);
         }
+        
     }
     
     spkname2.onclick = function() {
@@ -130,13 +128,17 @@ window.onload = function() {
         sortSegComboBox1.value = this.value;
         getSegmentsFromNode(nodeId, valueSelected);
     });
+
+    ipcRenderer.on('saveFile', (event, arg) => {
+        saveFile(arg);
+    });
 }
 
-/*
- * POST REQUESTS
- * Post requests are used to communicate with the server
-*/
 
+/**
+  * Send a post request to get all the data from the diarization
+  *
+  */
 function loadDataForUI() {
 
     var jsonPath = path.join(__dirname, '..', 'settings.json');
@@ -157,6 +159,12 @@ function loadDataForUI() {
     })
 }
 
+
+/**
+  * Send a post request to answer a clustering question from the system
+  *
+  * @param {Boolean} answer The boolean that indicates if the two nodes should be group or not
+  */
 function answerQuestion(answer) {
     var options = {
         method: 'POST',
@@ -176,6 +184,11 @@ function answerQuestion(answer) {
     })
 }
 
+
+/**
+  * Send a post request to get the next question from the system
+  *
+  */
 function getNextQuestion() {
     var options = {
         method: 'POST',
@@ -195,12 +208,24 @@ function getNextQuestion() {
     })
 }
 
+
+/**
+  * Update the der track.
+  *
+  * @param {Object} der_track The new der track
+  */
 function updateDER(der_track) {
     derTrack = der_track
     der_log = der_track.der_log;
     document.getElementById('derButton').innerHTML = "DER: " +  der_log[der_log.length - 1].toFixed(2) + "%";
 }
 
+
+/**
+  * Send a post request to save the current diarization
+  *
+  * @param {string} path The path were the MDTM file should be saved
+  */
 function saveFile(path) {
     var options = {
         method: 'POST',
@@ -214,22 +239,33 @@ function saveFile(path) {
     request(options);
 }
 
-// send all segments to the server to update the diarization
-function updateInitDiar(segments) {
-    let system_config_path = path.join(__dirname, '../../config/lium_baseline.yaml')
-    console.log(system_config_path)
+/**
+  * Send a post request to rename a speaker
+  *
+  * @param {string} oldName The old name of the speaker
+  * @param {string} newName The new name of the speaker
+  */
+function renameSpeaker(oldName, newName) {
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/update_init_diar',
+        uri: 'http://127.0.0.1:5000/rename_speaker',
         json: {
-            segments: segments,
-            system_config_path: system_config_path
+            old_name: oldName,
+            new_name: newName
         }
     }
-    request(options)
+    request(options).then(function (res) {
+        //reload display and question
+    })
 }
 
-// ask the server to send the segments corresponding to the clicked node
+
+/**
+  * Send a post request to get the segments corresponding to the clicked node
+  *
+  * @param {Number} nodeId The id of the clicked node
+  * @param {string} selectionMethod The method that should be used to sort the segments
+  */
 function getSegmentsFromNode(nodeId, selectionMethod) {
      var options = {
          method: 'POST',
@@ -252,6 +288,11 @@ function getSegmentsFromNode(nodeId, selectionMethod) {
      })
  }
 
+
+ /**
+  * Send a post request to shutdown the flask server
+  *
+  */
  function shutdownServer() {
     var options = {
         method: 'POST',
@@ -263,25 +304,21 @@ function getSegmentsFromNode(nodeId, selectionMethod) {
     })
 }
 
-/*
- * IPC RENDERER
- * ipcRenderer is used to communicate with main.js
-*/
 
-ipcRenderer.on('saveFile', (event, arg) => {
-    saveFile(arg);
-});
-
-/*
- * Others methods
- *
-*/
-
+/**
+  * Load the segments in the global variable
+  * 
+  * @param {Array} segs The array of segments to load
+  */
 function loadSegments(segs) {
     segments = segs;
 }
 
 
+/**
+  * Update the display with default display
+  * 
+  */
 function updateDisplay() {
     nextQuestionButton.style.display = "";
     noButton.style.display = "none";
@@ -293,6 +330,11 @@ function updateDisplay() {
 }
 
 
+/**
+  * Load the diarization data
+  * 
+  * @param {Object} data The object containing the segments, the clusters and the tree
+  */
 function loadData(data) {
     loadSegments(data.segments)
     clusters = data.clusters;
@@ -301,6 +343,10 @@ function loadData(data) {
 }
 
 
+/**
+  * Draw a random color for each cluster
+  * 
+  */
 function randomColorClusters() {
   initialColors = [];
   for (i = 0; i < clusters.length; i++) {
@@ -314,6 +360,10 @@ function randomColorClusters() {
 }
 
 
+/**
+  * Display the text of the question
+  * 
+  */
 function displayQuestion() {
   let intituleQuestion = document.getElementById("question");
   let spk1 = document.getElementById("spkname1");
@@ -322,7 +372,11 @@ function displayQuestion() {
 }
 
 
-// Load the question sent by the system
+/**
+  * Load the question
+  * 
+  * @param {Object} question The question object sent by the system
+  */
 function loadQuestion(question) {
   // first find the node concerned by the question
   let node = findParentNode(question.node[0], question.node[1]);
@@ -335,6 +389,13 @@ function loadQuestion(question) {
   displayQuestion();
 }
 
+
+/**
+  * Load the segments to display
+  * 
+  * @param {Array} segList1 The first array of segments to display
+  * @param {Array} segList2 The second array of segments to display
+  */
 function loadSegmentsToDisplay(segList1, segList2) {
     findSegmentsToDisplay(segList1, segList2);
     setClustersToDisplay();
@@ -344,6 +405,14 @@ function loadSegmentsToDisplay(segList1, segList2) {
 }
 
 
+/**
+  * Process the two segment lists and get for each segment its index in "segments[]".
+  * Each index is added in "segmentsToDisplay[]"
+  * "separationIndex" is the index that marks the separation between the two segment lists.
+  * 
+  * @param {Array} segList1 The first array of segments to display
+  * @param {Array} segList2 The second array of segments to display
+  */
 function findSegmentsToDisplay(segList1, segList2) {
     separationIndex = segList1.length;
     segmentsToDisplay = [];
@@ -362,6 +431,13 @@ function findSegmentsToDisplay(segList1, segList2) {
 }
 
 
+/**
+  * Check if two arrays are equals
+  * 
+  * @param {Array} a1 The first array
+  * @param {Array} a2 The second array
+  * @returns {Boolean} Return true if arrays are equals, false otherwise
+  */
 function arraysEqual(a1,a2) {
     return JSON.stringify(a1)==JSON.stringify(a2);
 }

@@ -32,15 +32,23 @@ var questionNode;
 var flashRegionTimer;
 var flashNodeTimer
 
+
+/**
+  * Make the node of the dendrogram selected by the user bigger.
+  *
+  * @param node The html node to make bigger.
+  */
 function highlightNode(node) {
-
   selectedNode = node;
-
-  //make the node bigger
   d3.select(selectedNode)
     .attr("r",10)
 }
 
+
+/**
+  * Restore the selected node to its normal size.
+  *
+  */
 function removeHighlight() {
 
   //reset selected node style to default
@@ -58,7 +66,13 @@ function removeHighlight() {
   displayRegions();
 }
 
-//display node information on right panel
+
+/**
+  * Display a table of segments on the selected position.
+  *
+  * @param {Number[]} segsIndex The array containing the indexes of the segments to display. Each index refers to a segment in the "segments" variable.
+  * @param {Number} position The position where we want to display the segments. Value must be 1 or 2.
+  */
 function displaySegmentDetails(segsIndex, position) {
 
   if(position < 1 || position > 2) {
@@ -154,32 +168,29 @@ function displaySegmentDetails(segsIndex, position) {
   segTable.appendChild(table);
 }
 
- //return all segments linked to the node
-function getBaseClusterIDs(node, result = []){
-    if(!node.children || node.children.length === 0){
-        result.push(node.data["node_id"]);
-    } else {
-        for(i = 0; i < node.children.length; i++) {
-            result = getBaseClusterIDs(node.children[i], result);
-        }                   
-    }
-    return result;
-}
 
-//update node height / 100 based on the height of the root
+/**
+  * Update the height of the node in the dendrogram based on his height compared to the height of the root.
+  *
+  * @param node The html node.
+  */
 function changeNodesHeight(node) {
     graphHeight = height - 40;
     node.y = graphHeight - (node.data.height / rootHeight * graphHeight);
 }
 
 
-function drawDendrogram(data, threshold) {
+/**
+  * Draw the dendrogram from the json tree
+  *
+  * @param data The json tree.
+  */
+function drawDendrogram(data) {
 
     //remove previous dendrogram
     document.getElementById('svg').innerHTML = '';
 
     rootHeight = data.height;
-    
     // append the svg object to the body of the page
     var svg = d3.select("#svg")
     .append("svg")
@@ -190,7 +201,6 @@ function drawDendrogram(data, threshold) {
     .attr("transform", "translate(0,15)");  // bit of margin on the top = 15
     
     // read data
-    
     var cluster = d3.cluster()
       .size([ width, height - 40]) // bit of margin on the bottom = 20
       //distance between leaves
@@ -203,7 +213,7 @@ function drawDendrogram(data, threshold) {
     });
     cluster(root);
 
-    // Lien entre chaque noeud
+    // Link between each node
     svg.selectAll('path')
       .data( root.descendants().slice(1) )
       .enter()
@@ -249,10 +259,25 @@ function drawDendrogram(data, threshold) {
     resizeSVG();
 }
 
+
+/**
+  * Sorts 2 nodes according to their id, in ascending order
+  *
+  * @param node1 The first node.
+  * @param node2 The second node.
+  * @returns Negative value if node1 < node2, positive value if node1 > node2.
+  */
 function sortNodesById(node1, node2) {
   return node1.__data__.data.node_id - node2.__data__.data.node_id
 }
 
+
+/**
+  * Colors the tree nodes from bottom to top.
+  * A grouped node takes the color of its left child.
+  *
+  * @param {Array} sortedNodes The array of nodes sorted by their id.
+  */
 function colorNodesUpward(sortedNodes) {
   for (i = 0; i < sortedNodes.length; i++) {
     let node = sortedNodes[i];
@@ -269,7 +294,14 @@ function colorNodesUpward(sortedNodes) {
   }
 }
 
-//recursively check that the 2 children of a grouped node have the same color
+
+/**
+  * Recursively check that the 2 children of a grouped node have the same color
+  *
+  * @param {Array} sortedNodes The array of nodes sorted by their id.
+  * @param {Number} node_id The id of the node to check
+  * @param parent The parent node
+  */
 function colorNodesDownward(sortedNodes, node_id, parent) {
   var node = sortedNodes[node_id];
   if (parent && parent.__data__.data.isGrouped) {
@@ -291,7 +323,13 @@ function colorNodesDownward(sortedNodes, node_id, parent) {
 }
 
 
-// Find a parent node from the ids of two children
+/**
+  * Find the parent node from the ids of two children
+  *
+  * @param {Number} childNodeId1 The id of the first child node
+  * @param {Number} childNodeId2 The id of the second child node
+  * @returns the parent node of the two children
+  */
 function findParentNode(childNodeId1, childNodeId2) {
   let nodes = d3.selectAll("g")._groups[0]
   for (let i = 1; i < nodes.length; i++) {
@@ -307,6 +345,12 @@ function findParentNode(childNodeId1, childNodeId2) {
   return null;
 }
 
+
+/**
+  * Make a region of the waveform appears and disappears
+  *
+  * @param {Element} target The html region
+  */
 function flashRegion(target) {
   let segID = target.style["data-id"];
   let htmlRegion = wavesurfer.regions.list[segID].element;
@@ -316,6 +360,11 @@ function flashRegion(target) {
   }, 1600);
 }
 
+/**
+  * Make a node of the dendrogram appears and disappears
+  *
+  * @param {Element} target The html node
+  */
 function flashNode(target) {
   $(target).fadeOut(800).fadeIn(800);
   flashNodeTimer = setInterval(function(){ 
@@ -323,7 +372,11 @@ function flashNode(target) {
   }, 1600);
 }
 
-
+/**
+  * Manage the selected node when a node is clicked
+  *
+  * @param {Element} node The html node
+  */
 function nodeClicked(node) {
 
   if (node == selectedNode) {
@@ -341,6 +394,10 @@ function nodeClicked(node) {
 }
 
 
+/**
+  * Resize the dendrogram based on the size of the window
+  *
+  */
 function resizeSVG(){
   var dendrosvg = document.getElementById("dendrosvg");
   var svg = document.getElementById("svg");
@@ -354,9 +411,11 @@ function resizeSVG(){
   svg.style.paddingBottom=height+"px";
 }
 
+
 $(function(){
     resizeSVG();
 });
+
 
 window.addEventListener('resize', function(event){
     resizeSVG();
