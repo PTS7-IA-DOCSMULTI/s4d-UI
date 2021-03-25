@@ -106,8 +106,30 @@ window.onload = function() {
     initDisplay();
     loadDataForUI();
 
-    let path = ipcRenderer.sendSync('get-audio-path');
-    wavesurferOpenFile(path);
+    let audioPath = ipcRenderer.sendSync('get-audio-path');
+    wavesurferOpenFile(audioPath);
+
+    let jsonPath = path.join(__dirname, '..', 'settings.json');
+    let settings = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+
+    sortSegComboBox1 = document.getElementById('sortcmb1');
+    sortSegComboBox1.value = settings.selection_method;
+    sortSegComboBox2 = document.getElementById('sortcmb2');
+    sortSegComboBox2.value = settings.selection_method;
+
+    $(sortSegComboBox1).on('change', function (e) {
+        let valueSelected = this.value;
+        let nodeId = selectedNode.__data__.data["node_id"]
+        sortSegComboBox2.value = this.value;
+        getSegmentsFromNode(nodeId, valueSelected);
+    });
+
+    $(sortSegComboBox2).on('change', function (e) {
+        let valueSelected = this.value;
+        let nodeId = selectedNode.__data__.data["node_id"]
+        sortSegComboBox1.value = this.value;
+        getSegmentsFromNode(nodeId, valueSelected);
+    });
 }
 
 /*
@@ -208,12 +230,13 @@ function updateInitDiar(segments) {
 }
 
 // ask the server to send the segments corresponding to the clicked node
-function getSegmentsFromNode(nodeId) {
+function getSegmentsFromNode(nodeId, selectionMethod) {
      var options = {
          method: 'POST',
          uri: 'http://127.0.0.1:5000/get_segments_from_node',
          form: {
-            node_id: nodeId
+            node_id: nodeId,
+            selection_method: selectionMethod
         }
      }
  

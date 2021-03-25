@@ -514,6 +514,14 @@ def save_file():
 @app.route('/get_segments_from_node', methods=['POST'])
 def get_segments_from_node():
     node_id = int(request.form.get('node_id'))
+    sort_method = request.form.get('selection_method')
+
+    sort_by_start_time = False
+    if sort_method == "start_time":
+        sort_by_start_time = True
+        sort_method = "longest"
+
+
     data = None
     if node_id > number_cluster - 1:
         node = link[node_id - number_cluster]
@@ -523,7 +531,11 @@ def get_segments_from_node():
                                                                                 None,
                                                                                 init_diar,
                                                                                 current_vec_per_seg,
-                                                                                selection_method)
+                                                                                sort_method)
+        if sort_by_start_time:
+            first_seg_list_sorted.sort(key=get_start_time)
+            second_seg_list_sorted.sort(key=get_start_time)
+
         data = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
     else:
         seg_list_sorted, _ = get_segment_sorted_list([node_id, node_id],
@@ -532,7 +544,10 @@ def get_segments_from_node():
                                                      None,
                                                      init_diar,
                                                      current_vec_per_seg,
-                                                     selection_method)
+                                                     sort_method)
+        if sort_by_start_time:
+            seg_list_sorted.sort(key=get_start_time)
+
         data = dict(segs=seg_list_sorted)
 
     return json.dumps(data)
@@ -545,6 +560,11 @@ def shutdown():
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
     return json.dumps("")
+
+
+# take second element for sort
+def get_start_time(segment):
+    return segment[3]
 
 
 def correct_link_after_removing_node(number_cluster, node_idx, link_list, removed_nodes_number):
