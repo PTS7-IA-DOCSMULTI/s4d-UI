@@ -443,16 +443,10 @@ function arraysEqual(a1,a2) {
 }
 
 
-function getSegIndex(segment) {
-    for (let i = 0; i < segments.length; i++) {
-        if (arraysEqual(segments[i], segment)) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-
+/**
+  * Calculate the clusters to display according to the segments to display
+  * 
+  */
 function setClustersToDisplay() {
     clustersToDisplay = [];
     for (let i = 0; i < segmentsToDisplay.length; i++) {
@@ -465,6 +459,11 @@ function setClustersToDisplay() {
 }
 
 
+/**
+  * Save the diarization error rate log in a file
+  * 
+  * @param {Object} der The der object to save
+  */
 function saveDERToFile(der) {
     //third parameter is for pretty print
     let data = JSON.stringify(der, null, 4);
@@ -473,6 +472,10 @@ function saveDERToFile(der) {
 }
 
 
+/**
+  * Reset the display
+  * 
+  */
 function initDisplay() {
     nextQuestionButton.style.display = "none";
     noButton.style.display = "none";

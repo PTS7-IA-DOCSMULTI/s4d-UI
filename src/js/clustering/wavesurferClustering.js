@@ -29,6 +29,17 @@ var url;
 var wavesurfer;
 var isPlayingRegionOnly = false;
 
+window.addEventListener('resize', function(event){
+    resizeWaveform();
+    displayRegions();
+});
+
+
+/**
+ * Load the audio file with wavesurfer
+ * 
+ * @param {string} audioFilePath The path to the audio file
+ */
 function wavesurferOpenFile(audioFilePath) {
 
     wavesurfer.pause();
@@ -47,12 +58,24 @@ function wavesurferOpenFile(audioFilePath) {
     document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 }
 
+
+/**
+ * Display the current position in the audio file and the duration
+ * 
+ */
 function displayTime() {
     let text = secondsToHms(wavesurfer.getCurrentTime()) + " - " + secondsToHms(wavesurfer.getDuration());
     document.getElementById("audioTime").innerHTML = text;
 }
 
-//duration must be in second
+
+/**
+ * Format time in second to the format 'hh:mm:ss'.
+ * Do not display hours if hours is equals to 0.
+ * 
+ * @param {Number} d The duration in second
+ * @returns {string} The formatted time
+ */
 function secondsToHms(d) {
     d = Number(d);
     var h = Math.floor(d / 3600);
@@ -69,6 +92,11 @@ function secondsToHms(d) {
     return res;
 }
 
+
+/**
+ * Switch wavesurfer play/pause status
+ * 
+ */
 function playPause() {
     wavesurfer.playPause();
 	var playIcon = document.getElementById("play");
@@ -78,6 +106,10 @@ function playPause() {
 }
 
 
+/**
+ * Switch wavesurfer mute/unmute status
+ * 
+ */
 function toggleMute() {
     wavesurfer.toggleMute();
 	var volumeIcon = document.getElementById("volume");
@@ -85,6 +117,11 @@ function toggleMute() {
 	volumeIcon.classList.toggle("off");
 }
 
+
+/**
+ * Stop audio playback and set cursor at the beginning of the audio
+ * 
+ */
 function stop() {
     wavesurfer.stop();
 	var playIcon = document.getElementById("play");
@@ -92,6 +129,10 @@ function stop() {
 	playIcon.classList.remove("pause");
 }
 
+/**
+ * Initialize the wavesurfer object
+ * 
+ */
 function initWavesurfer() {
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
@@ -177,7 +218,10 @@ function initWavesurfer() {
 }
 
 
-// display regions on waveform
+/**
+ * Display regions on the waveform according to the segments in "segmentsToDisplay[]"
+ * 
+ */
 function displayRegions() {
     //remove all regions displayed on waveform
     wavesurfer.clearRegions();
@@ -217,6 +261,11 @@ function displayRegions() {
     }
 }
 
+
+/**
+ * Resize waveform according to the size of the window
+ * 
+ */
 function resizeWaveform(){
     var waveform = document.getElementById("waveform");
     var shadowBlock = waveform.parentElement.parentElement;
@@ -227,8 +276,3 @@ function resizeWaveform(){
     var height = shadowBlock.clientHeight - headerBlock.clientHeight - paddingTop - paddingBottom
     wavesurfer.setHeight(height)
 }
-
-window.addEventListener('resize', function(event){
-    resizeWaveform();
-    displayRegions();
-});

@@ -116,7 +116,12 @@ const mainMenuTemplate =  [
   } 
 ];
 
-var openFile = function() {
+
+/**
+ * Open file dialog to choose an audio file to open
+ * 
+ */
+function openFile() {
   dialog.showOpenDialog({
     properties: [ 'openFile'], 
     filters: [
@@ -151,7 +156,12 @@ var openFile = function() {
   })
 };
 
-var openSettings = function() {
+
+/**
+ * Open the settings window
+ * 
+ */
+function openSettings() {
   let settingsWindow;
   settingsWindow = new BrowserWindow({
     parent: mainWindow,
@@ -181,7 +191,12 @@ var openSettings = function() {
   settingsWindow.setMenu(null);
 }
 
-var saveFile = function() {
+
+/**
+ * Open file dialog to choose a path to save the mdtm file
+ * 
+ */
+function saveFile() {
   dialog.showSaveDialog({
     filters: [
       { 
@@ -199,7 +214,12 @@ var saveFile = function() {
   })
 };
 
-var openDER = function() {
+
+/**
+ * Open the der window.
+ * 
+ */
+function openDER() {
   let derWindow;
   derWindow = new BrowserWindow({
    parent: mainWindow,
@@ -287,6 +307,10 @@ const contextMenuTemplate =  [
 ]
 
 
+/**
+ * Initialize the context menu to display on right click
+ * 
+ */
 function initContextMenu() {
   contextMenu({
     append: () => {return contextMenuTemplate},
@@ -316,6 +340,11 @@ ipcMain.on('should-show-menu', (event, arg) => {
   shouldShowMenu = arg;
 })
 
+
+/**
+ * Display the segmentation page
+ * 
+ */
 function displaySegmentationStep() {
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, '../html/segmentation.html'),
@@ -324,7 +353,10 @@ function displaySegmentationStep() {
   }));
 }
 
-
+/**
+ * Display the clustering step
+ * 
+ */
 function displayClusteringStep() {
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, '../html/clustering.html'),
@@ -334,6 +366,10 @@ function displayClusteringStep() {
 }
 
 
+/**
+ * Display the open file step
+ * 
+ */
 function displayOpenFileStep() {
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, '../html/index.html'),

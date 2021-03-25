@@ -389,7 +389,8 @@ function nodeClicked(node) {
     highlightNode(selectedNode);
 
     nodeId = node.__data__.data["node_id"]
-    getSegmentsFromNode(nodeId);
+    let selection_method = $('#sortcmb1').val()
+    getSegmentsFromNode(nodeId, selection_method);
   }
 }
 

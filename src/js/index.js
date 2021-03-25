@@ -60,6 +60,10 @@ window.onload = function() {
 }
 
 
+/**
+  * Send a post request to shutdown the flask server
+  *
+  */
 function shutdownServer() {
     var options = {
         method: 'POST',
@@ -70,9 +74,4 @@ function shutdownServer() {
         console.log("Server down")
     })
 }
-
-
-ipcRenderer.on('saveFile', (event, arg) => {
-    saveFile(arg);
-});
 

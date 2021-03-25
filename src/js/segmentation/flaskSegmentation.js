@@ -40,16 +40,15 @@ var segmentsToDisplay = [];
 var validateButton;
 var flashRegionTimer;
 
-/*
- * Display initialisation
- *
-*/
-
 window.onload = function() {
     validateButton = document.getElementById('validateButton');
     validateButton.onclick = function() {
-        validateSegmentation();
+        updateInitDiar(segments);
     }
+
+    ipcRenderer.on('saveFile', (event, arg) => {
+        saveFile(arg);
+    });
 
     initWavesurfer();
     let audioPath = ipcRenderer.sendSync('get-audio-path');
@@ -62,11 +61,12 @@ window.onload = function() {
     loadFile(url);
 }
 
-/*
- * POST REQUESTS
- * Post requests are used to communicate with the server
-*/
 
+/**
+  * Send a post request to get the initial diarization
+  *
+  * @param {string} fileName The path to the audio file to load
+  */
 function loadFile(fileName) {
 
     var options = {
@@ -85,6 +85,12 @@ function loadFile(fileName) {
     })
 }
 
+
+/**
+  * Send a post request to save the current diarization
+  *
+  * @param {string} path The path were the MDTM file should be saved
+  */
 function saveFile(path) {
     var options = {
         method: 'POST',
@@ -98,7 +104,11 @@ function saveFile(path) {
     request(options);
 }
 
-// send all segments to the server to update the diarization
+
+/**
+ * Send a post request to update the initial diar with the segmentation modified by the user
+ * @param {Array} segments The segments modified by the user
+ */
 function updateInitDiar(segments) {
 
     var jsonPath = path.join(__dirname, '..', 'settings.json');
@@ -135,6 +145,11 @@ function updateInitDiar(segments) {
     })
 }
 
+
+/**
+  * Send a post request to shutdown the flask server
+  *
+  */
  function shutdownServer() {
     var options = {
         method: 'POST',
@@ -146,20 +161,11 @@ function updateInitDiar(segments) {
     })
 }
 
-/*
- * IPC RENDERER
- * ipcRenderer is used to communicate with main.js
-*/
 
-ipcRenderer.on('saveFile', (event, arg) => {
-    saveFile(arg);
-});
-
-/*
- * Others methods
- *
-*/
-
+/**
+ * Fill "clusters[]" with all the clusters found in the segments
+ * 
+ */
 function findClusters() {
     clusters = [];
     for (let i = 0; i < segments.length; i++) {
@@ -170,6 +176,10 @@ function findClusters() {
 }
 
 
+/**
+  * Draw a random color for each cluster
+  * 
+  */
 function randomColorClusters() {
   colors = [];
   for (i = 0; i < clusters.length; i++) {
@@ -181,6 +191,11 @@ function randomColorClusters() {
 }
 
 
+/**
+ * Update segments to display according to the selected speaker
+ * 
+ * @param {string} selectedSpeaker The speaker selected
+ */
 function updateSegmentsToDisplay(selectedSpeaker) {
     segmentsToDisplay = []
     for (let i = 0; i < segments.length; i++) {
@@ -191,27 +206,24 @@ function updateSegmentsToDisplay(selectedSpeaker) {
 }
 
 
+/**
+  * Check if two arrays are equals
+  * 
+  * @param {Array} a1 The first array
+  * @param {Array} a2 The second array
+  * @returns {Boolean} Return true if arrays are equals, false otherwise
+  */
 function arraysEqual(a1,a2) {
     return JSON.stringify(a1)==JSON.stringify(a2);
 }
 
 
-function getSegIndex(segment) {
-    for (let i = 0; i < segments.length; i++) {
-        if (arraysEqual(segments[i], segment)) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-
-function validateSegmentation() {
-    updateInitDiar(segments);
-}
-
-
-//display node information on right panel
+/**
+  * Display a table of segments on the right panel.
+  *
+  * @param {Number[]} segsIndex The array containing the indexes of the segments to display.
+  * Each index refers to a segment in the "segments" variable.
+  */
 function displaySegmentDetails(segsIndex) {
   
     let segTable = document.getElementById("segTable2");
@@ -298,6 +310,12 @@ function displaySegmentDetails(segsIndex) {
     segTable.appendChild(table);
 }
 
+
+/**
+  * Make a region of the waveform appears and disappears
+  *
+  * @param {Element} target The html region
+  */
 function flashRegion(target) {
     let segID = target.style["data-id"];
     let htmlRegion = wavesurfer.regions.list[segID].element;
@@ -307,6 +325,11 @@ function flashRegion(target) {
     }, 1600);
 }
 
+
+/**
+ * Display all data
+ * 
+ */
 function displayData() {
     displaySpeakerNames();
     updateSelectedSpeaker();
@@ -314,7 +337,10 @@ function displayData() {
     displayRegions();
 }
 
-
+/**
+ * Create and html table with one speaker and one radio button per row
+ * 
+ */
 function displaySpeakerNames() {
   
     let speakersTable = document.getElementById("speakers");
@@ -355,6 +381,9 @@ function displaySpeakerNames() {
 }
 
 
+/**
+ * Update the selected speaker and the display consequently
+ */
 function updateSelectedSpeaker() {
     let selectedSpeaker = $("input[name='selectedSpeaker']:checked").val();
     updateSegmentsToDisplay(selectedSpeaker);

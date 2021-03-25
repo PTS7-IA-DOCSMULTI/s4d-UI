@@ -64,15 +64,25 @@ window.addEventListener('mousemove', e => {
     }  
   });
 
+
+/**
+ * Display the current position in the audio file and the duration
+ * 
+ */
 function displayTime() {
     let text = secondsToHms(wavesurfer.getCurrentTime()) + " - " + secondsToHms(wavesurfer.getDuration());
     document.getElementById("audioTime").innerHTML = text;
 }
 
+
+/**
+ * Load the audio file with wavesurfer
+ * 
+ * @param {string} filename The path to the audio file
+ */
 function wavesurferLoadFile(filename) {
 
     wavesurfer.pause();
-
     var playIcon = document.getElementById("play");
     playIcon.classList.remove("play");
     playIcon.classList.add("play");
@@ -87,7 +97,14 @@ function wavesurferLoadFile(filename) {
     document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 };
 
-//duration must be in second
+
+/**
+ * Format time in second to the format 'hh:mm:ss'.
+ * Do not display hours if hours is equals to 0.
+ * 
+ * @param {Number} d The duration in second
+ * @returns {string} The formatted time
+ */
 function secondsToHms(d) {
     d = Number(d);
     var h = Math.floor(d / 3600);
@@ -104,6 +121,11 @@ function secondsToHms(d) {
     return res;
 }
 
+
+/**
+ * Switch wavesurfer play/pause status
+ * 
+ */
 function playPause() {
     wavesurfer.playPause();
 	var playIcon = document.getElementById("play");
@@ -113,6 +135,10 @@ function playPause() {
 }
 
 
+/**
+ * Switch wavesurfer mute/unmute status
+ * 
+ */
 function toggleMute() {
     wavesurfer.toggleMute();
 	var volumeIcon = document.getElementById("volume");
@@ -120,6 +146,11 @@ function toggleMute() {
 	volumeIcon.classList.toggle("off");
 }
 
+
+/**
+ * Stop audio playback and set cursor at the beginning of the audio
+ * 
+ */
 function stop() {
     wavesurfer.stop();
 	var playIcon = document.getElementById("play");
@@ -127,6 +158,11 @@ function stop() {
 	playIcon.classList.remove("pause");
 }
 
+
+/**
+ * Enable or disabled the possibility to create region by dragging with the mouse on the waveform
+ * @param {Boolean} dragSelection 
+ */
 function setDragSelection(dragSelection) {
     if (dragSelection) {
         wavesurfer.enableDragSelection(true);
@@ -135,6 +171,11 @@ function setDragSelection(dragSelection) {
     }
 }
 
+
+/**
+ * Initialize the wavesurfer object
+ * 
+ */
 function initWavesurfer() {
     wavesurfer = WaveSurfer.create({
         container: '#waveform',
@@ -223,7 +264,7 @@ function initWavesurfer() {
     wavesurfer.on('region-created', region => {
         if (region.id.toString().startsWith("wavesurfer")) {
             regionCreated = region
-            document.addEventListener('mousemove', colorRegionCreatedByUser, false);
+            document.addEventListener('mousemove', initRegionCreatedByUser, false);
         } 
     });
 
@@ -251,7 +292,10 @@ function initWavesurfer() {
 }
 
 
-// display regions on waveform
+/**
+ * Display regions on the waveform according to the segments in "segmentsToDisplay[]"
+ * 
+ */
 function displayRegions() {
     //remove all regions displayed on waveform
     wavesurfer.clearRegions();
@@ -295,6 +339,13 @@ function displayRegions() {
    setDragSelection(dragSelection)
 }
 
+
+/**
+ * Return the following region from the same speaker for a given region
+ * 
+ * @param {Object} region The given region
+ * @returns {Object} Return the next region of the same speaker if it exists, otherwise return null
+ */
 function getNextRegionFromSameSpeaker(region) {
     seg = segments[region.id];
     sameSpeakerSegments = segments.filter( s => s[1] == seg[1]);
@@ -306,6 +357,13 @@ function getNextRegionFromSameSpeaker(region) {
     return wavesurfer.regions.list[nextSegId]
 }
 
+
+/**
+ * Return the previous region from the same speaker for a given region
+ * 
+ * @param {Object} region The given region
+ * @returns {Object} Return the previous region of the same speaker if it exists, otherwise return null
+ */
 function getBackRegionFromSameSpeaker(region) {
     seg = segments[region.id];
     sameSpeakerSegments = segments.filter( s => s[1] == seg[1]);
@@ -317,7 +375,11 @@ function getBackRegionFromSameSpeaker(region) {
     return wavesurfer.regions.list[backSegId]
 }
 
-//set next and back region for each region
+
+/**
+ * Set the next and back region for each region
+ * 
+ */
 function updateBoundaries() {
     for (id in wavesurfer.regions.list) {
         let region = wavesurfer.regions.list[id];
@@ -326,9 +388,15 @@ function updateBoundaries() {
     }
 }
 
-function colorRegionCreatedByUser(mouseEvent) {
 
-    document.removeEventListener('mousemove', colorRegionCreatedByUser);
+/**
+ * Initialize settings for the region created by the user after dragging with the mouse
+ * 
+ * @param {event} mouseEvent The mouse event corresponding to the drag
+ */
+function initRegionCreatedByUser(mouseEvent) {
+
+    document.removeEventListener('mousemove', initRegionCreatedByUser);
 
     mouseY = mouseEvent.pageY;
     waveform = document.getElementById('waveform');
@@ -362,6 +430,12 @@ function colorRegionCreatedByUser(mouseEvent) {
     regionCreated.attributes.backRegion = getBackRegionForNewRegion(regionCreated)
 }
 
+
+/**
+ * Create the segment corresponding to the region created by the user
+ * and append the segment in the segments list 
+ * @param {Object} region 
+ */
 function generateSegmentCreatedByUser(region) {
 
     //create the segment
@@ -383,6 +457,12 @@ function generateSegmentCreatedByUser(region) {
     displayRegions();
 }
 
+
+/**
+ * Delete a region from the waveform.
+ * The associated segment is remove from the segment list.
+ * @param {Object} region The region to delete
+ */
 function deleteRegion(region) {
     let id = region.getAttribute('data-id');
     //remove segment
@@ -393,6 +473,13 @@ function deleteRegion(region) {
 
 }
 
+
+/**
+ * Split a region into two regions and update the segment list.
+ * 
+ * @param {Object} region The region to split
+ * @param {Number} x The horizontal x coordinate which indicates where to separate the regions
+ */
 function splitRegion(region, x) {
     // duplicate the segment
     let id = region.getAttribute('data-id');
@@ -418,6 +505,11 @@ function splitRegion(region, x) {
     displayRegions();
 }
 
+
+/**
+ * Resize waveform according to the size of the window
+ * 
+ */
 function resizeWaveform(){
     let speakers = document.getElementById("speakers")
     let table = speakers.childNodes[0]
@@ -431,6 +523,12 @@ window.addEventListener('resize', function(event){
 });
 
 
+/**
+ * Return the following region from the same speaker for the a new region created
+ * 
+ * @param {Object} region The new region created
+ * @returns {Object} Return the next region of the same speaker if it exists, otherwise return null
+ */
 function getNextRegionForNewRegion(newRegion) {
     indexCluster = newRegion.style.groupId;
     sameSpeakerSegments = segments.filter( s => s[1] == clusters[indexCluster]);
@@ -449,6 +547,12 @@ function getNextRegionForNewRegion(newRegion) {
 }
 
 
+/**
+ * Return the previous region from the same speaker for the a new region created
+ * 
+ * @param {Object} region The new region created
+ * @returns {Object} Return the previous region of the same speaker if it exists, otherwise return null
+ */
 function getBackRegionForNewRegion(newRegion) {
     indexCluster = newRegion.style.groupId;
     sameSpeakerSegments = segments.filter( s => s[1] == clusters[indexCluster]);
