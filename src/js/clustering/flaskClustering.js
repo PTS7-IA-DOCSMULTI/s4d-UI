@@ -55,6 +55,8 @@ window.onload = function() {
     derButton = document.getElementById('derButton');
     spkname1 = document.getElementById('spkname1');
     spkname2 = document.getElementById('spkname2');
+    backButton = document.getElementById('backButton');
+    saveButton = document.getElementById('saveButton');
 
     nextQuestionButton.onclick = function() {
         getNextQuestion();
@@ -90,6 +92,14 @@ window.onload = function() {
         if (newName && newName.replaceAll(' ', '')) {
             spkname2.innerHTML = newName
         }
+    }
+
+    backButton.onclick = function() {
+        ipcRenderer.send('show-segmentation');
+    }
+
+    saveButton.onclick = function() {
+        ipcRenderer.send('save-file');
     }
 
     initWavesurfer();

@@ -365,6 +365,10 @@ ipcMain.on('show-segmentation', (event, arg) => {
   displaySegmentationStep();
 })
 
+ipcMain.on('save-file', (event, arg) => {
+  saveFile();
+})
+
 
 
 
