@@ -31,13 +31,31 @@ var openFileButton;
 
 window.onload = function() {
     openFileButton = document.getElementById('openFileButton');
+    loadSegButton = document.getElementById('loadSegButton');
+    filePathText = document.getElementById('filePath');
+    openIcon = document.getElementById('openIcon');
+
     openFileButton.onclick = function() {
         ipcRenderer.send('open-file');        
     }
 
-    let errorMsg = ipcRenderer.sendSync('get-error-msg');
-    if (errorMsg) {
-        alert(errorMsg);    
+    openIcon.onclick = function() {
+        ipcRenderer.send('open-file');        
+    }
+
+    loadSegButton.onclick = function() {
+        ipcRenderer.send('show-segmentation');        
+    }
+
+    let res = ipcRenderer.sendSync('get-open-file-result');
+ 
+    if(res.audioPath) {
+        filePathText.innerHTML = res.audioPath
+        loadSegButton.parentElement.style.visibility = 'visible'
+    } else {
+        loadSegButton.parentElement.style.visibility = 'hidden'
+        filePathText.innerHtml = "No selected file"
+        if(res.errorMsg) alert(res.errorMsg);
     }
 }
 

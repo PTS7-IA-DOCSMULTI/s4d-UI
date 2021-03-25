@@ -24,6 +24,7 @@
 
 var WaveSurfer = require('wavesurfer.js');
 var RegionPlugin = require ('wavesurfer.js/dist/plugin/wavesurfer.regions.min.js');
+var MinimapPlugin = require ('wavesurfer.js/dist/plugin/wavesurfer.minimap.min.js');
 const ipcRendererWaveSurfer = require('electron').ipcRenderer;
 var url;
 var wavesurfer;
@@ -140,7 +141,10 @@ function initWavesurfer() {
         plugins: [
             RegionPlugin.create({
                 dragSelection: true
-            })
+            })/*,
+            MinimapPlugin.create({
+ 
+            })*/
         ],
         waveColor: 'white',
         progressColor: 'white',

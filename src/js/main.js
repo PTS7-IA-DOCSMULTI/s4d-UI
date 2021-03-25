@@ -128,6 +128,7 @@ var openFile = function() {
   }).then(result => {
     openFileErrorMsg = ""
     if(!result.canceled) {
+      audioPath = result.filePaths[0]
       // remove the extension of the audio file
       var url = result.filePaths[0].split('.');
       url.pop();
@@ -138,13 +139,12 @@ var openFile = function() {
       for (i = 0; i < extensions.length; i++) {
         let path = url + extensions[i];
         if (!fs.existsSync(path)) {
-          displayOpenFileStep();
           openFileErrorMsg = "File not found:\n" + path + "\n Make sure to put this file in the same folder than the audio file";
-          return;
+          audioPath = ""
+          break;
         }
       }
-      audioPath = result.filePaths[0]
-      displaySegmentationStep();
+      displayOpenFileStep();
     }
   }).catch(err => {
     console.log(err)
@@ -348,14 +348,23 @@ ipcMain.on('get-audio-path', (event, arg) => {
 })
 
 
-ipcMain.on('get-error-msg', (event, arg) => {
-  event.returnValue = openFileErrorMsg;
+ipcMain.on('get-open-file-result', (event, arg) => {
+  event.returnValue = {
+    errorMsg: openFileErrorMsg,
+    audioPath: audioPath
+  }
 })
 
 
 ipcMain.on('open-file', (event, arg) => {
   openFile();
 })
+
+
+ipcMain.on('show-segmentation', (event, arg) => {
+  displaySegmentationStep();
+})
+
 
 
 
