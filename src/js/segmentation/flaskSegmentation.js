@@ -46,6 +46,13 @@ window.onload = function() {
         updateInitDiar(segments);
     }
 
+    resetButton = document.getElementById('resetSegmentation');
+    resetButton.onclick = function() {
+        let audioPath = ipcRenderer.sendSync('get-audio-path');
+        let url = path.join(folderPath, shortFileName)
+        getInitDiar(url);
+    }
+
     ipcRenderer.on('saveFile', (event, arg) => {
         saveFile(arg);
     });
@@ -53,12 +60,17 @@ window.onload = function() {
     initWavesurfer();
     let audioPath = ipcRenderer.sendSync('get-audio-path');
     wavesurferLoadFile(audioPath);
-
     folderPath = path.dirname(audioPath);
     extension = path.extname(audioPath)
     shortFileName = path.basename(audioPath, extension)
     url = path.join(folderPath, shortFileName)
-    loadFile(url);
+
+    let userSegAlreadyExists = fs.existsSync(url + ".user_seg.mdtm")
+    if (userSegAlreadyExists) {
+        getSavedSegmentation(url);
+    } else {
+        getInitDiar(url);
+    }
 }
 
 
@@ -67,7 +79,7 @@ window.onload = function() {
   *
   * @param {string} fileName The path to the audio file to load
   */
-function loadFile(fileName) {
+function getInitDiar(fileName) {
 
     var options = {
         method: 'POST',
@@ -83,6 +95,29 @@ function loadFile(fileName) {
         randomColorClusters();
         displayData();
     })
+}
+
+/** 
+  * Send a post request to get the segmentation saved by the user
+  *
+  * @param {string} fileName The path to the audio file to load
+  */
+function getSavedSegmentation(fileName) {
+
+  var options = {
+      method: 'POST',
+      uri: 'http://127.0.0.1:5000/get_user_seg',
+      json: {
+          show_name: fileName,
+      }
+  }
+
+  request(options).then(function(res) {
+      segments = res.segments
+      findClusters();
+      randomColorClusters();
+      displayData();
+  })
 }
 
 

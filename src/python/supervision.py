@@ -203,6 +203,17 @@ def get_init_diar():
     return json.dumps(dict(segments=first_pass_diar.segments))
 
 
+@app.route('/get_user_seg', methods=['POST'])
+def get_user_seg():
+    json_str = str(request.get_json())
+    json_str = json_str.replace("\'", "\"")
+    show_name = json.loads(json_str)['show_name']
+
+    global first_pass_diar
+    first_pass_diar = s4d.Diar.read_mdtm(f"{show_name}.user_seg.mdtm")
+    return json.dumps(dict(segments=first_pass_diar.segments))
+
+
 # Create a nested dictionary from the ClusterNode's returned by SciPy
 def add_node(node, parent):
     # First create the new node and append it to its parent's children
