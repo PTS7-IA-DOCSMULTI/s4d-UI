@@ -59,6 +59,8 @@ window.onload = function() {
     spkname2 = document.getElementById('spkname2');
     backButton = document.getElementById('backButton');
     saveButton = document.getElementById('saveButton');
+    renameBtn1 = document.getElementById('renameBtn1');
+    renameBtn2 = document.getElementById('renameBtn2');
 
     nextQuestionButton.onclick = function() {
         getNextQuestion();
@@ -80,7 +82,7 @@ window.onload = function() {
         ipcRenderer.sendSync('open-der', derTrack)
     }
     
-    spkname1.onclick = function() {
+    renameBtn1.onclick = function() {
         let currentName = spkname1.innerHTML
         let newName = ipcRenderer.sendSync('rename-speaker', currentName)
         if (newName && newName.replaceAll(' ', '')) {
@@ -91,7 +93,7 @@ window.onload = function() {
         }
     }
     
-    spkname2.onclick = function() {
+    renameBtn2.onclick = function() {
         let currentName = spkname2.innerHTML
         let newName = ipcRenderer.sendSync('rename-speaker', currentName)
         if (newName && newName.replaceAll(' ', '')) {
@@ -259,8 +261,9 @@ function saveFile(path) {
     var options = {
         method: 'POST',
         uri: 'http://127.0.0.1:5000/save_file',
-        form: {
-            path: path
+        json: {
+            path: path,
+            new_cluster_labels: getNewClusterLabels()
         }
     }
 
@@ -288,8 +291,7 @@ function renameSpeaker(defaultClusterName, newName) {
     displaySegmentDetails(segmentsToDisplay.slice(separationIndex, segmentsToDisplay.length), 2, !rightNodeIsOneSpeaker);
     if(document.getElementById("question").innerHTML) {
         displayQuestion();
-    }
-    
+    }    
 }
 
 
@@ -542,8 +544,28 @@ function getSpeakerNewName(defaultClusterName) {
 }
 
 
+/**
+ * Return the name of a cluster for a given node
+ * @param {Number} nodeId The if of the node 
+ * @returns {string The name of the cluster}
+ */
 function getClusterFromNodeId(nodeId) {
     if (nodeId < clusters.length) {
         return clusters[nodeId];
     }
+}
+
+
+/**
+ * Return an object with the old name and the new name of each initial cluster
+ * @returns {Object} The object with the old name and the new name
+ */
+function getNewClusterLabels() {
+    newClusterLabels = new Object;
+    for (let i = 0; i < clusters.length; i++) {
+        oldName = clusters[i];
+        newName = renamingTable.links[oldName].newName;
+        newClusterLabels[oldName] = newName;
+    }
+    return newClusterLabels
 }

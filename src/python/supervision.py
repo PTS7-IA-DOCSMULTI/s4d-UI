@@ -506,8 +506,14 @@ def next_question():
 
 @app.route('/save_file', methods=['POST'])
 def save_file():
-    path = request.form.get('path')
-    allies_write_diar(current_diar, path)
+    json_str = str(request.get_json())
+    json_str = json_str.replace("\'", "\"")
+    path = json.loads(json_str)['path']
+    new_cluster_labels = json.loads(json_str)['new_cluster_labels']
+    diar_to_save = copy.deepcopy(current_diar)
+    for seg in diar_to_save.segments:
+        seg['cluster'] = new_cluster_labels[seg['cluster']]
+    allies_write_diar(diar_to_save, path)
     return json.dumps("")
 
 
@@ -520,7 +526,6 @@ def get_segments_from_node():
     if sort_method == "start_time":
         sort_by_start_time = True
         sort_method = "longest"
-
 
     data = None
     if node_id > number_cluster - 1:
@@ -536,7 +541,7 @@ def get_segments_from_node():
             first_seg_list_sorted.sort(key=get_start_time)
             second_seg_list_sorted.sort(key=get_start_time)
 
-        data = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node=node.tolist())
+        data = dict(segs1=first_seg_list_sorted, segs2=second_seg_list_sorted, node_id=node_id)
     else:
         seg_list_sorted, _ = get_segment_sorted_list([node_id, node_id],
                                                      link,
@@ -548,7 +553,7 @@ def get_segments_from_node():
         if sort_by_start_time:
             seg_list_sorted.sort(key=get_start_time)
 
-        data = dict(segs=seg_list_sorted)
+        data = dict(segs=seg_list_sorted, node_id=node_id)
 
     return json.dumps(data)
 

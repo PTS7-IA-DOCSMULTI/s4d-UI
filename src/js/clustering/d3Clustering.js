@@ -23,7 +23,7 @@
 */
 
 //dimensions and margins of the graph
-var width = 335;
+var width = 600;
 var height = 335;
 
 var rootHeight;
@@ -109,15 +109,20 @@ function displaySegmentDetails(segsIndex, position, severalSpeakers) {
   let spknameID = "spkname" + position;
   let spkName = document.getElementById(spknameID);
 
+  let renameBtnID = "renameBtn" + position;
+  let renameBtn = document.getElementById(renameBtnID);
+
   let tbody = table.createTBody();
   let j = 0;
 
   if (segsIndex.length == 0) {
     tag.style.display = "none";
-    spkName.innerHTML = "Speaker";
+    spkName.innerHTML = "";
+    renameBtn.style.display = "none"
   } else if (severalSpeakers) {
     tag.style.display = "none";
     spkName.innerHTML = "Several speakers";
+    renameBtn.style.display = "none"
   } else  {
     let firstSeg = segments[segsIndex[0]];
     let indexCluster = clusters.indexOf(firstSeg[1]);
@@ -126,6 +131,7 @@ function displaySegmentDetails(segsIndex, position, severalSpeakers) {
     tag.style.display = "";
     let name = getSpeakerNewName(firstSeg[1]);
     spkName.innerHTML = name;
+    renameBtn.style.display = ""
   }
 
   for(let i = 0; i < segsIndex.length; i++) {
