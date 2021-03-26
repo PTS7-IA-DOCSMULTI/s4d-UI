@@ -35,12 +35,21 @@ window.addEventListener('load', function () {
     drawChart();
 });
 
+
+/**
+ * Load the diarization error rate log from the json file
+ * 
+ */
 function loadDER() {
-    //load DER
  	var jsonPath = path.join(__dirname, '..', 'der.json');
     derTrack = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
 }
 
+
+/**
+ * Draw the DER log chart with D3.js
+ * 
+ */
 function drawChart() {
 
     // remove previous chart
@@ -145,6 +154,14 @@ window.addEventListener('resize', function(event){
     drawChart();
 });
 
+
+/**
+ * Make a point of the graph bigger when the mouse is over the point.
+ * Also display the correction type associated to the point.
+ * 
+ * @param {Object} d The data associated to the point
+ * @param {Number} i The index of the point
+ */
 function handleMouseOver(d, i) {  // Add interactivity
 
     this.setAttribute("fill", "orange")
@@ -161,6 +178,13 @@ function handleMouseOver(d, i) {  // Add interactivity
         });
   }
 
+
+/**
+ * Restore the point to its normal size and color when the mouse leave the point.
+ * 
+ * @param {Object} d The data associated to the point
+ * @param {Number} i The index of the point
+ */
 function handleMouseOut(d, i) {
     
     this.setAttribute("fill", "steelblue")
@@ -169,6 +193,14 @@ function handleMouseOut(d, i) {
     d3.select("#t-" + i).remove();  // Remove text location
 }
 
+
+/**
+ * Return the x position of the text associated to a point.
+ * Avoid displaying the text outside of the window.
+ * 
+ * @param {Object} d The data associated to the point
+ * @returns {Number} The x position of the text
+ */
 function getX(d) {
     res = xScale(d.x);
     if (res + 250 > $("#svg").width()) {
@@ -177,6 +209,14 @@ function getX(d) {
     return res;
 }
 
+
+/**
+ * Return the y position of the text associated to a point.
+ * Avoid displaying the text outside of the window.
+ * 
+ * @param {Object} d The data associated to the point
+ * @returns {Number} The y position of the point
+ */
 function getY(d) {
     res = yScale(d.y) - 20;
     if (res < 0) {
@@ -184,5 +224,3 @@ function getY(d) {
     }
     return res;
 }
-
-
