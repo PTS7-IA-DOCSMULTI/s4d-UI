@@ -30,7 +30,8 @@ var rootHeight;
 var selectedNode;
 var questionNode;
 var flashRegionTimer;
-var flashNodeTimer
+var flashNodeTimer;
+var sortedNodes;
 
 
 /**
@@ -61,8 +62,8 @@ function removeHighlight() {
   clustersToDisplay = [];
 
   //update display
-  displaySegmentDetails([], 1);
-  displaySegmentDetails([], 2)
+  displaySegmentDetails([], 1, false);
+  displaySegmentDetails([], 2, false);
   displayRegions();
 }
 
@@ -70,10 +71,12 @@ function removeHighlight() {
 /**
   * Display a table of segments on the selected position.
   *
-  * @param {Number[]} segsIndex The array containing the indexes of the segments to display. Each index refers to a segment in the "segments" variable.
+  * @param {Number[]} segsIndex The array containing the indexes of the segments to display.
+  * Each index refers to a segment in the "segments" variable.
   * @param {Number} position The position where we want to display the segments. Value must be 1 or 2.
+  * @param {Boolean} severalSpeakers Whether or not the segments to display represent several speakers
   */
-function displaySegmentDetails(segsIndex, position) {
+function displaySegmentDetails(segsIndex, position, severalSpeakers) {
 
   if(position < 1 || position > 2) {
     console.error("Position arg must be 1 or 2");
@@ -109,17 +112,20 @@ function displaySegmentDetails(segsIndex, position) {
   let tbody = table.createTBody();
   let j = 0;
 
-  if (segsIndex.length > 0) {
+  if (segsIndex.length == 0) {
+    tag.style.display = "none";
+    spkName.innerHTML = "Speaker";
+  } else if (severalSpeakers) {
+    tag.style.display = "none";
+    spkName.innerHTML = "Several speakers";
+  } else  {
     let firstSeg = segments[segsIndex[0]];
     let indexCluster = clusters.indexOf(firstSeg[1]);
     let color = currentColors[indexCluster];
     tag.style.backgroundColor = color ? color : "rgba(71,71,71,255)";
     tag.style.display = "";
-    let name = firstSeg[1];
+    let name = getSpeakerNewName(firstSeg[1]);
     spkName.innerHTML = name;
-  } else {
-    tag.style.display = "none";
-    spkName.innerHTML = "Speaker";
   }
 
   for(let i = 0; i < segsIndex.length; i++) {
@@ -253,9 +259,12 @@ function drawDendrogram(data) {
           })
 
     // sort nodes by id
-    var sortedNodes = Array.prototype.slice.call(svg.selectAll("g")._groups[0], 0).sort(sortNodesById);
+    sortedNodes = Array.prototype.slice.call(svg.selectAll("g")._groups[0], 0).sort(sortNodesById);
     colorNodesUpward(sortedNodes);
-    colorNodesDownward(sortedNodes, sortedNodes.length - 1, null)
+    colorNodesDownward(sortedNodes, sortedNodes.length - 1, null);
+    nameNodesUpward(sortedNodes);
+    nameNodesDownward(sortedNodes, sortedNodes.length - 1, null);
+    updateRenamingTable(sortedNodes);
     resizeSVG();
 }
 
@@ -269,6 +278,94 @@ function drawDendrogram(data) {
   */
 function sortNodesById(node1, node2) {
   return node1.__data__.data.node_id - node2.__data__.data.node_id
+}
+
+
+/**
+  * Name the tree nodes from bottom to top.
+  *
+  * @param {Array} sortedNodes The array of nodes sorted by their id.
+  */
+ function nameNodesUpward(sortedNodes) {
+  for (let i = 0; i < clusters.length; i++) {
+    let node = sortedNodes[i];
+    node.__data__.data.cluster = getClusterFromNodeId(i);
+  }
+  for (let i = clusters.length - 1; i < sortedNodes.length; i++) {
+    let node = sortedNodes[i];
+    if (node.__data__.data.isGrouped) {
+      //check if left child is renamed
+      let leftChild = node.__data__.data.children[0]
+      let leftChildCluster = null;
+      if (leftChild.children.length == 0) {
+        leftChildCluster = getClusterFromNodeId(leftChild.node_id);
+      } else {
+        leftChildCluster = leftChild.cluster;
+      }
+      leftChildIsRenamed = renamingTable.links[leftChildCluster].isRenamed
+      //check if right child is renamed
+      let rightChild = node.__data__.data.children[1]
+      let rightChildCluster = null;
+      if (rightChild.children.length == 0) {
+        rightChildCluster = getClusterFromNodeId(rightChild.node_id);
+      } else {
+        rightChildCluster = rightChild.cluster;
+      }
+      rightChildIsRenamed = renamingTable.links[rightChildCluster].isRenamed
+
+      // If no child is renamed, the grouped node takes the name of the left child
+      // If only the left child is renamed, takes the name of the left child too
+      if(!rightChildIsRenamed) {
+        node.__data__.data.cluster = leftChildCluster;
+      }
+      // If only the right child is renamed, takes the name of the right child
+      else if (rightChildIsRenamed) {
+        node.__data__.data.cluster = rightChildCluster;
+      }
+      // If both children are renamed, takes the name of the last child renamed
+      else {
+        renamingNbLeft = renamingTable.links[leftChildCluster].renamingNumber;
+        renamingNbRight = renamingTable.links[rightChildCluster].renamingNumber;
+        node.__data__.data.cluster = renamingNbLeft > renamingNbRight ? leftChildCluster : rightChildCluster
+      }
+    }
+  }
+}
+
+
+/**
+  * Recursively check that the 2 children of a grouped node have the same cluster name
+  *
+  * @param {Array} sortedNodes The array of nodes sorted by their id.
+  * @param {Number} node_id The id of the node to check
+  * @param parent The parent node
+  */
+ function nameNodesDownward(sortedNodes, node_id, parent) {
+  var node = sortedNodes[node_id];
+  if (parent && parent.__data__.data.isGrouped) {
+    node.__data__.data.cluster = parent.__data__.data.cluster;
+  }
+
+  if (node.__data__.data.children.length == 2) {
+    var id1 = node.__data__.data.children[0].node_id;
+    var id2 = node.__data__.data.children[1].node_id;
+    nameNodesDownward(sortedNodes, id1, node);
+    nameNodesDownward(sortedNodes, id2, node);   
+  }
+}
+
+/**
+ * Update the renaming table
+ * 
+ * @param {Array} sortedNodes The array of nodes sorted by their id.
+ */
+function updateRenamingTable(sortedNodes) {
+  for (i = 0; i < clusters.length; i++) {
+    let initClusterName = clusters[i];
+    let node = sortedNodes[i];
+    let currentClusterName = getSpeakerNewName(node.__data__.data.cluster)
+    renamingTable.links[initClusterName].newName = currentClusterName
+  }
 }
 
 
@@ -340,6 +437,44 @@ function findParentNode(childNodeId1, childNodeId2) {
       if (id1 == childNodeId1 && id2 == childNodeId2) {
         return node;
       }
+    }
+  }
+  return null;
+}
+
+
+/**
+ * Find if the left child and the right child of a node represent only one speaker
+ * 
+ * @param {*} parentNodeId The id of the parent node 
+ */
+function findIfChildrenIsOneSpeaker(parentNodeId) {
+  let childrenNodes = findChildrenNodes(parentNodeId);
+    if (childrenNodes) {
+      leftNodeIsOneSpeaker = childrenNodes[0].data.isGrouped || childrenNodes[0].data.children.length == 0
+      rightNodeIsOneSpeaker = childrenNodes[1].data.isGrouped || childrenNodes[1].data.children.length == 0
+    } else {
+      leftNodeIsOneSpeaker = true;
+      rightNodeIsOneSpeaker = true;
+    }
+}
+
+
+/**
+ * Return the children of a node from its id
+ * 
+ * @param {string} parentNodeId The id of the parent node
+ * @returns {Array} The array containing the children
+ */
+function findChildrenNodes(parentNodeId) {
+  let nodes = d3.selectAll("g")._groups[0]
+  for (let i = 1; i < nodes.length; i++) {
+    let node = nodes[i].__data__
+    if (node.data.node_id == parentNodeId) {
+      if(node.data.children.length == 2) {
+        return [node.children[0], node.children[1]]
+      }
+      break;
     }
   }
   return null;

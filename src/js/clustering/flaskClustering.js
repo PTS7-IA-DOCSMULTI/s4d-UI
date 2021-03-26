@@ -26,6 +26,7 @@ var request = require('request-promise');
 var fs = require('fs');
 var path = require('path');
 const { ipcRenderer } = require('electron');
+const { get } = require('request-promise');
 
 var segments = [];
 var clusters = [];
@@ -35,6 +36,11 @@ var clustersToDisplay = [];
 var segmentsToDisplay = [];
 var separationIndex;
 var derTrack;
+var renamingTable;
+var leftNodeIsOneSpeaker;
+var rightNodeIsOneSpeaker;
+var leftNode;
+var rightNode;
 
 var nextQuestionButton;
 var noButton;
@@ -79,9 +85,10 @@ window.onload = function() {
         let newName = ipcRenderer.sendSync('rename-speaker', currentName)
         if (newName && newName.replaceAll(' ', '')) {
             spkname1.innerHTML = newName
-            renameSpeaker(currentName, newName);
+            let nodeId = selectedNode.__data__.data.node_id
+            let cluster = nodeId >= clusters.length ? leftNode.data.cluster : getClusterFromNodeId(nodeId)
+            renameSpeaker(cluster, newName);
         }
-        
     }
     
     spkname2.onclick = function() {
@@ -89,6 +96,9 @@ window.onload = function() {
         let newName = ipcRenderer.sendSync('rename-speaker', currentName)
         if (newName && newName.replaceAll(' ', '')) {
             spkname2.innerHTML = newName
+            let nodeId = selectedNode.__data__.data.node_id
+            let cluster = nodeId >= clusters.length ? rightNode.data.cluster : getClusterFromNodeId(nodeId)
+            renameSpeaker(cluster, newName);
         }
     }
 
@@ -132,6 +142,25 @@ window.onload = function() {
     ipcRenderer.on('saveFile', (event, arg) => {
         saveFile(arg);
     });
+
+}
+
+
+/**
+ * Initialize the renaming table with the default name of all clusters
+ * 
+ */
+function initRenamingTable() {
+    renamingTable = new Object();
+    renamingTable.numberOfRenaming = 0;
+    renamingTable.links = new Object();
+    for (let i = 0; i < clusters.length; i++) {
+        let clusterName = clusters[i]
+        renamingTable.links[clusterName] = {
+            isRenamed: false,
+            newName: null
+        }
+    }
 }
 
 
@@ -240,23 +269,27 @@ function saveFile(path) {
 }
 
 /**
-  * Send a post request to rename a speaker
+  * Rename a speaker
   *
-  * @param {string} oldName The old name of the speaker
+  * @param {string} defaultClusterName The default name of the cluster to rename
   * @param {string} newName The new name of the speaker
   */
-function renameSpeaker(oldName, newName) {
-    var options = {
-        method: 'POST',
-        uri: 'http://127.0.0.1:5000/rename_speaker',
-        json: {
-            old_name: oldName,
-            new_name: newName
-        }
+function renameSpeaker(defaultClusterName, newName) {
+    renamingTable.links[defaultClusterName] = {
+        isRenamed: true,
+        newName: newName,
+        renamingNumber: ++renamingTable.numberOfRenaming
     }
-    request(options).then(function (res) {
-        //reload display and question
-    })
+    // sort nodes by id
+    nameNodesUpward(sortedNodes);
+    nameNodesDownward(sortedNodes, sortedNodes.length - 1, null);
+    updateRenamingTable(sortedNodes);
+    displaySegmentDetails(segmentsToDisplay.slice(0, separationIndex), 1, !leftNodeIsOneSpeaker);
+    displaySegmentDetails(segmentsToDisplay.slice(separationIndex, segmentsToDisplay.length), 2, !rightNodeIsOneSpeaker);
+    if(document.getElementById("question").innerHTML) {
+        displayQuestion();
+    }
+    
 }
 
 
@@ -280,11 +313,10 @@ function getSegmentsFromNode(nodeId, selectionMethod) {
      request(options).then(function (res) {
          data = JSON.parse(res);
          if (data.segs1 && data.segs2) {
-             loadSegmentsToDisplay(data.segs1, data.segs2);
+             loadSegmentsToDisplay(data.segs1, data.segs2, data.node_id);
          } else if (data.segs) {
-             loadSegmentsToDisplay(data.segs, []);
+             loadSegmentsToDisplay(data.segs, [], data.node_id);
          }
-         
      })
  }
 
@@ -339,6 +371,9 @@ function loadData(data) {
     loadSegments(data.segments)
     clusters = data.clusters;
     randomColorClusters();
+    if(!renamingTable) {
+        initRenamingTable();
+    }
     drawDendrogram(data.tree);
 }
 
@@ -385,7 +420,7 @@ function loadQuestion(question) {
   flashNode(node.children[0]);
 
   //load segments to display
-  loadSegmentsToDisplay(question.segs1, question.segs2)
+  loadSegmentsToDisplay(question.segs1, question.segs2, node.__data__.data.node_id)
   displayQuestion();
 }
 
@@ -395,13 +430,21 @@ function loadQuestion(question) {
   * 
   * @param {Array} segList1 The first array of segments to display
   * @param {Array} segList2 The second array of segments to display
+  * @param {string} nodeId The id of the selected node
   */
-function loadSegmentsToDisplay(segList1, segList2) {
+function loadSegmentsToDisplay(segList1, segList2, nodeId) {
     findSegmentsToDisplay(segList1, segList2);
     setClustersToDisplay();
-    displaySegmentDetails(segmentsToDisplay.slice(0, separationIndex), 1);
-    displaySegmentDetails(segmentsToDisplay.slice(separationIndex, segmentsToDisplay.length), 2);
+    let children = findChildrenNodes(nodeId);
+    if (children) {
+        leftNode = children[0];
+        rightNode = children[1];
+    }
+    findIfChildrenIsOneSpeaker(nodeId);
+    displaySegmentDetails(segmentsToDisplay.slice(0, separationIndex), 1, !leftNodeIsOneSpeaker);
+    displaySegmentDetails(segmentsToDisplay.slice(separationIndex, segmentsToDisplay.length), 2, !rightNodeIsOneSpeaker);
     displayRegions();
+    getClusterFromNodeId(nodeId);
 }
 
 
@@ -484,4 +527,23 @@ function initDisplay() {
     displaySegmentDetails([], 1);
     displaySegmentDetails([], 2);
     $(window).resize();
+}
+
+
+/**
+ * Return the new name of a speaker.
+ * 
+ * @param {string} defaultClusterName The default name of the cluster
+ * @returns The new name of the speaker if sets, the old name otherwise
+ */
+function getSpeakerNewName(defaultClusterName) {
+    let newName = renamingTable.links[defaultClusterName].newName;
+    return newName ? newName : defaultClusterName;
+}
+
+
+function getClusterFromNodeId(nodeId) {
+    if (nodeId < clusters.length) {
+        return clusters[nodeId];
+    }
 }
