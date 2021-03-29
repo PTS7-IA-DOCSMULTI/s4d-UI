@@ -282,6 +282,28 @@ i.icon.zoom-out:before {
 i.icon.zoom-in:before {
 	content: "\f00e";
 }
+i.icon.check:before {
+	content: "\f00c";
+}
+i.icon.pencil:before {
+	content: "\f303";
+}
+i.icon.pencil:before {
+	content: "\f303";
+}
+i.icon.close:before {
+	content: "\f00d";
+}
+i.icon.save:before {
+	content: "\f0c7";
+}
+i.icon.back:before {
+	content: "\f060";
+}
+i.icon.reset:before {
+	content: "\f0e2";
+}
+
 
 .action-button {
 	background: none;
