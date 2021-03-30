@@ -27,6 +27,7 @@ var fs = require('fs');
 var path = require('path');
 const { ipcRenderer } = require('electron');
 const { settings } = require('cluster');
+const { clearScreenDown } = require('readline');
 
 var folderPath;
 var shortFileName;
@@ -39,11 +40,33 @@ var segmentsToDisplay = [];
 
 var validateButton;
 var flashRegionTimer;
+var addClusterButton;
+var deleteClusterBtn;
 
 window.onload = function() {
     validateButton = document.getElementById('validateButton');
     validateButton.onclick = function() {
         updateInitDiar(segments);
+    }
+
+    addClusterButton = document.getElementById('addClusterButton');
+    addClusterButton.onclick = function() {
+        let clusterName = addNewCluster();
+        displayData();
+        $("input[name='selectedSpeaker'][value=" + clusterName + "]").prop('checked', true);
+        updateSelectedSpeaker();
+        var scrollContainer = $('#scrollContainer');
+        scrollContainer.scrollTop(scrollContainer.prop("scrollHeight"));
+    }
+
+    deleteClusterBtn = document.getElementById('deleteClusterBtn');
+    deleteClusterBtn.onclick = function() {
+        let clusterName = $("input[name='selectedSpeaker']:checked").val();
+        deleteCluster(clusterName);
+        displayData();
+        $("input[name='selectedSpeaker'][value=" + clusters[0] + "]").prop('checked', true);
+        updateSelectedSpeaker();
+        $('#scrollContainer').scrollTop(0);
     }
 
     resetButton = document.getElementById('resetSegmentation');
@@ -288,18 +311,12 @@ function displaySegmentDetails(segsIndex) {
     let tbody = table.createTBody();
     let j = 0;
   
-    if (segsIndex.length > 0) {
-      let firstSeg = segments[segsIndex[0]];
-      let indexCluster = clusters.indexOf(firstSeg[1]);
-      let color = colors[indexCluster];
-      tag.style.backgroundColor = color ? color : "rgba(71,71,71,255)";
-      tag.style.display = "";
-      let name = firstSeg[1];
-      spkName.innerHTML = name;
-    } else {
-      tag.style.display = "none";
-      spkName.innerHTML = "Speaker";
-    }
+    let clusterName = $("input[name='selectedSpeaker']:checked").val();
+    let indexCluster = clusters.indexOf(clusterName);
+    tag.style.backgroundColor = colors[indexCluster]
+    tag.style.display = "";
+    spkName.innerHTML = clusterName;
+    
   
     for(let i = 0; i < segsIndex.length; i++) {
         //add a row for each segment
@@ -403,14 +420,15 @@ function displaySpeakerNames() {
         radiobox.value = clusters[i];
         radiobox.name = 'selectedSpeaker'
         radiobox.checked = (i == 0)
-
-        radiobox.addEventListener('change', function() {
-            updateSelectedSpeaker();
-        });
         
         //add elem to row
         row.insertCell(0).appendChild(radiobox);
         row.insertCell(1).appendChild(speakerName);
+
+        row.onclick = function() {
+            $("input[name='selectedSpeaker'][value=" + clusters[i] + "]").prop('checked', true);
+            updateSelectedSpeaker();
+        }
   
     }
     //add elems to html page
@@ -428,3 +446,32 @@ function updateSelectedSpeaker() {
 }
 
 
+/**
+ * Add a new cluster in the list
+ * 
+ * @returns {String} The name of the new cluster
+ */
+function addNewCluster() {
+    let i = 0;
+    while(clusters.includes(String(i))) {
+        i++;
+    }
+    clusters.push(String(i));
+    let r = Math.floor(Math.random() * 256); 
+    let g = Math.floor(Math.random() * 256); 
+    let b = Math.floor(Math.random() * 256); 
+    colors.push("rgba(" + r + ", " + g + ", " + b + ", 1)");
+
+    return String(i);
+}
+
+
+/**
+ * Delete a cluster and all its segments
+ */
+function deleteCluster(clusterName) {
+    segments = segments.filter(s => s[1] != clusterName);
+    let indexCluster = clusters.indexOf(clusterName);
+    clusters.splice(indexCluster, 1);
+    colors.splice(indexCluster, 1);
+}
