@@ -24,14 +24,50 @@
 
 var WaveSurfer = require('wavesurfer.js');
 var RegionPlugin = require ('wavesurfer.js/dist/plugin/wavesurfer.regions.min.js');
-var MinimapPlugin = require ('wavesurfer.js/dist/plugin/wavesurfer.minimap.min.js');
 const ipcRendererWaveSurfer = require('electron').ipcRenderer;
 var url;
 var wavesurfer;
+var wavesurferForWaveform;
 var regionCreated;
 var isPlayingRegionOnly = false;
 var shouldShowMenu = false;
 var rightClickData;
+var slider;
+var waveformClicked = false;
+
+
+/**
+ * Initialize buttons for wavesurfer
+ * 
+ */
+function initWavesurferButtons() {
+    slider = document.querySelector('#slider');
+    slider.oninput = function () {
+        var zoomLevel = Number(slider.value);
+        wavesurfer.zoom(zoomLevel);
+        wavesurferForWaveform.zoom(zoomLevel);
+    };
+
+    document.getElementById("zoom-out").onclick = function() {
+        if (Number(slider.value) >= 1) {
+            slider.value = Number(slider.value) - 1;
+            wavesurfer.zoom(slider.value);
+            wavesurferForWaveform.zoom(slider.value);
+        }
+    }
+
+    document.getElementById("zoom-in").onclick = function() {
+        if (Number(slider.value) <= 49) {
+            slider.value = Number(slider.value) + 1;
+            wavesurfer.zoom(slider.value);
+            wavesurferForWaveform.zoom(slider.value);
+        } 
+    }
+
+    document.getElementById("waveform2").onclick = function() {
+        waveformClicked = true;
+    }
+}
 
 ipcRendererWaveSurfer.on('right-click', (event, arg) => {
     let element = document.elementFromPoint(arg.x, arg.y)
@@ -91,8 +127,8 @@ function wavesurferLoadFile(filename) {
     url = filename;
     // Second parameter is an array of pre-generated peaks
     // Empty array avoid displaying the waveform
-    // wavesurfer.load(url, []);
-    wavesurfer.load(url);
+    wavesurfer.load(url, []);
+    wavesurferForWaveform.load(url)
     document.title = "s4d-UI - " + url;
     document.getElementById("filename").innerHTML = '<span>' + url.split('\\').pop() + '</span>';
 };
@@ -182,10 +218,7 @@ function initWavesurfer() {
         plugins: [
             RegionPlugin.create({
                 dragSelection: true
-            })/*,
-            MinimapPlugin.create({
- 
-            })*/
+            })
         ],
         waveColor: 'white',
         progressColor: 'white',
@@ -196,48 +229,31 @@ function initWavesurfer() {
         backend: 'MediaElement',
         cursorWidth: 2,
         cursorColor: "black",
-        normalize: false
+        normalize: false,
+        hideScrollbar: true
     });
 
-    wavesurfer.on('audioprocess', function() {
+    wavesurfer.on('audioprocess', function(a,b,c) {
         displayTime();
+        if(wavesurferForWaveform.getCurrentTime() != wavesurfer.getCurrentTime()) {
+            let position = wavesurfer.getCurrentTime() / wavesurfer.getDuration()
+            wavesurferForWaveform.seekAndCenter(position)
+        }
     })
 
     wavesurfer.on('ready', function() {
-        wavesurfer.zoom(0);
         displayTime();
     });
 
-    wavesurfer.on('seek', function() {
+    wavesurfer.on('seek', function(position) {
         displayTime();
+        wavesurferForWaveform.seekTo(position)
     })
 
     wavesurfer.on('zoom', function(d) {
         slider.value = d;
     })
     
-    var slider = document.querySelector('#slider');
-    slider.oninput = function () {
-      var zoomLevel = Number(slider.value);
-      wavesurfer.zoom(zoomLevel);
-    };
-
-    document.getElementById("zoom-out").onclick = function() {
-        let slider = document.getElementById("slider");
-        if (Number(slider.value) >= 1) {
-            slider.value = Number(slider.value) - 1;
-            wavesurfer.zoom(Number(slider.value));
-        }
-    }
-
-    document.getElementById("zoom-in").onclick = function() {
-        let slider = document.getElementById("slider");
-        if (Number(slider.value) <= 49) {
-            slider.value = Number(slider.value) + 1;
-            wavesurfer.zoom(Number(slider.value));
-        } 
-    }
-
     //called when a region is resized
     wavesurfer.on('region-update-end', function(region) {
 
@@ -281,7 +297,6 @@ function initWavesurfer() {
     })
 
     wavesurfer.on('waveform-ready', function() {
-        let slider = document.getElementById("slider");
         let zoomLevel = Number(slider.value);
         let maxZoom = slider.getAttribute("max");
         // play with zoom levels to update the display and get the waveform
@@ -569,3 +584,57 @@ function getBackRegionForNewRegion(newRegion) {
     }
     return backRegion;
 }
+
+
+/**
+ * Initialize the wavesurfer used only for the waveform
+ * 
+ */
+ function initWavesurferForWaveform() {
+    wavesurferForWaveform = WaveSurfer.create({
+        container: '#waveform2',
+        waveColor: 'white',
+        progressColor: 'white',
+        scrollParent: true,
+        partialRender: true,
+        responsive: true,
+        pixelRatio: 1,
+        backend: 'MediaElement',
+        cursorWidth: 2,
+        cursorColor: "black",
+        normalize: true
+    });
+
+    wavesurferForWaveform.on('ready', function() {
+        wavesurferForWaveform.zoom(0);
+        wavesurferForWaveform.setHeight(50);
+    });
+
+    wavesurferForWaveform.on('seek', function(position) {
+        if (waveformClicked) {
+            waveformClicked = false;
+            wavesurfer.seekTo(position); 
+        }
+    })
+
+    wavesurferForWaveform.on('waveform-ready', function() {
+        let zoomLevel = Number(slider.value);
+        let maxZoom = slider.getAttribute("max");
+        // play with zoom levels to update the display and get the waveform
+        wavesurferForWaveform.zoom(maxZoom);
+        wavesurferForWaveform.zoom(0);
+        wavesurferForWaveform.zoom(zoomLevel);
+    })
+
+    wavesurferForWaveform.on('scroll', function(d) {
+        if (!wavesurfer.isPlaying()) {
+            let scrollX = wavesurferForWaveform.drawer.getScrollX();
+            let width = wavesurferForWaveform.drawer.width;
+            let progress = scrollX / width;
+            wavesurfer.drawer.progress(progress)
+            wavesurfer.seekTo(wavesurfer.getCurrentTime() / wavesurfer.getDuration())
+        }
+    })
+}
+
+

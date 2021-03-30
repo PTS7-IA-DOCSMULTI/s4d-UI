@@ -57,7 +57,9 @@ window.onload = function() {
         saveFile(arg);
     });
 
+    initWavesurferButtons();
     initWavesurfer();
+    initWavesurferForWaveform();
     let audioPath = ipcRenderer.sendSync('get-audio-path');
     wavesurferLoadFile(audioPath);
     folderPath = path.dirname(audioPath);
