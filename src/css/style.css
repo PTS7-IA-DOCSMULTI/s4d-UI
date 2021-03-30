@@ -84,11 +84,11 @@
 
 .middle-part {
 	background: transparent;
-	height: 250px;
-	width: 450px;
+	height: 350px;
+	width: 600px;
 	position: absolute;
-	top: calc(50% - 125px);
-	left: calc(50% - 225px);
+	top: calc(50% - 175px);
+	left: calc(50% - 265px);
 }
 
 .app-header {
@@ -236,11 +236,14 @@ i.big.icon, i.big.icons {
 }
 
 .file-path {
-	margin-top: 15px;
-	text-align: center;
+	display: table-cell;
+	vertical-align: middle;
+	height: 131px;
+	padding-bottom: 15px;
 }
 
 .subcontent {
+	height: calc(100% - 185px);
     padding: 15px;
     background: #00000021;
     border-radius: 15px;
