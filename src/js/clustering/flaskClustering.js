@@ -61,6 +61,7 @@ window.onload = function() {
     saveButton = document.getElementById('saveButton');
     renameBtn1 = document.getElementById('renameBtn1');
     renameBtn2 = document.getElementById('renameBtn2');
+    helpButton = document.getElementById('help');
 
     nextQuestionButton.onclick = function() {
         getNextQuestion();
@@ -110,6 +111,10 @@ window.onload = function() {
 
     saveButton.onclick = function() {
         ipcRenderer.send('save-file');
+    }
+
+    helpButton.onclick = function() {
+        displayHelp();
     }
 
     initWavesurfer();
@@ -568,4 +573,18 @@ function getNewClusterLabels() {
         newClusterLabels[oldName] = newName;
     }
     return newClusterLabels
+}
+
+
+/**
+ *  Display help for the clustering step
+ * 
+ */
+ function displayHelp() {
+    let msg = "During the clustering step the system will ask you some questions to know if some clusters should be grouped or not. " +
+    "To answer questions, you can listen to segments associated to the clusters. " +
+    "You can check the diarization error rate with the DER button. " +
+    "Speakers can also be renamed. " +
+    "You can save the diarization at any time with the save button."
+    ipcRenderer.sendSync('display-information-msg', msg);
 }

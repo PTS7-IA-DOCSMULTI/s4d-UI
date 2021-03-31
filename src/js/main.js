@@ -261,7 +261,7 @@ ipcMain.on('display-information-msg', (event, arg) => {
     message: arg,
   };
 
-  dialog.showMessageBox(null, options);
+  dialog.showMessageBox(mainWindow, options);
   event.returnValue = null;
 })
 

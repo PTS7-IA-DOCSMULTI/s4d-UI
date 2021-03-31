@@ -34,6 +34,7 @@ window.onload = function() {
     loadSegButton = document.getElementById('loadSegButton');
     filePathText = document.getElementById('filePath');
     openIcon = document.getElementById('openIcon');
+    helpButton = document.getElementById('help');
 
     openFileButton.onclick = function() {
         ipcRenderer.send('open-file');        
@@ -45,6 +46,10 @@ window.onload = function() {
 
     loadSegButton.onclick = function() {
         ipcRenderer.send('show-segmentation');        
+    }
+
+    helpButton.onclick = function() {
+        displayHelp();
     }
 
     let res = ipcRenderer.sendSync('get-open-file-result');
@@ -73,5 +78,17 @@ function shutdownServer() {
     request(options).then(function (res) {
         console.log("Server down")
     })
+}
+
+
+/**
+ *  Display help for the open file step
+ * 
+ */
+ function displayHelp() {
+    let msg = "Use the open file button to choose a wav file, then press 'load segmentation'. " +
+    "Make sure to have all of the following files in the same folder than the audio file: " +
+    ".first.mdtm, .uem, .ref. All of these files must have the same name."
+    ipcRenderer.sendSync('display-information-msg', msg);
 }
 

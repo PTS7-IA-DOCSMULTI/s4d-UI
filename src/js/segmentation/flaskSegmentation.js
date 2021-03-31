@@ -42,6 +42,7 @@ var validateButton;
 var flashRegionTimer;
 var addClusterButton;
 var deleteClusterBtn;
+var helpButton;
 
 window.onload = function() {
     validateButton = document.getElementById('validateButton');
@@ -74,6 +75,11 @@ window.onload = function() {
         let audioPath = ipcRenderer.sendSync('get-audio-path');
         let url = path.join(folderPath, shortFileName)
         getInitDiar(url);
+    }
+
+    helpButton = document.getElementById('help');
+    helpButton.onclick = function() {
+        displayHelp();
     }
 
     ipcRenderer.on('saveFile', (event, arg) => {
@@ -474,4 +480,17 @@ function deleteCluster(clusterName) {
     let indexCluster = clusters.indexOf(clusterName);
     clusters.splice(indexCluster, 1);
     colors.splice(indexCluster, 1);
+}
+
+
+/**
+ *  Display help for segmentation step
+ * 
+ */
+function displayHelp() {
+    let msg = "During the segmentation step, you can create new segments by dragging on the timeline, " +
+    "delete or split a segment by right-clicking on it and change the borders of a segment. " +
+    "When the segmentation is right for you, press 'validate segmentation' to load the clustering step. " +
+    "You can use the reset button to undo all of your changes." 
+    ipcRenderer.sendSync('display-information-msg', msg);
 }
