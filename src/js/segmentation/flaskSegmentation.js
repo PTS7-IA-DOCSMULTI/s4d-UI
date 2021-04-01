@@ -90,7 +90,6 @@ window.onload = function() {
 
     initWavesurferButtons();
     initWavesurfer();
-    initWavesurferForWaveform();
     let audioPath = ipcRenderer.sendSync('get-audio-path');
     wavesurferLoadFile(audioPath);
     folderPath = path.dirname(audioPath);
@@ -256,7 +255,7 @@ function randomColorClusters() {
     let r = Math.floor(Math.random() * 256); 
     let g = Math.floor(Math.random() * 256); 
     let b = Math.floor(Math.random() * 256); 
-    colors.push("rgba(" + r + ", " + g + ", " + b + ", 1)");
+    colors.push("rgba(" + r + ", " + g + ", " + b + ", 0.5)");
   }
 }
 
@@ -438,6 +437,7 @@ function displaySpeakerNames() {
         row.onclick = function() {
             $("input[name='selectedSpeaker'][value=" + clusters[i] + "]").prop('checked', true);
             updateSelectedSpeaker();
+            updateCanvas();
         }
   
     }
