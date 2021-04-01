@@ -53,6 +53,7 @@ window.onload = function() {
     addClusterButton = document.getElementById('addClusterButton');
     addClusterButton.onclick = function() {
         let clusterName = addNewCluster();
+        displaySpeakerNames();
         displayData();
         $("input[name='selectedSpeaker'][value=" + clusterName + "]").prop('checked', true);
         updateSelectedSpeaker();
@@ -64,6 +65,7 @@ window.onload = function() {
     deleteClusterBtn.onclick = function() {
         let clusterName = $("input[name='selectedSpeaker']:checked").val();
         deleteCluster(clusterName);
+        displaySpeakerNames();
         displayData();
         $("input[name='selectedSpeaker'][value=" + clusters[0] + "]").prop('checked', true);
         updateSelectedSpeaker();
@@ -124,6 +126,7 @@ function getInitDiar(fileName) {
         segments = res.segments
         findClusters();
         randomColorClusters();
+        displaySpeakerNames();
         displayData();
     })
 }
@@ -147,6 +150,7 @@ function getSavedSegmentation(fileName) {
       segments = res.segments
       findClusters();
       randomColorClusters();
+      displaySpeakerNames();
       displayData();
   })
 }
@@ -391,7 +395,7 @@ function flashRegion(target) {
  * 
  */
 function displayData() {
-    displaySpeakerNames();
+    displayClustersOverview();
     updateSelectedSpeaker();
     resizeWaveform();
     displayRegions();
@@ -493,4 +497,13 @@ function displayHelp() {
     "When the segmentation is right for you, press 'validate segmentation' to load the clustering step. " +
     "You can use the reset button to undo all of your changes." 
     ipcRenderer.sendSync('display-information-msg', msg);
+}
+
+
+/**
+ * Display the total number of segments and clusters
+ */
+function displayClustersOverview() {
+    document.getElementById('nbClusterLabel').innerHTML = "Number of clusters : " + clusters.length
+    document.getElementById('nbSegmentLabel').innerHTML = "Number of segments : " + segments.length
 }

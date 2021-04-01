@@ -469,7 +469,6 @@ function generateSegmentCreatedByUser(region) {
     //resort segment by time because the new segment position is not correct
     segments.sort((a, b) => a[3] - b [3])
     displayData();
-    displayRegions();
 }
 
 
@@ -484,8 +483,6 @@ function deleteRegion(region) {
     segments.splice(id, 1)
 
     displayData();
-    displayRegions(); 
-
 }
 
 
@@ -517,7 +514,6 @@ function splitRegion(region, x) {
     segments.sort((a, b) => a[3] - b [3])
 
     displayData();
-    displayRegions();
 }
 
 

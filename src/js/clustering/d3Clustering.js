@@ -118,11 +118,11 @@ function displaySegmentDetails(segsIndex, position, severalSpeakers) {
   if (segsIndex.length == 0) {
     tag.style.display = "none";
     spkName.innerHTML = "";
-    renameBtn.style.display = "none"
+    renameBtn.parentElement.style.display = "none"
   } else if (severalSpeakers) {
     tag.style.display = "none";
     spkName.innerHTML = "Several speakers";
-    renameBtn.style.display = "none"
+    renameBtn.parentElement.style.display = "none"
   } else  {
     let firstSeg = segments[segsIndex[0]];
     let indexCluster = clusters.indexOf(firstSeg[1]);
@@ -131,7 +131,7 @@ function displaySegmentDetails(segsIndex, position, severalSpeakers) {
     tag.style.display = "";
     let name = getSpeakerNewName(firstSeg[1]);
     spkName.innerHTML = name;
-    renameBtn.style.display = ""
+    renameBtn.parentElement.style.display = ""
   }
 
   for(let i = 0; i < segsIndex.length; i++) {
