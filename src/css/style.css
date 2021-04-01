@@ -291,9 +291,6 @@ i.icon.check:before {
 i.icon.pencil:before {
 	content: "\f303";
 }
-i.icon.pencil:before {
-	content: "\f303";
-}
 i.icon.close:before {
 	content: "\f00d";
 }
@@ -306,7 +303,19 @@ i.icon.back:before {
 i.icon.reset:before {
 	content: "\f0e2";
 }
+i.icon.help:before {
+    content: "\f059";
+}
+i.icon.next:before {
+	content: "\f061";
+}
 
+.header .title {
+	display: inline-block;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
 
 .action-button {
 	background: none;
