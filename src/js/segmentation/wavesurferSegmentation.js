@@ -250,9 +250,9 @@ function initWavesurfer() {
         wavesurferForWaveform.seekTo(position)
     })
 
-    wavesurfer.on('zoom', function(d) {
+    /**wavesurfer.on('zoom', function(d) {
         slider.value = d;
-    })
+    })**/
     
     //called when a region is resized
     wavesurfer.on('region-update-end', function(region) {

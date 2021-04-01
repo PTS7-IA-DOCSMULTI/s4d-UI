@@ -86,22 +86,35 @@ window.onload = function() {
     renameBtn1.onclick = function() {
         let currentName = spkname1.innerHTML
         let newName = ipcRenderer.sendSync('rename-speaker', currentName)
-        if (newName && newName.replaceAll(' ', '')) {
-            spkname1.innerHTML = newName
+        newName = newName.replaceAll(' ', '');
+        if (newName && newName != currentName) {
             let nodeId = selectedNode.__data__.data.node_id
             let cluster = nodeId >= clusters.length ? leftNode.data.cluster : getClusterFromNodeId(nodeId)
-            renameSpeaker(cluster, newName);
+            let nameIsAvailable = checkIfNameIsAvailable(cluster, newName);
+            if (nameIsAvailable) {
+                renameSpeaker(cluster, newName);
+                spkname1.innerHTML = newName
+            }
+            else {
+                ipcRenderer.sendSync('display-information-msg', "This name is not available");
+            }
         }
     }
     
     renameBtn2.onclick = function() {
         let currentName = spkname2.innerHTML
         let newName = ipcRenderer.sendSync('rename-speaker', currentName)
-        if (newName && newName.replaceAll(' ', '')) {
-            spkname2.innerHTML = newName
+        newName = newName.replaceAll(' ', '');
+        if (newName && newName != currentName) {
             let nodeId = selectedNode.__data__.data.node_id
             let cluster = nodeId >= clusters.length ? rightNode.data.cluster : getClusterFromNodeId(nodeId)
-            renameSpeaker(cluster, newName);
+            let nameIsAvailable = checkIfNameIsAvailable(cluster, newName);
+            if (nameIsAvailable) {
+                spkname2.innerHTML = newName
+                renameSpeaker(cluster, newName);
+            } else {
+                ipcRenderer.sendSync('display-information-msg', "This name is not available");
+            }
         }
     }
 
@@ -587,4 +600,20 @@ function getNewClusterLabels() {
     "Speakers can also be renamed. " +
     "You can save the diarization at any time with the save button."
     ipcRenderer.sendSync('display-information-msg', msg);
+}
+
+
+/**
+ * Check if the new name is available
+ * 
+ * @param {String} cluster The default name of the cluster
+ * @param {String} newName The new name of the cluster
+ * @returns {Boolean} Returns true if the name is available, false otherwise
+ */
+function checkIfNameIsAvailable(cluster, newName) {
+    let names = new Set();
+    for (let i = 0; i < clusters.length; i++) {
+        names.add(renamingTable.links[clusters[i]].newName);
+    }
+    return !names.has(newName);
 }
