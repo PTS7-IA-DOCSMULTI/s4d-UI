@@ -357,6 +357,19 @@ th {
 	position: relative;
 }
 
+#spkname1, #spkname2 {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 50px);
+    display: block;
+    overflow: hidden
+}
+
+.flexHeader {
+	display: flex;
+	flex-wrap: wrap;
+}
+
 .buttons {
 	display: inline-block;
     background: #ffffff14;
