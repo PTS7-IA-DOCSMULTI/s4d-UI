@@ -315,7 +315,7 @@ function displaySegmentDetails(segsIndex) {
     thPlayElement.innerHTML = "<b>Play</b>";
   
     let tag = document.getElementById("speaker-tag2");
-    let spkName = document.getElementById("spkname2");
+    let spkName = document.getElementById("spkname");
   
     let tbody = table.createTBody();
     let j = 0;
