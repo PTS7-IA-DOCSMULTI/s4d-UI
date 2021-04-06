@@ -150,7 +150,7 @@ function initWavesurfer() {
         backend: 'MediaElement',
         cursorWidth: 2,
         cursorColor: "black",
-        normalize: true
+        normalize: false
     });
 
     wavesurfer.on('audioprocess', function() {

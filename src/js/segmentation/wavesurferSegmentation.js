@@ -221,7 +221,8 @@ function initWavesurfer() {
         backend: 'MediaElement',
         cursorWidth: 2,
         cursorColor: "black",
-        normalize: true
+        normalize: true,
+        hideScrollbar: false
     });
 
     wavesurfer.on('audioprocess', function() {

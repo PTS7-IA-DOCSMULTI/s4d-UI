@@ -88,7 +88,7 @@
 	width: 600px;
 	position: absolute;
 	top: calc(50% - 175px);
-	left: calc(50% - 265px);
+	left: calc(50% - 300px);
 }
 
 .app-header {
@@ -139,6 +139,13 @@
 
 #speaker-tag2 {
 	right: calc(20px + 10px) !important;
+}
+
+#clusterOverview {
+	width: 50%;
+	max-height: calc(100% - 90px);
+	overflow: auto;
+	position: relative;
 }
 
 .right-part-left {
@@ -338,8 +345,15 @@ th {
 }
 
 #segTable1, #segTable2 {
-	max-height: calc(100% - 100px);
+	margin-top: 10px;
+	max-height: calc(100% - 120px);
     overflow: auto;
+	position: relative;
+}
+
+#segTable {
+	max-height: calc(100% - 90px);
+	overflow: auto;
 	position: relative;
 }
 

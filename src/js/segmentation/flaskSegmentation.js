@@ -295,7 +295,7 @@ function arraysEqual(a1,a2) {
   */
 function displaySegmentDetails(segsIndex) {
   
-    let segTable = document.getElementById("segTable2");
+    let segTable = document.getElementById("segTable");
     segTable.innerHTML = "";    
   
     let table = document.createElement('table');
@@ -504,6 +504,6 @@ function displayHelp() {
  * Display the total number of segments and clusters
  */
 function displayClustersOverview() {
-    document.getElementById('nbClusterLabel').innerHTML = "Number of clusters : " + clusters.length
-    document.getElementById('nbSegmentLabel').innerHTML = "Number of segments : " + segments.length
+    document.getElementById('nbClusterLabel').innerHTML = clusters.length
+    document.getElementById('nbSegmentLabel').innerHTML = segments.length
 }
