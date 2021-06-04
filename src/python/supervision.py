@@ -110,6 +110,12 @@ class FlaskThread(threading.Thread):
 
 @app.route('/load_data_for_ui', methods=['POST'])
 def load_data_for_ui():
+    """
+    handles the request to load the clustering step on the interface
+
+    :return: data_for_ui: a json string that contains the dendrogram, the threshold, the clusters, the segments
+    and the der track
+    """
     global current_diar, first_pass_diar, current_vec_per_seg, scores_per_cluster, uem, ref
     global clustering_method, selection_method, conditional_questioning, prioritize_separation2clustering
     global links_to_check, init_diar, link, number_cluster, complete_list, temporary_link_list, der_log, der_track
@@ -186,6 +192,7 @@ def load_data_for_ui():
     stop_separation_list = []  # a list of nodes that have gotten confirmation for separation question
     stop_clustering_list = []  # a list of nodes that have gotten confirmation for clustering question
 
+    # convert data for the interface to json format
     data_for_ui = json.dumps(
         dict(tree=json_tree, threshold=th, clusters=complete_list, segments=first_pass_diar.segments, der_track=der_track))
 
@@ -194,6 +201,12 @@ def load_data_for_ui():
 
 @app.route('/get_init_diar', methods=['POST'])
 def get_init_diar():
+    """
+    handles the request to get segments of initial diar.
+    The http request provides the name of the show in json format with the show_name parameter
+
+    :return: data: a json string that contains all the segments
+    """
     json_str = str(request.get_json())
     json_str = json_str.replace("\'", "\"")
     show_name = json.loads(json_str)['show_name']
@@ -205,6 +218,12 @@ def get_init_diar():
 
 @app.route('/get_user_seg', methods=['POST'])
 def get_user_seg():
+    """
+    handles the request to get segments of the segmentation saved by the human expert.
+    The http request provides the name of the show in json format with the show_name parameter
+
+    :return: data: a json string that contains all the segments
+    """
     json_str = str(request.get_json())
     json_str = json_str.replace("\'", "\"")
     show_name = json.loads(json_str)['show_name']
@@ -214,8 +233,14 @@ def get_user_seg():
     return json.dumps(dict(segments=first_pass_diar.segments))
 
 
-# Create a nested dictionary from the ClusterNode's returned by SciPy
 def add_node(node, parent):
+    """
+    recursively creates a nested dictionary from the ClusterNode's returned by SciPy
+
+    :param node: a ClusterNode to convert into a dictionary
+    :param parent: a dictionary that will contains the result
+    :return: parent: a dictionary contains the result
+    """
     # First create the new node and append it to its parent's children
     new_node = dict(node_id=node.id, height=0, children=[])
     if parent is None:
@@ -236,6 +261,11 @@ def add_node(node, parent):
 
 
 def node_is_grouped(node):
+    """
+    indicates if a node is grouped or not. A node is grouped if it belongs to temporary_link_list
+    :param node: the node to test
+    :return: True if grouped, False if not grouped
+    """
     if node.left and node.right:
         for l in temporary_link_list:
             if l[0] == int(node.left.id) and l[1] == int(node.right.id):
@@ -245,6 +275,11 @@ def node_is_grouped(node):
 
 @app.route('/answer_question', methods=['POST'])
 def answer_question():
+    """
+    handles the request to answer a question from the system.
+    The http request provides the boolean result of the question in json format with the is_same_speaker parameter
+    :return: data: a json string that contains the new dendrogram, the new der track, and the new segments
+    """
     global links_to_check, no_more_separation, no_more_clustering, der_track, current_diar
     global stop_separation_list, separated_list, stop_clustering_list, temporary_link_list
     node = links_to_check[0]
@@ -332,6 +367,21 @@ def answer_question():
 
 @app.route('/update_init_diar', methods=['POST'])
 def update_init_diar():
+    """
+    handles the request when the human expert validate the segmentation.
+    The http request provides the name of the show (show_name),
+    the root folder to write the generated files (root_folder),
+    the settings configured in the interface (clustering_method, selection_method, conditional_questioning,
+    prioritize_separation2clustering, vectors_type),
+    and the segments in the same format they were sent (segments).
+    It also provides the path to the mdtm_file (mdtm_path),
+    the path to the config folder (system_config_path),
+    the path to the temporary folder (tmp_dir),
+    the path to the best_xtractor_path file (best_xtractor_path),
+    the path to the allies model file (model_allies_path),
+    and the path to the wav file (wav_file)
+    :return: an empty json object
+    """
 
     global clustering_method, selection_method, conditional_questioning, prioritize_separation2clustering
     global root_folder, show_name, vectors_type
@@ -407,6 +457,12 @@ def update_init_diar():
 
 @app.route('/next_question', methods=['POST'])
 def next_question():
+    """
+    handles the request to load the next question.
+    :return: question: a json string that contains the questioned node, the list of segments belonging to the left child
+    and the list of segments belonging to the right child. If no more question are available, returns an error string
+    "No more question"
+    """
     global no_more_clustering, no_more_separation, links_to_check, node_waiting_for_answer_is_grouped
 
     length = len(links_to_check)
@@ -517,6 +573,12 @@ def next_question():
 
 @app.route('/save_file', methods=['POST'])
 def save_file():
+    """
+    handles the request to save the diarization to mdtm format
+    The http request provides the path where the file should be saved. The new_cluster_labels parameter indicates the
+    old name and the new name of each cluster.
+    :return: an empty json object
+    """
     json_str = str(request.get_json())
     json_str = json_str.replace("\'", "\"")
     path = json.loads(json_str)['path']
@@ -530,6 +592,11 @@ def save_file():
 
 @app.route('/get_segments_from_node', methods=['POST'])
 def get_segments_from_node():
+    """
+    handles the request to get the info about a node
+    The http request provides the id of the node (node_id) and the method to sort the segments (selection_method)
+    :return: data: a json string that contains one list of segments per node, and the id of the node.
+    """
     node_id = int(request.form.get('node_id'))
     sort_method = request.form.get('selection_method')
 
@@ -571,6 +638,10 @@ def get_segments_from_node():
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
+    """
+    handles the request to shutdown the server from the interface
+    :return: an empty json object
+    """
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
@@ -578,12 +649,24 @@ def shutdown():
     return json.dumps("")
 
 
-# take second element for sort
 def get_start_time(segment):
+    """
+    take 4th element for sort
+    :param segment: the segment to sort
+    :return: the start time of the segment
+    """
     return segment[3]
 
 
 def correct_link_after_removing_node(number_cluster, node_idx, link_list, removed_nodes_number):
+    """
+    function copied from evallies. Corrects links after removing a node. For more info, see doc from evallies.
+    :param number_cluster:
+    :param node_idx:
+    :param link_list:
+    :param removed_nodes_number:
+    :return:
+    """
     removed_node_idx = number_cluster + node_idx
 
     for idx_link in range(node_idx, len(link_list) - 1):
@@ -607,6 +690,17 @@ def correct_link_after_removing_node(number_cluster, node_idx, link_list, remove
 
 
 def allies_init_seg(model, system_config, show, file_info, filename, root_folder, verbose=False):
+    """
+    function copied from evallies. Generate all files for the clustering step. For more info, see doc from evallies.
+    :param model:
+    :param system_config:
+    :param show:
+    :param file_info:
+    :param filename:
+    :param root_folder:
+    :param verbose:
+    :return:
+    """
     model_cfg = system_config
 
     first_seg_path = f"{model_cfg['tmp_dir']}/seg/first_th{model_cfg['first_seg']['thr_h']}/"
