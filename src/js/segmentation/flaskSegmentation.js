@@ -29,6 +29,9 @@ const { ipcRenderer } = require('electron');
 const { settings } = require('cluster');
 const { clearScreenDown } = require('readline');
 
+//const SERVER_ADDRESS = "http://127.0.0.1:5000";
+const SERVER_ADDRESS = "http://lst-demo:8097";
+
 var folderPath;
 var shortFileName;
 var extension;
@@ -115,7 +118,7 @@ function getInitDiar(fileName) {
 
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/get_init_diar',
+        uri: SERVER_ADDRESS + '/get_init_diar',
         json: {
             show_name: fileName,
         }
@@ -139,7 +142,7 @@ function getSavedSegmentation(fileName) {
 
   var options = {
       method: 'POST',
-      uri: 'http://127.0.0.1:5000/get_user_seg',
+      uri: SERVER_ADDRESS + '/get_user_seg',
       json: {
           show_name: fileName,
       }
@@ -163,7 +166,7 @@ function getSavedSegmentation(fileName) {
 function saveFile(path) {
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/save_file',
+        uri: SERVER_ADDRESS + '/save_file',
         form: {
             path: path
         }
@@ -191,7 +194,7 @@ function updateInitDiar(segments) {
 
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/update_init_diar',
+        uri: SERVER_ADDRESS + '/update_init_diar',
         json: {
             segments: segments,
             system_config_path: system_config_path,
@@ -222,7 +225,7 @@ function updateInitDiar(segments) {
  function shutdownServer() {
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/shutdown',
+        uri: SERVER_ADDRESS + '/shutdown',
     }
 
     request(options).then(function (res) {

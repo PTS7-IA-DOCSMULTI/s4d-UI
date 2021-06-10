@@ -28,6 +28,9 @@ var path = require('path');
 const { ipcRenderer } = require('electron');
 const { get } = require('request-promise');
 
+//const SERVER_ADDRESS = "http://127.0.0.1:5000";
+const SERVER_ADDRESS = "http://lst-demo:8097";
+
 var segments = [];
 var clusters = [];
 var currentColors = [];
@@ -195,7 +198,7 @@ function loadDataForUI() {
 
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/load_data_for_ui',
+        uri: SERVER_ADDRESS + '/load_data_for_ui',
     }
 
     request(options).then(function(res) {
@@ -217,7 +220,7 @@ function loadDataForUI() {
 function answerQuestion(answer) {
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/answer_question',
+        uri: SERVER_ADDRESS + '/answer_question',
         form: {
             is_same_speaker: answer
         }
@@ -241,7 +244,7 @@ function answerQuestion(answer) {
 function getNextQuestion() {
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/next_question',
+        uri: SERVER_ADDRESS + '/next_question',
     }
 
     // get the question
@@ -278,7 +281,7 @@ function updateDER(der_track) {
 function saveFile(path) {
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/save_file',
+        uri: SERVER_ADDRESS + '/save_file',
         json: {
             path: path,
             new_cluster_labels: getNewClusterLabels()
@@ -322,7 +325,7 @@ function renameSpeaker(defaultClusterName, newName) {
 function getSegmentsFromNode(nodeId, selectionMethod) {
      var options = {
          method: 'POST',
-         uri: 'http://127.0.0.1:5000/get_segments_from_node',
+         uri:  SERVER_ADDRESS + '/get_segments_from_node',
          form: {
             node_id: nodeId,
             selection_method: selectionMethod
@@ -348,7 +351,7 @@ function getSegmentsFromNode(nodeId, selectionMethod) {
  function shutdownServer() {
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/shutdown',
+        uri: SERVER_ADDRESS + '/shutdown',
     }
 
     request(options).then(function (res) {

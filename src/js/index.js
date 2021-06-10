@@ -27,6 +27,9 @@ var fs = require('fs');
 var path = require('path');
 const { ipcRenderer } = require('electron');
 
+//const SERVER_ADDRESS = "http://127.0.0.1:5000";
+const SERVER_ADDRESS = "http://lst-demo:8097";
+
 var openFileButton;
 
 window.onload = function() {
@@ -72,7 +75,7 @@ window.onload = function() {
 function shutdownServer() {
     var options = {
         method: 'POST',
-        uri: 'http://127.0.0.1:5000/shutdown',
+        uri: SERVER_ADDRESS + '/shutdown',
     }
 
     request(options).then(function (res) {
